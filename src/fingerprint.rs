@@ -1,4 +1,3 @@
-use pyo3::class::basic::PyObjectProtocol;
 use pyo3::prelude::*;
 use pyo3::types::PyBytes;
 
@@ -8,7 +7,7 @@ use crate::identity_key::IdentityKey;
 #[pyclass]
 #[derive(Clone, Debug)]
 pub struct Fingerprint {
-    pub state: libsignal_protocol_rust::Fingerprint,
+    pub state: libsignal_protocol::Fingerprint,
 }
 
 #[pymethods]
@@ -22,7 +21,7 @@ impl Fingerprint {
         remote_id: &[u8],
         remote_key: &IdentityKey,
     ) -> PyResult<Self> {
-        match libsignal_protocol_rust::Fingerprint::new(
+        match libsignal_protocol::Fingerprint::new(
             version,
             iterations,
             local_id,
@@ -47,10 +46,7 @@ impl Fingerprint {
         let fingerprint = self.state.scannable.serialize()?;
         Ok(PyBytes::new(py, &fingerprint).into())
     }
-}
 
-#[pyproto]
-impl PyObjectProtocol for Fingerprint {
     fn __str__(&self) -> Result<String> {
         self.display_string()
     }

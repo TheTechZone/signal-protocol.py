@@ -1,18 +1,19 @@
-use pyo3::class::basic::PyObjectProtocol;
 use pyo3::prelude::*;
+
+use crate::sealed_sender::DeviceId;
 
 #[pyclass]
 #[derive(Clone, Debug)]
 pub struct ProtocolAddress {
-    pub state: libsignal_protocol_rust::ProtocolAddress,
+    pub state: libsignal_protocol::ProtocolAddress,
 }
 
 #[pymethods]
 impl ProtocolAddress {
     #[new]
-    fn new(name: String, device_id: u32) -> ProtocolAddress {
+    fn new(name: String, device_id: DeviceId) -> ProtocolAddress {
         ProtocolAddress {
-            state: libsignal_protocol_rust::ProtocolAddress::new(name, device_id),
+            state: libsignal_protocol::ProtocolAddress::new(name, device_id.value),
         }
     }
 
@@ -21,12 +22,9 @@ impl ProtocolAddress {
     }
 
     pub fn device_id(&self) -> u32 {
-        self.state.device_id()
+        u32::from(self.state.device_id())
     }
-}
 
-#[pyproto]
-impl PyObjectProtocol for ProtocolAddress {
     fn __str__(&self) -> PyResult<String> {
         Ok(String::from(format!(
             "{} {}",

@@ -1,3 +1,4 @@
+use libsignal_protocol::GenericSignedPreKey;
 use pyo3::prelude::*;
 use pyo3::types::PyBytes;
 use pyo3::wrap_pyfunction;
@@ -5,45 +6,101 @@ use pyo3::wrap_pyfunction;
 use crate::curve::{KeyPair, PrivateKey, PublicKey};
 use crate::error::{Result, SignalProtocolError};
 use crate::identity_key::IdentityKey;
+use crate::sealed_sender::DeviceId;
+
+use std::convert;
 
 // Newtypes from upstream crate not exposed as part of the public API
-pub type SignedPreKeyId = u32;
-pub type PreKeyId = u32;
+#[pyclass]
+#[derive(Clone, Debug)]
+pub struct SignedPreKeyId {
+    pub value: libsignal_protocol::SignedPreKeyId,
+}
+// todo: handle impl
+impl convert::From<SignedPreKeyId> for u32 {
+    fn from(value: SignedPreKeyId) -> Self {
+        u32::from(value.value)
+    }
+}
+
+// pub type PreKeyId = u32;
 
 #[pyclass]
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug)]
+pub struct PreKeyId {
+    pub value: libsignal_protocol::PreKeyId,
+}
+// todo: handle impl
+impl convert::From<PreKeyId> for u32 {
+    fn from(value: PreKeyId) -> Self {
+        u32::from(value.value)
+    }
+}
+
+impl convert::From<u32> for PreKeyId {
+    fn from(value: u32) -> Self {
+        PreKeyId {
+            value: libsignal_protocol::PreKeyId::from(value),
+        }
+    }
+}
+
+#[pyclass]
+#[derive(Clone, Debug)]
+pub struct KyberPreKeyId {
+    pub value: libsignal_protocol::KyberPreKeyId,
+}
+// todo: handle impl
+
+#[pyclass]
+#[derive(Clone, Debug)]
+pub struct PreKeysUsed {
+    pub pre_key_id: Option<PreKeyId>,
+    pub kyber_pre_key_id: Option<KyberPreKeyId>,
+}
+
+#[pyclass]
+#[derive(Clone)]
+pub struct SystemTime {
+    pub handle: std::time::SystemTime,
+}
+
+#[pyclass]
+#[derive(Clone)]
 pub struct PreKeyBundle {
-    pub state: libsignal_protocol_rust::PreKeyBundle,
+    pub state: libsignal_protocol::PreKeyBundle,
 }
 
 #[pymethods]
 impl PreKeyBundle {
     #[new]
+    #[pyo3(signature = (registration_id, device_id, pre_key_public,signed_pre_key_id,signed_pre_key_public,signed_pre_key_signature,identity_key))]
     fn new(
         registration_id: u32,
-        device_id: u32,
-        pre_key_id: Option<PreKeyId>,
-        pre_key_public: Option<PublicKey>,
+        device_id: DeviceId,
+        // pre_key_id: Option<PreKeyId>,
+        pre_key_public: Option<(PreKeyId, PublicKey)>,
         signed_pre_key_id: SignedPreKeyId,
         signed_pre_key_public: PublicKey,
         signed_pre_key_signature: Vec<u8>,
         identity_key: IdentityKey,
     ) -> PyResult<Self> {
-        let pre_key: std::option::Option<libsignal_protocol_rust::PublicKey> = match pre_key_public
-        {
-            Some(inner) => Some(inner.key),
+        let pre_key: std::option::Option<(
+            libsignal_protocol::PreKeyId,
+            libsignal_protocol::PublicKey,
+        )> = match pre_key_public {
+            Some(inner) => Some((inner.0.value, inner.1.key)),
             None => None,
         };
 
         let signed_pre_key = signed_pre_key_public.key;
         let identity_key_direct = identity_key.key;
 
-        match libsignal_protocol_rust::PreKeyBundle::new(
+        match libsignal_protocol::PreKeyBundle::new(
             registration_id,
-            device_id,
-            pre_key_id,
+            device_id.value,
             pre_key,
-            signed_pre_key_id,
+            signed_pre_key_id.value,
             signed_pre_key,
             signed_pre_key_signature,
             identity_key_direct,
@@ -57,12 +114,19 @@ impl PreKeyBundle {
         Ok(self.state.registration_id()?)
     }
 
-    fn device_id(&self) -> Result<u32> {
-        Ok(self.state.device_id()?)
+    fn device_id(&self) -> Result<DeviceId> {
+        Ok(DeviceId {
+            value: self.state.device_id()?,
+        })
     }
 
     fn pre_key_id(&self) -> Result<Option<PreKeyId>> {
-        Ok(self.state.pre_key_id()?)
+        let key = self.state.pre_key_id()?;
+        // Ok(PreKeyId{ value: self.state.pre_key_id()})
+        match key {
+            Some(key) => Ok(Some(PreKeyId { value: key })),
+            None => Ok(None),
+        }
     }
 
     fn pre_key_public(&self) -> Result<Option<PublicKey>> {
@@ -74,7 +138,9 @@ impl PreKeyBundle {
     }
 
     fn signed_pre_key_id(&self) -> Result<SignedPreKeyId> {
-        Ok(self.state.signed_pre_key_id()?)
+        Ok(SignedPreKeyId {
+            value: self.state.signed_pre_key_id()?,
+        })
     }
 
     fn signed_pre_key_public(&self) -> Result<PublicKey> {
@@ -98,30 +164,31 @@ impl PreKeyBundle {
 #[pyclass]
 #[derive(Debug, Clone)]
 pub struct PreKeyRecord {
-    pub state: libsignal_protocol_rust::PreKeyRecord,
+    pub state: libsignal_protocol::PreKeyRecord,
 }
 
 #[pymethods]
 impl PreKeyRecord {
     #[new]
     fn new(id: PreKeyId, keypair: &KeyPair) -> Self {
-        let key =
-            libsignal_protocol_rust::KeyPair::new(keypair.key.public_key, keypair.key.private_key);
+        let key = libsignal_protocol::KeyPair::new(keypair.key.public_key, keypair.key.private_key);
         PreKeyRecord {
-            state: libsignal_protocol_rust::PreKeyRecord::new(id, &key),
+            state: libsignal_protocol::PreKeyRecord::new(id.value, &key),
         }
     }
 
     #[staticmethod]
     fn deserialize(data: &[u8]) -> PyResult<Self> {
-        match libsignal_protocol_rust::PreKeyRecord::deserialize(data) {
+        match libsignal_protocol::PreKeyRecord::deserialize(data) {
             Ok(state) => Ok(PreKeyRecord { state }),
             Err(err) => Err(SignalProtocolError::new_err(err)),
         }
     }
 
     fn id(&self) -> Result<PreKeyId> {
-        Ok(self.state.id()?)
+        Ok(PreKeyId {
+            value: self.state.id()?,
+        })
     }
 
     fn key_pair(&self) -> Result<KeyPair> {
@@ -160,10 +227,10 @@ impl PreKeyRecord {
 #[pyfunction]
 pub fn generate_n_prekeys(n: u16, id: PreKeyId) -> Vec<PreKeyRecord> {
     let mut keyvec: Vec<PreKeyRecord> = Vec::new();
-    let mut i: u32 = id;
+    let mut i: u32 = u32::from(id);
     for _n in 0..n {
         let keypair = KeyPair::generate();
-        let prekey = PreKeyRecord::new(i, &keypair);
+        let prekey = PreKeyRecord::new(PreKeyId::from(i), &keypair);
         keyvec.push(prekey);
         i += 1;
     }
@@ -174,32 +241,33 @@ pub fn generate_n_prekeys(n: u16, id: PreKeyId) -> Vec<PreKeyRecord> {
 #[pyclass]
 #[derive(Debug, Clone)]
 pub struct SignedPreKeyRecord {
-    pub state: libsignal_protocol_rust::SignedPreKeyRecord,
+    pub state: libsignal_protocol::SignedPreKeyRecord,
 }
 
 #[pymethods]
 impl SignedPreKeyRecord {
     #[new]
     fn new(id: SignedPreKeyId, timestamp: u64, keypair: &KeyPair, signature: &[u8]) -> Self {
-        let key =
-            libsignal_protocol_rust::KeyPair::new(keypair.key.public_key, keypair.key.private_key);
+        let key = libsignal_protocol::KeyPair::new(keypair.key.public_key, keypair.key.private_key);
         SignedPreKeyRecord {
-            state: libsignal_protocol_rust::SignedPreKeyRecord::new(
-                id, timestamp, &key, &signature,
+            state: libsignal_protocol::SignedPreKeyRecord::new(
+                id.value, timestamp, &key, &signature,
             ),
         }
     }
 
     #[staticmethod]
     fn deserialize(data: &[u8]) -> PyResult<Self> {
-        match libsignal_protocol_rust::SignedPreKeyRecord::deserialize(data) {
+        match libsignal_protocol::SignedPreKeyRecord::deserialize(data) {
             Ok(state) => Ok(SignedPreKeyRecord { state }),
             Err(err) => Err(SignalProtocolError::new_err(err)),
         }
     }
 
     fn id(&self) -> Result<SignedPreKeyId> {
-        Ok(self.state.id()?)
+        Ok(SignedPreKeyId {
+            value: (self.state.id()?),
+        })
     }
 
     fn timestamp(&self) -> Result<u64> {
@@ -236,9 +304,9 @@ impl SignedPreKeyRecord {
 }
 
 #[pyclass]
-#[derive(Clone, Debug)]
+#[derive(Clone)]
 pub struct SessionRecord {
-    pub state: libsignal_protocol_rust::SessionRecord,
+    pub state: libsignal_protocol::SessionRecord,
 }
 
 /// session_state_mut() is not exposed as part of the Python API.
@@ -247,13 +315,13 @@ impl SessionRecord {
     #[staticmethod]
     pub fn new_fresh() -> Self {
         SessionRecord {
-            state: libsignal_protocol_rust::SessionRecord::new_fresh(),
+            state: libsignal_protocol::SessionRecord::new_fresh(),
         }
     }
 
     #[staticmethod]
     fn deserialize(bytes: &[u8]) -> PyResult<Self> {
-        match libsignal_protocol_rust::SessionRecord::deserialize(bytes) {
+        match libsignal_protocol::SessionRecord::deserialize(bytes) {
             Ok(state) => Ok(SessionRecord { state }),
             Err(err) => Err(SignalProtocolError::new_err(err)),
         }
@@ -294,19 +362,19 @@ impl SessionRecord {
     }
 
     // Returns bytes instead of ChainKey
-    pub fn get_receiver_chain_key(
+    pub fn get_receiver_chain_key_bytes(
         &self,
         sender: &PublicKey,
         py: Python,
     ) -> Result<Option<PyObject>> {
-        match self.state.get_receiver_chain_key(&sender.key)? {
-            Some(result) => Ok(Some(PyBytes::new(py, &result.key()[..]).into())),
+        match self.state.get_receiver_chain_key_bytes(&sender.key)? {
+            Some(result) => Ok(Some(PyBytes::new(py, &result[..]).into())),
             None => Ok(None),
         }
     }
 
-    fn has_sender_chain(&self) -> Result<bool> {
-        Ok(self.state.has_sender_chain()?)
+    fn has_usable_sender_chain(&self, now: SystemTime) -> Result<bool> {
+        Ok(self.state.has_usable_sender_chain(now.handle)?)
     }
 
     fn alice_base_key(&self, py: Python) -> Result<PyObject> {
@@ -319,6 +387,14 @@ impl SessionRecord {
         Ok(PyBytes::new(py, &result).into())
     }
 }
+
+#[pyclass]
+#[derive(Clone)]
+pub struct KyberPreKeyRecord {
+    pub state: libsignal_protocol::KyberPreKeyRecord,
+}
+
+/// todo: implement KyberPreKeyRecord
 
 /// UnacknowledgedPreKeyMessageItems is not exposed as part of the upstream public API.
 pub fn init_submodule(module: &PyModule) -> PyResult<()> {

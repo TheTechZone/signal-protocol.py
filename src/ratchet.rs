@@ -6,36 +6,38 @@ use rand::rngs::OsRng;
 use crate::curve::{KeyPair, PublicKey};
 use crate::error::Result;
 use crate::identity_key::{IdentityKey, IdentityKeyPair};
+use crate::protocol::KemKeyPair;
+use crate::protocol::KemSerializedCiphertext;
 use crate::state::SessionRecord;
 
 #[pyclass]
 pub struct AliceSignalProtocolParameters {
-    inner: libsignal_protocol_rust::AliceSignalProtocolParameters,
+    inner: libsignal_protocol::AliceSignalProtocolParameters,
 }
 
 #[pymethods]
 impl AliceSignalProtocolParameters {
     #[new]
+    #[pyo3(signature = (our_identity_key_pair,our_base_key_pair,their_identity_key,their_signed_pre_key,_their_one_time_pre_key,their_ratchet_key))]
     pub fn new(
         our_identity_key_pair: IdentityKeyPair,
         our_base_key_pair: KeyPair,
         their_identity_key: IdentityKey,
         their_signed_pre_key: PublicKey,
-        their_one_time_pre_key: Option<PublicKey>,
+        _their_one_time_pre_key: Option<PublicKey>, // todo: wth libsignal ignores this and kyber? :/
         their_ratchet_key: PublicKey,
     ) -> Self {
-        let upstream_their_one_time_pre_key = match their_one_time_pre_key {
-            None => None,
-            Some(x) => Some(x.key),
-        };
+        // let upstream_their_one_time_pre_key = match their_one_time_pre_key {
+        //     None => None,
+        //     Some(x) => Some(x.key),
+        // };
 
         Self {
-            inner: libsignal_protocol_rust::AliceSignalProtocolParameters::new(
+            inner: libsignal_protocol::AliceSignalProtocolParameters::new(
                 our_identity_key_pair.key,
                 our_base_key_pair.key,
                 their_identity_key.key,
                 their_signed_pre_key.key,
-                upstream_their_one_time_pre_key,
                 their_ratchet_key.key,
             ),
         }
@@ -87,25 +89,28 @@ pub fn initialize_alice_session(
 ) -> Result<SessionRecord> {
     let mut csprng = OsRng;
     let state =
-        libsignal_protocol_rust::initialize_alice_session_record(&parameters.inner, &mut csprng)?;
+        libsignal_protocol::initialize_alice_session_record(&parameters.inner, &mut csprng)?;
     Ok(SessionRecord { state })
 }
 
 #[pyclass]
 pub struct BobSignalProtocolParameters {
-    inner: libsignal_protocol_rust::BobSignalProtocolParameters,
+    inner: libsignal_protocol::BobSignalProtocolParameters<'static>,
 }
 
 #[pymethods]
 impl BobSignalProtocolParameters {
     #[new]
+    #[pyo3(signature = (our_identity_key_pair,our_signed_pre_key_pair,our_one_time_pre_key_pair,our_ratchet_key_pair,our_kyber_pre_key_pair,their_identity_key,their_base_key,_their_kyber_ciphertext))]
     pub fn new(
         our_identity_key_pair: IdentityKeyPair,
         our_signed_pre_key_pair: KeyPair,
         our_one_time_pre_key_pair: Option<KeyPair>,
         our_ratchet_key_pair: KeyPair,
+        our_kyber_pre_key_pair: Option<KemKeyPair>,
         their_identity_key: IdentityKey,
         their_base_key: PublicKey,
+        _their_kyber_ciphertext: Option<KemSerializedCiphertext>, // todo:deal with this
     ) -> Self {
         let upstream_our_one_time_pre_key_pair = match our_one_time_pre_key_pair {
             None => None,
@@ -113,13 +118,15 @@ impl BobSignalProtocolParameters {
         };
 
         Self {
-            inner: libsignal_protocol_rust::BobSignalProtocolParameters::new(
+            inner: libsignal_protocol::BobSignalProtocolParameters::new(
                 our_identity_key_pair.key,
                 our_signed_pre_key_pair.key,
                 upstream_our_one_time_pre_key_pair,
                 our_ratchet_key_pair.key,
+                Some(our_kyber_pre_key_pair.unwrap().state),
                 their_identity_key.key,
                 their_base_key.key,
+                None, // todo: not sure here
             ),
         }
     }
@@ -166,7 +173,7 @@ impl BobSignalProtocolParameters {
 
 #[pyfunction]
 pub fn initialize_bob_session(parameters: &BobSignalProtocolParameters) -> Result<SessionRecord> {
-    let state = libsignal_protocol_rust::initialize_bob_session_record(&parameters.inner)?;
+    let state = libsignal_protocol::initialize_bob_session_record(&parameters.inner)?;
     Ok(SessionRecord { state })
 }
 

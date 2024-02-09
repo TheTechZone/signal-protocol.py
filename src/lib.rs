@@ -14,6 +14,7 @@ mod session;
 mod session_cipher;
 mod state;
 mod storage;
+mod uuid;
 
 /// Signal Protocol in Python
 ///
@@ -22,7 +23,7 @@ mod storage;
 ///
 /// Basic usage:
 ///
-/// >>> pub, priv = signal_protocol.curve.generate_keypair()
+/// >>> pub, priv = signal_protocol.curve.generate_skeypair()
 ///
 /// We do not expose a Python submodule for HKDF (a module in the upstream crate).
 #[pymodule]
@@ -83,6 +84,9 @@ fn signal_protocol(py: Python, module: &PyModule) -> PyResult<()> {
     storage::init_submodule(storage_submod)?;
     module.add_submodule(storage_submod)?;
 
+    let uuid_submod = PyModule::new(py, "uuid")?;
+    uuid::init_submodule(uuid_submod)?;
+    module.add_submodule(uuid_submod)?;
     // Workaround to enable imports from submodules. Upstream issue: pyo3 issue #759
     // https://github.com/PyO3/pyo3/issues/759#issuecomment-653964601
     let mods = [
@@ -100,6 +104,7 @@ fn signal_protocol(py: Python, module: &PyModule) -> PyResult<()> {
         "session",
         "state",
         "storage",
+        "uuid",
     ];
     for module_name in mods.iter() {
         let cmd = format!(

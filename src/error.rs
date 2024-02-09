@@ -15,7 +15,7 @@ create_exception!(
 #[pyclass]
 #[derive(Debug)]
 pub struct SignalProtocolError {
-    pub err: libsignal_protocol_rust::SignalProtocolError,
+    pub err: libsignal_protocol::SignalProtocolError,
 }
 
 impl fmt::Display for SignalProtocolError {
@@ -30,14 +30,14 @@ impl convert::From<SignalProtocolError> for PyErr {
     }
 }
 
-impl convert::From<libsignal_protocol_rust::SignalProtocolError> for SignalProtocolError {
-    fn from(err: libsignal_protocol_rust::SignalProtocolError) -> Self {
+impl convert::From<libsignal_protocol::SignalProtocolError> for SignalProtocolError {
+    fn from(err: libsignal_protocol::SignalProtocolError) -> Self {
         SignalProtocolError { err }
     }
 }
 
 impl SignalProtocolError {
-    pub fn new(err: libsignal_protocol_rust::SignalProtocolError) -> Self {
+    pub fn new(err: libsignal_protocol::SignalProtocolError) -> Self {
         Self { err }
     }
 
@@ -45,7 +45,7 @@ impl SignalProtocolError {
         SignalProtocolException::new_err(err)
     }
 
-    pub fn new_err(err: libsignal_protocol_rust::SignalProtocolError) -> PyErr {
+    pub fn new_err(err: libsignal_protocol::SignalProtocolError) -> PyErr {
         let local_error = SignalProtocolError { err };
         SignalProtocolException::new_err(local_error.to_string())
     }

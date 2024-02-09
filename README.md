@@ -1,5 +1,15 @@
 # signal-protocol
 
+----
+TODO:
+
+- kyber
+- kyber impl protocol store
+
+
+----
+
+
 [![CircleCI](https://circleci.com/gh/freedomofpress/signal-protocol.svg?style=svg)](https://circleci.com/gh/freedomofpress/signal-protocol)
 [![PyPI version](https://badge.fury.io/py/signal-protocol.svg)](https://badge.fury.io/py/signal-protocol)
 
