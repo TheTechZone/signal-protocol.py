@@ -2,13 +2,17 @@ version: 2
 jobs:
   test:
     docker:
-      - image: circleci/python:3.10
+      - image: cimg/python:3.10
     steps:
       - checkout
       - run:
           name: Install rust
           command: |
             curl https://sh.rustup.rs -sSf | sh -s -- --default-toolchain nightly-2024-02-06 -y
+      - run:
+          name: Install protoc
+          command: |
+            sudo apt-get update && sudo apt-get install -yyq protobuf-compiler
       - run:
           name: Install dependencies and run tests
           command: |
@@ -21,13 +25,17 @@ jobs:
 
   build:
     docker:
-      - image: circleci/python:3.10
+      - image: cimg/python:3.10
     steps:
       - checkout
       - run:
           name: Install rust
           command: |
             curl https://sh.rustup.rs -sSf | sh -s -- --default-toolchain nightly-2024-02-06 -y
+      - run:
+          name: Install protoc
+          command: |
+            sudo apt-get update && sudo apt-get install -yyq protobuf-compiler
       - run:
           name: Build wheels.
           command: |
