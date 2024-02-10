@@ -2,13 +2,13 @@ version: 2
 jobs:
   test:
     docker:
-      - image: circleci/python:3.7
+      - image: circleci/python:3.10
     steps:
       - checkout
       - run:
           name: Install rust
           command: |
-            curl https://sh.rustup.rs -sSf | sh -s -- --default-toolchain nightly-2020-11-09 -y
+            curl https://sh.rustup.rs -sSf | sh -s -- --default-toolchain nightly-2024-02-06 -y
       - run:
           name: Install dependencies and run tests
           command: |
@@ -21,13 +21,13 @@ jobs:
 
   build:
     docker:
-      - image: circleci/python:3.7
+      - image: circleci/python:3.10
     steps:
       - checkout
       - run:
           name: Install rust
           command: |
-            curl https://sh.rustup.rs -sSf | sh -s -- --default-toolchain nightly-2020-11-09 -y
+            curl https://sh.rustup.rs -sSf | sh -s -- --default-toolchain nightly-2024-02-06 -y
       - run:
           name: Build wheels.
           command: |
