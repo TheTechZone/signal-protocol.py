@@ -91,7 +91,7 @@ def run_interaction(
         ) == bob_ptext.encode("utf8")
 
     ## Now we check that messages can be decrypted when delivered out of order
-    for (ptext, ctext) in alice_ooo_messages:
+    for ptext, ctext in alice_ooo_messages:
         assert session_cipher.message_decrypt(
             bob_store, alice_address, ctext
         ) == ptext.encode("utf8")
