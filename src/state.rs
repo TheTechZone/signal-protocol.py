@@ -3,10 +3,10 @@ use pyo3::prelude::*;
 use pyo3::types::PyBytes;
 use pyo3::wrap_pyfunction;
 
+use crate::address::DeviceId;
 use crate::curve::{KeyPair, PrivateKey, PublicKey};
 use crate::error::{Result, SignalProtocolError};
 use crate::identity_key::IdentityKey;
-use crate::sealed_sender::DeviceId;
 
 use std::convert;
 

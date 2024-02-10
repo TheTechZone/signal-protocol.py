@@ -1,4 +1,4 @@
-use crate::address::ProtocolAddress;
+use crate::address::{DeviceId, ProtocolAddress};
 use crate::curve::{PrivateKey, PublicKey};
 use crate::error::{Result, SignalProtocolError};
 use crate::state::SystemTime;
@@ -10,7 +10,6 @@ use pyo3::types::PyBytes;
 use pyo3::wrap_pyfunction;
 
 use rand::rngs::OsRng;
-use std::convert;
 
 #[pyclass]
 #[derive(Clone, Debug)]
@@ -18,26 +17,6 @@ pub struct ContentHint {
     pub data: libsignal_protocol::ContentHint,
 }
 // todo: impl
-
-#[pyclass]
-#[derive(Clone, Debug)]
-pub struct DeviceId {
-    pub value: libsignal_protocol::DeviceId,
-}
-
-impl convert::From<DeviceId> for u32 {
-    fn from(value: DeviceId) -> Self {
-        u32::from(value.value)
-    }
-}
-
-impl convert::From<u32> for DeviceId {
-    fn from(value: u32) -> Self {
-        DeviceId {
-            value: libsignal_protocol::DeviceId::from(value),
-        }
-    }
-}
 
 #[pyclass]
 #[derive(Debug, Clone)]

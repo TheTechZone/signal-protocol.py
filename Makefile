@@ -42,6 +42,10 @@ dev: ## Build the library (dev mode)
 build: ## Build wheels (both source and binary)
 	. .venv/bin/activate && python -m build
 
+.PHONY:
+test: ## Build wheels (both source and binary)
+	. .venv/bin/activate && pytest -v tests/
+
 .DEFAULT_GOAL := help
 .PHONY: help
 help: ## Display this help section

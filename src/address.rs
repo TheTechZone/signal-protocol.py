@@ -1,6 +1,25 @@
 use pyo3::prelude::*;
+use std::convert;
 
-use crate::sealed_sender::DeviceId;
+#[pyclass]
+#[derive(Clone, Debug)]
+pub struct DeviceId {
+    pub value: libsignal_protocol::DeviceId,
+}
+
+impl convert::From<DeviceId> for u32 {
+    fn from(value: DeviceId) -> Self {
+        u32::from(value.value)
+    }
+}
+
+impl convert::From<u32> for DeviceId {
+    fn from(value: u32) -> Self {
+        DeviceId {
+            value: libsignal_protocol::DeviceId::from(value),
+        }
+    }
+}
 
 #[pyclass]
 #[derive(Clone, Debug)]
@@ -11,9 +30,12 @@ pub struct ProtocolAddress {
 #[pymethods]
 impl ProtocolAddress {
     #[new]
-    fn new(name: String, device_id: DeviceId) -> ProtocolAddress {
+    fn new(name: String, device_id: u32) -> ProtocolAddress {
         ProtocolAddress {
-            state: libsignal_protocol::ProtocolAddress::new(name, device_id.value),
+            state: libsignal_protocol::ProtocolAddress::new(
+                name,
+                libsignal_protocol::DeviceId::from(device_id),
+            ),
         }
     }
 
