@@ -381,7 +381,7 @@ impl SenderKeyMessage {
 }
 
 /// CiphertextMessageType::SenderKeyDistribution => 5
-#[pyclass(extends=CiphertextMessage)]
+#[pyclass]
 #[derive(Debug, Clone)]
 pub struct SenderKeyDistributionMessage {
     pub data: libsignal_protocol::SenderKeyDistributionMessage,

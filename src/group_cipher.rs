@@ -6,10 +6,10 @@ use futures::executor::block_on;
 use rand::rngs::OsRng;
 
 use crate::address::ProtocolAddress;
-// use crate::error::{Result, SignalProtocolError};
-use crate::error::Result;
-// use crate::protocol::{CiphertextMessage, SenderKeyDistributionMessage};
+use crate::error::{Result, SignalProtocolError};
+// use crate::error::Result;
 use crate::protocol::SenderKeyDistributionMessage;
+// use crate::protocol::SenderKeyDistributionMessage;
 use crate::storage::InMemSignalProtocolStore;
 use crate::uuid::UUID;
 
@@ -62,7 +62,6 @@ pub fn process_sender_key_distribution_message(
     )?)
 }
 
-/*
 #[pyfunction]
 pub fn create_sender_key_distribution_message(
     sender: &ProtocolAddress,
@@ -70,22 +69,20 @@ pub fn create_sender_key_distribution_message(
     protocol_store: &mut InMemSignalProtocolStore,
 ) -> PyResult<Py<SenderKeyDistributionMessage>> {
     let mut csprng = OsRng;
-    let upstream_data = match block_on(
-        libsignal_protocol::create_sender_key_distribution_message(
-            &sender.state,
-            distribution_id.handle,
-            &mut protocol_store.store.sender_key_store,
-            &mut csprng,
-        ),
-    ) {
+    let upstream_data = match block_on(libsignal_protocol::create_sender_key_distribution_message(
+        &sender.state,
+        distribution_id.handle,
+        &mut protocol_store.store.sender_key_store,
+        &mut csprng,
+    )) {
         Ok(data) => data,
         Err(err) => return Err(SignalProtocolError::new_err(err)),
     };
 
     // libsignal_protocol::SenderKeyDistributionMessage::new(upstream_data., distribution_id, chain_id, iteration, chain_key, signing_key)
-    let ciphertext = libsignal_protocol::CiphertextMessage::SenderKeyMessage(
-        upstream_data.clone(),
-    );
+    // let ciphertext = libsignal_protocol::CiphertextMessage::SenderKeyMessage(
+    //     upstream_data.clone(),
+    // );
 
     // The CiphertextMessage is required as it is the base class for SenderKeyDistributionMessage
     // on the Python side, so we must create _both_ a CiphertextMessage and a SenderKeyDistributionMessage
@@ -96,23 +93,18 @@ pub fn create_sender_key_distribution_message(
     Python::with_gil(|py| {
         Py::new(
             py,
-            (
-                SenderKeyDistributionMessage {
-                    data: upstream_data,
-                },
-                CiphertextMessage { data: ciphertext },
-            ),
+            SenderKeyDistributionMessage {
+                data: upstream_data,
+            },
         )
     })
-
 }
-*/
 
 pub fn init_submodule(module: &PyModule) -> PyResult<()> {
     module.add_wrapped(wrap_pyfunction!(group_encrypt))?;
     module.add_wrapped(wrap_pyfunction!(group_decrypt))?;
     module.add_wrapped(wrap_pyfunction!(process_sender_key_distribution_message))?;
     // todo: triple-check this -- they changed the api
-    // module.add_wrapped(wrap_pyfunction!(create_sender_key_distribution_message))?;
+    module.add_wrapped(wrap_pyfunction!(create_sender_key_distribution_message))?;
     Ok(())
 }
