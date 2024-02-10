@@ -8,11 +8,6 @@ TODO:
 
 
 ----
-
-
-[![CircleCI](https://circleci.com/gh/freedomofpress/signal-protocol.svg?style=svg)](https://circleci.com/gh/freedomofpress/signal-protocol)
-[![PyPI version](https://badge.fury.io/py/signal-protocol.svg)](https://badge.fury.io/py/signal-protocol)
-
 Experimental Python bindings to Rust signal protocol implementation [`libsignal-client`](https://github.com/signalapp/libsignal-client).
 This project provides a Rust extension using [PyO3](https://pyo3.rs/) to define a `signal_protocol` Python module.
 See [here](https://cryptography.io/en/latest/limitations.html) for a fundamental limitation storing secrets in Python-allocated memory.

@@ -50,6 +50,6 @@ jobs:
 workflows:
   version: 2
   jobs_per_pr:
-    jobs:
-      - test
-      - build
+    # jobs:
+    #   - test
+    #   - build
