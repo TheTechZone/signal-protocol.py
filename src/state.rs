@@ -23,6 +23,16 @@ impl convert::From<SignedPreKeyId> for u32 {
     }
 }
 
+#[pymethods]
+impl SignedPreKeyId {
+    #[new]
+    fn new(id: u32) -> SignedPreKeyId {
+        SignedPreKeyId {
+            value: libsignal_protocol::SignedPreKeyId::from(id),
+        }
+    }
+}
+
 // pub type PreKeyId = u32;
 
 #[pyclass]
@@ -41,6 +51,16 @@ impl convert::From<u32> for PreKeyId {
     fn from(value: u32) -> Self {
         PreKeyId {
             value: libsignal_protocol::PreKeyId::from(value),
+        }
+    }
+}
+
+#[pymethods]
+impl PreKeyId {
+    #[new]
+    fn new(id: u32) -> PreKeyId {
+        PreKeyId {
+            value: libsignal_protocol::PreKeyId::from(id),
         }
     }
 }
@@ -402,6 +422,8 @@ pub fn init_submodule(module: &PyModule) -> PyResult<()> {
     module.add_class::<PreKeyRecord>()?;
     module.add_class::<SessionRecord>()?;
     module.add_class::<SignedPreKeyRecord>()?;
+    module.add_class::<PreKeyId>()?;
+    module.add_class::<SignedPreKeyId>()?;
     module
         .add_function(wrap_pyfunction!(generate_n_prekeys, module)?)
         .unwrap();

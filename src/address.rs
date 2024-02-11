@@ -21,6 +21,16 @@ impl convert::From<u32> for DeviceId {
     }
 }
 
+#[pymethods]
+impl DeviceId {
+    #[new]
+    fn new(device_id: u32) -> DeviceId {
+        DeviceId {
+            value: libsignal_protocol::DeviceId::from(device_id),
+        }
+    }
+}
+
 #[pyclass]
 #[derive(Clone, Debug)]
 pub struct ProtocolAddress {
@@ -66,5 +76,6 @@ impl ProtocolAddress {
 
 pub fn init_submodule(module: &PyModule) -> PyResult<()> {
     module.add_class::<ProtocolAddress>()?;
+    module.add_class::<DeviceId>()?;
     Ok(())
 }

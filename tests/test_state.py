@@ -1,6 +1,7 @@
 from signal_protocol import curve, address, identity_key, state, storage
 
 DEVICE_ID = 1
+DEV_ID = address.DeviceId(DEVICE_ID)
 
 
 def test_define_prekey_bundle_under_prekey_exhaustion():
@@ -31,13 +32,12 @@ def test_define_prekey_bundle_under_prekey_exhaustion():
         .calculate_signature(bob_signed_pre_key_public)
     )
 
-    pre_key_id = 31337
-    signed_pre_key_id = 22
+    pre_key_id = state.PreKeyId(31337)
+    signed_pre_key_id = state.SignedPreKeyId(22)
 
     bob_pre_key_bundle = state.PreKeyBundle(
         bob_store.get_local_registration_id(),
-        DEVICE_ID,
-        None,
+        DEV_ID,
         None,
         signed_pre_key_id,
         bob_signed_pre_key_pair.public_key(),
