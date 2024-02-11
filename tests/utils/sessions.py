@@ -117,13 +117,17 @@ def initialize_sessions_v3():
 
     alice_session = ratchet.initialize_alice_session(alice_params)
 
+    _kyber_ctxt = protocol.KemSerializedCiphertext(b"")
+
     bob_params = ratchet.BobSignalProtocolParameters(
         bob_identity,
         bob_base_key,
         None,
         bob_ephemeral_key,
+        None,  # todo: kyber
         alice_identity.identity_key(),
         alice_base_key.public_key(),
+        _kyber_ctxt,
     )
 
     bob_session = ratchet.initialize_bob_session(bob_params)
@@ -246,7 +250,7 @@ def create_pre_key_bundle(store):
         store.get_local_registration_id(),
         device_id,
         # pre_key_id,
-        (pre_key_id,pre_key_pair.public_key()),
+        (pre_key_id, pre_key_pair.public_key()),
         signed_pre_key_id,
         signed_pre_key_pair.public_key(),
         signed_pre_key_signature,

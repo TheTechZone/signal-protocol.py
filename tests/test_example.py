@@ -32,11 +32,11 @@ def test_example_doc():
 
     # Clients should store their prekeys (both one-time and signed) in the protocol store along
     # with IDs that can be used to retrieve them later.
-    pre_key_id = 10
+    pre_key_id = state.PreKeyId(10)
     pre_key_record = state.PreKeyRecord(pre_key_id, pre_key_pair)
     store.save_pre_key(pre_key_id, pre_key_record)
 
-    signed_pre_key_id = 33
+    signed_pre_key_id = state.SignedPreKeyId(33)
     signed_prekey = state.SignedPreKeyRecord(
         signed_pre_key_id,
         42,  # This is a timestamp since the signed prekeys should be periodically rotated

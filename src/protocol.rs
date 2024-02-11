@@ -95,12 +95,22 @@ impl PreKeySignalMessage {
         identity_key: IdentityKey,
         message: SignalMessage,
     ) -> PyResult<(Self, CiphertextMessage)> {
+        let pk_id = match pre_key_id {
+            None => None,
+            Some(x) => Some(x.value),
+        };
+
+        let kyber_data = match kyber_payload {
+            None => None,
+            Some(x) => Some(x.data),
+        };
+
         let upstream_data = match libsignal_protocol::PreKeySignalMessage::new(
             message_version,
             registration_id,
-            Some(pre_key_id.unwrap().value),
+            pk_id,
             signed_pre_key_id.value,
-            Some(kyber_payload.unwrap().data),
+            kyber_data,
             base_key.key,
             identity_key.key,
             message.data.clone(),

@@ -1,6 +1,6 @@
 from tests.utils.protocol import assert_signal_message_equals, create_signal_message
 
-from signal_protocol import curve, identity_key, protocol
+from signal_protocol import curve, identity_key, protocol, state
 
 
 def test_signal_message_serialize_deserialize():
@@ -22,7 +22,8 @@ def test_pre_key_signal_message_serialize_deserialize():
         3,
         365,
         None,
-        97,
+        state.SignedPreKeyId(97),
+        None,
         base_key_pair.public_key(),
         identity_key_pair,
         message,

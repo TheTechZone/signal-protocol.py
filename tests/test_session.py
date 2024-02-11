@@ -52,12 +52,12 @@ def test_basic_prekey_v3():
         .calculate_signature(bob_signed_pre_key_public)
     )
 
-    pre_key_id = 31337
-    signed_pre_key_id = 22
+    pre_key_id = state.PreKeyId(31337)
+    signed_pre_key_id = state.SignedPreKeyId(22)
 
     bob_pre_key_bundle = state.PreKeyBundle(
         bob_store.get_local_registration_id(),
-        DEVICE_ID,
+        address.DeviceId(DEVICE_ID),
         (pre_key_id, bob_pre_key_pair.public_key()),
         signed_pre_key_id,
         bob_signed_pre_key_pair.public_key(),
@@ -147,8 +147,8 @@ def test_basic_prekey_v3():
         .calculate_signature(bob_signed_pre_key_public)
     )
 
-    pre_key_id = 31337
-    signed_pre_key_id = 22
+    pre_key_id = state.PreKeyId(31337)
+    signed_pre_key_id = state.SignedPreKeyId(22)
 
     bob_pre_key_bundle = state.PreKeyBundle(
         bob_store.get_local_registration_id(),
@@ -235,8 +235,8 @@ def test_bad_signed_pre_key_signature():
         .calculate_signature(bob_signed_pre_key_public)
     )
 
-    pre_key_id = 31337
-    signed_pre_key_id = 22
+    pre_key_id = state.PreKeyId(31337)
+    signed_pre_key_id = state.SignedPreKeyId(22)
 
     for bit in range(8):
         bit *= len(bob_signed_pre_key_signature)
@@ -254,7 +254,7 @@ def test_bad_signed_pre_key_signature():
 
         bob_pre_key_bundle = state.PreKeyBundle(
             bob_store.get_local_registration_id(),
-            DEVICE_ID,
+            address.DeviceId(DEVICE_ID),
             (pre_key_id, bob_pre_key_pair.public_key()),
             signed_pre_key_id,
             bob_signed_pre_key_pair.public_key(),
@@ -268,7 +268,7 @@ def test_bad_signed_pre_key_signature():
     # Finally check that the non-corrupted signature is accepted:
     bob_pre_key_bundle = state.PreKeyBundle(
         bob_store.get_local_registration_id(),
-        DEVICE_ID,
+        address.DeviceId(DEVICE_ID),
         (pre_key_id, bob_pre_key_pair.public_key()),
         signed_pre_key_id,
         bob_signed_pre_key_pair.public_key(),
@@ -307,12 +307,12 @@ def test_repeat_bundle_message_v3():
         .calculate_signature(bob_signed_pre_key_public)
     )
 
-    pre_key_id = 31337
-    signed_pre_key_id = 22
+    pre_key_id = state.PreKeyId(31337)
+    signed_pre_key_id = state.SignedPreKeyId(22)
 
     bob_pre_key_bundle = state.PreKeyBundle(
         bob_store.get_local_registration_id(),
-        DEVICE_ID,
+        address.DeviceId(DEVICE_ID),
         (pre_key_id, bob_pre_key_pair.public_key()),
         signed_pre_key_id,
         bob_signed_pre_key_pair.public_key(),
@@ -413,12 +413,12 @@ def test_bad_message_bundle():
         .calculate_signature(bob_signed_pre_key_public)
     )
 
-    pre_key_id = 31337
-    signed_pre_key_id = 22
+    pre_key_id = state.PreKeyId(31337)
+    signed_pre_key_id = state.SignedPreKeyId(22)
 
     bob_pre_key_bundle = state.PreKeyBundle(
         bob_store.get_local_registration_id(),
-        DEVICE_ID,
+        address.DeviceId(DEVICE_ID),
         (pre_key_id, bob_pre_key_pair.public_key()),
         signed_pre_key_id,
         bob_signed_pre_key_pair.public_key(),
@@ -509,12 +509,13 @@ def test_optional_one_time_prekey():
         .calculate_signature(bob_signed_pre_key_public)
     )
 
-    signed_pre_key_id = 22
+    signed_pre_key_id = state.SignedPreKeyId(22)
 
     bob_pre_key_bundle = state.PreKeyBundle(
         bob_store.get_local_registration_id(),
-        DEVICE_ID,
-        (None, None),  # No prekey  # No prekey
+        address.DeviceId(DEVICE_ID),
+        # (None, None),  # No prekey  # No prekey
+        None,
         signed_pre_key_id,
         bob_signed_pre_key_pair.public_key(),
         bob_signed_pre_key_signature,
@@ -1174,12 +1175,12 @@ def test_basic_large_message():
         .calculate_signature(bob_signed_pre_key_public)
     )
 
-    pre_key_id = 31337
-    signed_pre_key_id = 22
+    pre_key_id = state.PreKeyId(31337)
+    signed_pre_key_id = state.SignedPreKeyId(22)
 
     bob_pre_key_bundle = state.PreKeyBundle(
         bob_store.get_local_registration_id(),
-        DEVICE_ID,
+        address.DeviceId(DEVICE_ID),
         (pre_key_id, bob_pre_key_pair.public_key()),
         signed_pre_key_id,
         bob_signed_pre_key_pair.public_key(),
