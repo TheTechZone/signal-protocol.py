@@ -238,15 +238,15 @@ def create_pre_key_bundle(store):
         .calculate_signature(signed_pre_key_public)
     )
 
-    device_id = random.randint(1, 10000)
-    pre_key_id = random.randint(1, 10000)
-    signed_pre_key_id = random.randint(1, 10000)
+    device_id = address.DeviceId(random.randint(1, 10000))
+    pre_key_id = state.PreKeyId(random.randint(1, 10000))
+    signed_pre_key_id = state.SignedPreKeyId(random.randint(1, 10000))
 
     pre_key_bundle = state.PreKeyBundle(
         store.get_local_registration_id(),
         device_id,
-        pre_key_id,
-        pre_key_pair.public_key(),
+        # pre_key_id,
+        (pre_key_id,pre_key_pair.public_key()),
         signed_pre_key_id,
         signed_pre_key_pair.public_key(),
         signed_pre_key_signature,

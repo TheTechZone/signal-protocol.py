@@ -1,6 +1,7 @@
 import pytest
 
-from signal_protocol.address import ProtocolAddress
+from datetime import datetime
+from signal_protocol.address import ProtocolAddress, DeviceId
 from signal_protocol.curve import KeyPair
 from signal_protocol.error import SignalProtocolException
 from signal_protocol.identity_key import IdentityKeyPair
@@ -66,7 +67,7 @@ def test_sender_cert():
         1, server_key.public_key(), trust_root.private_key()
     )
 
-    device_id = 2
+    device_id = DeviceId(2)
     expiration = 1234567
 
     sender_cert = SenderCertificate(
