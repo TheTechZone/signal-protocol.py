@@ -8,6 +8,7 @@ use pyo3::prelude::*;
 use pyo3::types::{PyBytes, PyDict, PyInt, PyTuple};
 use rand::random;
 use std::collections::hash_map::DefaultHasher;
+use std::convert;
 use std::hash::{Hash, Hasher};
 use std::iter;
 use uuid::{Builder, Context, Timestamp, Uuid, Variant, Version};
@@ -401,7 +402,6 @@ impl UUID {
 }
 
 #[pyfunction(name = "uuid3")]
-#[allow(dead_code)]
 fn uuid3(namespace: &UUID, name: &PyBytes) -> UUID {
     UUID {
         handle: Uuid::new_v3(&namespace.handle, name.as_bytes()),
@@ -409,7 +409,6 @@ fn uuid3(namespace: &UUID, name: &PyBytes) -> UUID {
 }
 
 #[pyfunction(name = "uuid5")]
-#[allow(dead_code)]
 fn uuid5(namespace: &UUID, name: &PyBytes) -> UUID {
     UUID {
         handle: Uuid::new_v5(&namespace.handle, name.as_bytes()),
@@ -417,7 +416,6 @@ fn uuid5(namespace: &UUID, name: &PyBytes) -> UUID {
 }
 
 #[pyfunction(name = "uuid4_bulk")]
-#[allow(dead_code)]
 fn uuid4_bulk(py: Python, n: usize) -> Vec<UUID> {
     py.allow_threads(|| {
         iter::repeat_with(|| UUID {
@@ -429,7 +427,6 @@ fn uuid4_bulk(py: Python, n: usize) -> Vec<UUID> {
 }
 
 #[pyfunction(name = "uuid4_as_strings_bulk")]
-#[allow(dead_code)]
 fn uuid4_as_strings_bulk(py: Python, n: usize) -> Vec<String> {
     py.allow_threads(|| {
         iter::repeat_with(|| {
@@ -495,10 +492,28 @@ fn uuid_v1mc() -> UUID {
     }
 }
 
+impl convert::From<u128> for UUID {
+    fn from(value: u128) -> Self {
+        UUID {
+            handle: Uuid::from_u128(value),
+        }
+    }
+}
+
+#[pyfunction(name = "uuid_from_u128")]
+pub fn uuid_from_u128(value: u128) -> UUID {
+    UUID::from(value)
+}
+
 pub fn init_submodule(module: &PyModule) -> PyResult<()> {
     module.add_class::<UUID>()?;
+    module.add_wrapped(wrap_pyfunction!(uuid3))?;
+    module.add_wrapped(wrap_pyfunction!(uuid5))?;
+    module.add_wrapped(wrap_pyfunction!(uuid4_bulk))?;
+    module.add_wrapped(wrap_pyfunction!(uuid4_as_strings_bulk))?;
     module.add_wrapped(wrap_pyfunction!(uuid4))?;
     module.add_wrapped(wrap_pyfunction!(uuid1))?;
     module.add_wrapped(wrap_pyfunction!(uuid_v1mc))?;
+    module.add_wrapped(wrap_pyfunction!(uuid_from_u128))?;
     Ok(())
 }

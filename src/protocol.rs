@@ -389,61 +389,56 @@ pub struct SenderKeyDistributionMessage {
 
 #[pymethods]
 impl SenderKeyDistributionMessage {
-    // todo :: they swapped the api -- CiphertextMessage::SenderKeyDistributionMessage is gone
+    #[staticmethod]
+    pub fn try_from(data: &[u8]) -> PyResult<Py<SenderKeyDistributionMessage>> {
+        let upstream_data = match libsignal_protocol::SenderKeyDistributionMessage::try_from(data) {
+            Ok(data) => data,
+            Err(err) => return Err(SignalProtocolError::new_err(err)),
+        };
 
-    // #[staticmethod]
-    // pub fn try_from(data: &[u8]) -> PyResult<Py<SenderKeyDistributionMessage>> {
-    //     let upstream_data =
-    //         match libsignal_protocol::SenderKeyDistributionMessage::try_from(data) {
-    //             Ok(data) => data,
-    //             Err(err) => return Err(SignalProtocolError::new_err(err)),
-    //         };
-    //     let ciphertext = libsignal_protocol::CiphertextMessage::SenderKeyDistributionMessage(
-    //         upstream_data.clone(),
-    //     );
-
-    //     // Workaround to allow two constructors with pyclass inheritence
-    //     // let gil = Python::acquire_gil();
-    //     // let py = gil.python();
-    //     return Python::with_gil(|py| {
-    //         Py::new(
-    //             py,
-    //             (
-    //                 SenderKeyDistributionMessage {
-    //                     data: upstream_data,
-    //                 },
-    //                 CiphertextMessage { data: ciphertext },
-    //             ),
-    //         )
-    //     });
-    // }
+        // Workaround to allow two constructors with pyclass inheritence
+        // let gil = Python::acquire_gil();
+        // let py = gil.python();
+        return Python::with_gil(|py| {
+            Py::new(
+                py,
+                SenderKeyDistributionMessage {
+                    data: upstream_data,
+                },
+            )
+        });
+    }
 
     // todo :: they swapped the api -- CiphertextMessage::SenderKeyDistributionMessage is gone
-    // #[new]
-    // pub fn new(
-    //     id: u32,
-    //     iteration: u32,
-    //     chain_key: &[u8],
-    //     signing_key: &PublicKey,
-    // ) -> PyResult<(Self, CiphertextMessage)> {
-    //     let upstream_data = match libsignal_protocol::SenderKeyDistributionMessage::new(
-    //         id,
-    //         iteration,
-    //         chain_key,
-    //         signing_key.key,
-    //     ) {
-    //         Ok(data) => data,
-    //         Err(err) => return Err(SignalProtocolError::new_err(err)),
-    //     };
+    #[new]
+    pub fn new(
+        message_version: u8,
+        distribution_id: UUID,
+        chain_id: u32,
+        iteration: u32,
+        chain_key: &[u8],
+        signing_key: &PublicKey,
+    ) -> PyResult<Self> {
+        let upstream_data = match libsignal_protocol::SenderKeyDistributionMessage::new(
+            message_version,
+            distribution_id.handle,
+            chain_id,
+            iteration,
+            chain_key.to_vec(),
+            signing_key.key,
+        ) {
+            Ok(data) => data,
+            Err(err) => return Err(SignalProtocolError::new_err(err)),
+        };
 
-    //     let variant_msg = SenderKeyDistributionMessage {
-    //         data: upstream_data.clone(),
-    //     };
-    //     let ciphertext_msg = CiphertextMessage::new(
-    //         libsignal_protocol::CiphertextMessage::SenderKeyDistributionMessage(upstream_data),
-    //     );
-    //     Ok((variant_msg, ciphertext_msg))
-    // }
+        let variant_msg = SenderKeyDistributionMessage {
+            data: upstream_data.clone(),
+        };
+        // let ciphertext_msg = CiphertextMessage::new(
+        //     libsignal_protocol::CiphertextMessage::SenderKeyDistributionMessage(upstream_data),
+        // );
+        Ok(variant_msg)
+    }
 
     pub fn serialized(&self, py: Python) -> PyObject {
         PyBytes::new(py, &self.data.serialized()).into()

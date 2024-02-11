@@ -7,9 +7,7 @@ use rand::rngs::OsRng;
 
 use crate::address::ProtocolAddress;
 use crate::error::{Result, SignalProtocolError};
-// use crate::error::Result;
 use crate::protocol::SenderKeyDistributionMessage;
-// use crate::protocol::SenderKeyDistributionMessage;
 use crate::storage::InMemSignalProtocolStore;
 use crate::uuid::UUID;
 
