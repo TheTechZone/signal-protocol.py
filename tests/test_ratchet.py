@@ -1,6 +1,7 @@
 import pytest
 
 from signal_protocol.state import SessionRecord
+from signal_protocol.protocol import KemSerializedCiphertext
 from signal_protocol.curve import KeyPair, PrivateKey, PublicKey
 from signal_protocol.identity_key import IdentityKey, IdentityKeyPair
 from signal_protocol.ratchet import (
@@ -68,13 +69,17 @@ def test_ratcheting_session_as_bob():
 
     alice_identity_public = IdentityKey(alice_identity_public_bytes)
 
+    _kyber_ctxt = KemSerializedCiphertext(b"")
+
     bob_parameters = BobSignalProtocolParameters(
         bob_identity_key_pair,
         bob_signed_prekey_pair,
         None,
         bob_ephemeral_pair,
+        None,  # todo: no kyber yet
         alice_identity_public,
         alice_base_public_key,
+        _kyber_ctxt,  # and no kyber ctxt
     )
 
     bob_record = initialize_bob_session(bob_parameters)
@@ -151,6 +156,6 @@ def test_ratcheting_session_as_alice():
 
     assert alice_record.local_identity_key_bytes() == alice_identity_public
     assert alice_record.remote_identity_key_bytes() == bob_identity_public_bytes
-    assert alice_record.get_receiver_chain_key(bob_ephemeral_public) == bytes.fromhex(
-        expected_receiver_chain
-    )
+    assert alice_record.get_receiver_chain_key_bytes(
+        bob_ephemeral_public
+    ) == bytes.fromhex(expected_receiver_chain)

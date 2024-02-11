@@ -481,6 +481,16 @@ pub struct KemSerializedCiphertext {
     pub state: libsignal_protocol::kem::SerializedCiphertext,
 }
 
+#[pymethods]
+impl KemSerializedCiphertext {
+    // todo: dummy for now
+    #[new]
+    pub fn new(value: &[u8]) -> PyResult<Self> {
+        let kem_ctxt = libsignal_protocol::kem::SerializedCiphertext::from(value);
+        Ok(KemSerializedCiphertext { state: kem_ctxt })
+    }
+}
+
 /// CiphertextMessageType is an Enum that is not exposed as part
 /// of the Python API.
 pub fn init_submodule(module: &PyModule) -> PyResult<()> {

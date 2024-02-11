@@ -117,13 +117,18 @@ impl BobSignalProtocolParameters {
             Some(x) => Some(x.key),
         };
 
+        let upstream_our_kyber_pre_key_pair = match our_kyber_pre_key_pair {
+            None => None,
+            Some(x) => Some(x.state),
+        };
+
         Self {
             inner: libsignal_protocol::BobSignalProtocolParameters::new(
                 our_identity_key_pair.key,
                 our_signed_pre_key_pair.key,
                 upstream_our_one_time_pre_key_pair,
                 our_ratchet_key_pair.key,
-                Some(our_kyber_pre_key_pair.unwrap().state),
+                upstream_our_kyber_pre_key_pair,
                 their_identity_key.key,
                 their_base_key.key,
                 None, // todo: not sure here
