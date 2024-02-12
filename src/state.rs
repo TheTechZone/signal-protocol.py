@@ -393,8 +393,10 @@ impl SessionRecord {
         }
     }
 
-    fn has_usable_sender_chain(&self, now: SystemTime) -> Result<bool> {
-        Ok(self.state.has_usable_sender_chain(now.handle)?)
+    // todo: should SystemTime be exposed?
+    fn has_usable_sender_chain(&self) -> Result<bool> {
+        let now = std::time::SystemTime::now();
+        Ok(self.state.has_usable_sender_chain(now)?)
     }
 
     fn alice_base_key(&self, py: Python) -> Result<PyObject> {

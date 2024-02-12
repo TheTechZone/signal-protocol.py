@@ -155,7 +155,7 @@ def test_sealed_sender_happy():
         alice_uuid,
         alice_e164,
         alice_pubkey,
-        alice_device_id,
+        DeviceId(alice_device_id),
         expiration,
         server_cert,
         server_key.private_key(),
@@ -172,7 +172,7 @@ def test_sealed_sender_happy():
         expiration - 1,
         bob_e164,
         bob_uuid,
-        bob_device_id,
+        DeviceId(bob_device_id),
         bob_store,
     )
 
@@ -222,7 +222,7 @@ def test_sealed_sender_expired_cert():
         alice_uuid,
         alice_e164,
         alice_pubkey,
-        alice_device_id,
+        DeviceId(alice_device_id),
         expiration,
         server_cert,
         server_key.private_key(),
@@ -240,7 +240,7 @@ def test_sealed_sender_expired_cert():
             expiration + 1,
             bob_e164,
             bob_uuid,
-            bob_device_id,
+            DeviceId(bob_device_id),
             bob_store,
         )
 
@@ -285,7 +285,7 @@ def test_sealed_sender_invalid_trust_root():
         alice_uuid,
         alice_e164,
         alice_pubkey,
-        alice_device_id,
+        DeviceId(alice_device_id),
         expiration,
         server_cert,
         server_key.private_key(),
@@ -305,6 +305,6 @@ def test_sealed_sender_invalid_trust_root():
             expiration + 1,
             bob_e164,
             bob_uuid,
-            bob_device_id,
+            DeviceId(bob_device_id),
             bob_store,
         )

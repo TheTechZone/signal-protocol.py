@@ -7,7 +7,7 @@ use rand::rngs::OsRng;
 use crate::address::ProtocolAddress;
 use crate::error::Result;
 use crate::protocol::PreKeySignalMessage;
-use crate::state::SystemTime;
+// use crate::state::SystemTime;
 use crate::state::{KyberPreKeyId, PreKeyBundle, PreKeyId, PreKeysUsed, SessionRecord};
 use crate::storage::InMemSignalProtocolStore;
 
@@ -55,15 +55,16 @@ pub fn process_prekey_bundle(
     remote_address: ProtocolAddress,
     protocol_store: &mut InMemSignalProtocolStore,
     bundle: PreKeyBundle,
-    now: SystemTime,
+    // now: SystemTime, // todo: should SystemTime be exposed?
 ) -> Result<()> {
     let mut csprng = OsRng;
+    let now2 = std::time::SystemTime::now();
     block_on(libsignal_protocol::process_prekey_bundle(
         &remote_address.state,
         &mut protocol_store.store.session_store,
         &mut protocol_store.store.identity_store,
         &bundle.state,
-        now.handle,
+        now2,
         &mut csprng,
     ))?;
     Ok(())

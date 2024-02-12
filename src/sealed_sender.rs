@@ -1,7 +1,7 @@
 use crate::address::{DeviceId, ProtocolAddress};
 use crate::curve::{PrivateKey, PublicKey};
 use crate::error::{Result, SignalProtocolError};
-use crate::state::SystemTime;
+// use crate::state::SystemTime;
 use crate::storage::InMemSignalProtocolStore;
 
 use futures::executor::block_on;
@@ -353,17 +353,18 @@ pub fn sealed_sender_encrypt(
     sender_cert: &SenderCertificate,
     ptext: &[u8],
     protocol_store: &mut InMemSignalProtocolStore,
-    now: SystemTime,
+    // now: SystemTime, // todo: should SystemTime be exposed?
     py: Python,
 ) -> Result<PyObject> {
     let mut csprng = OsRng;
+    let now2 = std::time::SystemTime::now();
     let result = block_on(libsignal_protocol::sealed_sender_encrypt(
         &destination.state,
         &sender_cert.data,
         ptext,
         &mut protocol_store.store.session_store,
         &mut protocol_store.store.identity_store,
-        now.handle,
+        now2,
         &mut csprng,
     ))?;
     Ok(PyBytes::new(py, &result).into())

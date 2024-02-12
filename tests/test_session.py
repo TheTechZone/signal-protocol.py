@@ -150,26 +150,29 @@ def test_basic_prekey_v3():
     pre_key_id = state.PreKeyId(31337)
     signed_pre_key_id = state.SignedPreKeyId(22)
 
+    next_prekey_id = state.PreKeyId(31337 + 1)
+    next_signed_prekey_id = state.SignedPreKeyId(22 + 1)
+
     bob_pre_key_bundle = state.PreKeyBundle(
         bob_store.get_local_registration_id(),
-        DEVICE_ID,
-        (pre_key_id + 1, bob_pre_key_pair.public_key()),
-        signed_pre_key_id + 1,
+        address.DeviceId(DEVICE_ID),
+        (next_prekey_id, bob_pre_key_pair.public_key()),
+        next_signed_prekey_id,
         bob_signed_pre_key_pair.public_key(),
         bob_signed_pre_key_signature,
         bob_store.get_identity_key_pair().identity_key(),
     )
 
-    bob_prekey = state.PreKeyRecord(pre_key_id + 1, bob_pre_key_pair)
-    bob_store.save_pre_key(pre_key_id + 1, bob_prekey)
+    bob_prekey = state.PreKeyRecord(next_prekey_id, bob_pre_key_pair)
+    bob_store.save_pre_key(next_prekey_id, bob_prekey)
 
     signed_prekey = state.SignedPreKeyRecord(
-        signed_pre_key_id + 1,
+        next_signed_prekey_id,
         42,
         bob_signed_pre_key_pair,
         bob_signed_pre_key_signature,
     )
-    bob_store.save_signed_pre_key(signed_pre_key_id + 1, signed_prekey)
+    bob_store.save_signed_pre_key(next_signed_prekey_id, signed_prekey)
 
     session.process_prekey_bundle(
         bob_address,
@@ -196,7 +199,7 @@ def test_basic_prekey_v3():
     # Sign pre-key with wrong key
     bob_pre_key_bundle = state.PreKeyBundle(
         bob_store.get_local_registration_id(),
-        DEVICE_ID,
+        address.DeviceId(DEVICE_ID),
         (pre_key_id, bob_pre_key_pair.public_key()),
         signed_pre_key_id,
         bob_signed_pre_key_pair.public_key(),
