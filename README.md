@@ -16,12 +16,21 @@ See [here](https://cryptography.io/en/latest/limitations.html) for a fundamental
 
 ## Installation
 
-To use the wheel distributions you do not need the Rust toolchain installed.
-Simply run
+~~To use the wheel distributions you do not need the Rust toolchain installed.~~
+~~Simply run~~
 
+```diff
+- pip install signal-protocol
 ```
-pip install signal-protocol
+
+🚧 There is NO associated pypy release for this project. 🚧
+
+If you do insist on using this project (as part of your own) you can install from the git repo:
+
+```sh
+pip install git+https://github.com/https://github.com/TheTechZone/signal-protocol.py.git
 ```
+
 
 ## Usage
 
@@ -126,7 +135,7 @@ ciphertext = session_cipher.message_encrypt(store, recipient_address, b"hello")
 
 ## Developer Getting Started
 
-You will need both [Rust](https://rustup.rs/) and Python 3.7+ installed on your system.
+You will need both [Rust](https://rustup.rs/) and Python 3.10+ installed on your system.
 To install the project in your virtualenv:
 
 ```sh
