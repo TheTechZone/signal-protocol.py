@@ -36,15 +36,23 @@ lint: ## Fix style issues
 
 .PHONY:
 dev: ## Build the library (dev mode)
-	. .venv/bin/activate && python -m pip install --editable .
+	. .venv/bin/activate && SETUPTOOLS_ENABLE_FEATURES="legacy-editable" python -m pip install --editable .
 
 .PHONY:
 build: ## Build wheels (both source and binary)
 	. .venv/bin/activate && python -m build
 
 .PHONY:
-test: ## Build wheels (both source and binary)
+test: ## Run the Python test suite
 	. .venv/bin/activate && pytest -v tests/
+
+.PHONY:
+clean: ## Clean up
+	@[ -d ./.pytest_cache ] && rm -rf .pytest_cache || true
+	@[ -d ./signal_protocol.egg-info ] && rm -rf ./signal_protocol.egg-info || true
+	@[ -d ./build ] && rm -rf build || true
+	@[ -d ./target ] && rm -rf target || true
+	@[ -d ./tests/__pycache__ ] && rm -rf ./tests/__pycache__ || true
 
 .DEFAULT_GOAL := help
 .PHONY: help
