@@ -1,13 +1,5 @@
 # signal-protocol
 
-----
-TODO:
-
-- kyber
-- kyber impl protocol store
-
-
-----
 Experimental Python bindings to Rust signal protocol implementation [`libsignal-client`](https://github.com/signalapp/libsignal-client).
 This project provides a Rust extension using [PyO3](https://pyo3.rs/) to define a `signal_protocol` Python module.
 See [here](https://cryptography.io/en/latest/limitations.html) for a fundamental limitation storing secrets in Python-allocated memory.
@@ -135,7 +127,7 @@ ciphertext = session_cipher.message_encrypt(store, recipient_address, b"hello")
 
 ## Developer Getting Started
 
-You will need both [Rust](https://rustup.rs/) and Python 3.10+ installed on your system.
+You will need both [Rust](https://rustup.rs/) and Python 3.10+ installed on your system. Since libsignal uses protocol buffers for message serialization, you will also need to have [protoc](https://grpc.io/docs/protoc-installation/) available on your system.
 To install the project in your virtualenv:
 
 ```sh
