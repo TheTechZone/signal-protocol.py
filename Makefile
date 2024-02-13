@@ -51,6 +51,7 @@ clean: ## Clean up
 	@[ -d ./.pytest_cache ] && rm -rf .pytest_cache || true
 	@[ -d ./signal_protocol.egg-info ] && rm -rf ./signal_protocol.egg-info || true
 	@[ -d ./build ] && rm -rf build || true
+	@[ -d ./dist ] && rm -rf dist || true
 	@[ -d ./target ] && rm -rf target || true
 	@[ -d ./tests/__pycache__ ] && rm -rf ./tests/__pycache__ || true
 
