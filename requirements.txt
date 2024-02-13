@@ -3,3 +3,4 @@ setuptools
 setuptools-rust
 wheel
 pytest
+maturin
