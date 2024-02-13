@@ -4,7 +4,7 @@ build-backend = "maturin"
 
 [project]
 name = "signal_protocol"
-requires-python = ">=3.8"
+requires-python = ">=3.10"
 classifiers = [
     "License :: OSI Approved :: GNU Affero General Public License v3 or later (AGPLv3+)",
     "Development Status :: 3 - Alpha",
