@@ -20,7 +20,7 @@ See [here](https://cryptography.io/en/latest/limitations.html) for a fundamental
 If you do insist on using this project (as part of your own) you can install from the git repo:
 
 ```sh
-pip install git+https://github.com/https://github.com/TheTechZone/signal-protocol.py.git
+pip install git+https://github.com/TheTechZone/signal-protocol.py.git
 ```
 
 
