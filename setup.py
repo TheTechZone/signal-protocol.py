@@ -1,8 +1,19 @@
 #!/usr/bin/env python
 
-import sys
+import os
 from setuptools import setup
 from setuptools_rust import Binding, RustExtension
+
+
+def find_stubs(package):
+    stubs = ['py.typed']
+    for root, _, files in os.walk(package):
+        for file in files:
+            if '.pyi' not in file:
+                continue
+            path = os.path.join(root, file).replace(package + os.sep, "", 1)
+            stubs.append(path)
+    return {package: stubs}
 
 with open("README.md", "r") as fh:
     long_description = fh.read()
@@ -27,5 +38,6 @@ setup(
         )
     ],
     setup_requires=["setuptools-rust", "wheel"],
+    package_data=find_stubs("signal_protocol"),
     zip_safe=False,  # Rust extensions are not zip safe
 )
