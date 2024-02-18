@@ -6,8 +6,8 @@ use rand::rngs::OsRng;
 use crate::curve::{KeyPair, PublicKey};
 use crate::error::Result;
 use crate::identity_key::{IdentityKey, IdentityKeyPair};
-use crate::protocol::KemKeyPair;
-use crate::protocol::KemSerializedCiphertext;
+use crate::kem::KeyPair as KemKeyPair;
+// use crate::kem::SerializedCiphertext;
 use crate::state::SessionRecord;
 
 #[pyclass]
@@ -110,7 +110,7 @@ impl BobSignalProtocolParameters {
         our_kyber_pre_key_pair: Option<KemKeyPair>,
         their_identity_key: IdentityKey,
         their_base_key: PublicKey,
-        _their_kyber_ciphertext: Option<KemSerializedCiphertext>, // todo:deal with this
+        _their_kyber_ciphertext: Option<&[u8]>, // todo:deal with this
     ) -> Self {
         let upstream_our_one_time_pre_key_pair = match our_one_time_pre_key_pair {
             None => None,
@@ -119,7 +119,7 @@ impl BobSignalProtocolParameters {
 
         let upstream_our_kyber_pre_key_pair = match our_kyber_pre_key_pair {
             None => None,
-            Some(x) => Some(x.state),
+            Some(x) => Some(x.key),
         };
 
         Self {
