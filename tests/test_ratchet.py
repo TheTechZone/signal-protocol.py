@@ -1,7 +1,8 @@
 import pytest
 
 from signal_protocol.state import SessionRecord
-from signal_protocol.protocol import KemSerializedCiphertext
+
+# from signal_protocol.protocol import KemSerializedCiphertext
 from signal_protocol.curve import KeyPair, PrivateKey, PublicKey
 from signal_protocol.identity_key import IdentityKey, IdentityKeyPair
 from signal_protocol.ratchet import (
@@ -69,7 +70,7 @@ def test_ratcheting_session_as_bob():
 
     alice_identity_public = IdentityKey(alice_identity_public_bytes)
 
-    _kyber_ctxt = KemSerializedCiphertext(b"")
+    _kyber_ctxt = b""
 
     bob_parameters = BobSignalProtocolParameters(
         bob_identity_key_pair,

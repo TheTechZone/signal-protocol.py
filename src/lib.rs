@@ -6,6 +6,7 @@ mod error;
 mod fingerprint;
 mod group_cipher;
 mod identity_key;
+mod kem;
 mod protocol;
 mod ratchet;
 mod sealed_sender;
@@ -51,6 +52,10 @@ fn signal_protocol(py: Python, module: &PyModule) -> PyResult<()> {
     let identity_key_submod = PyModule::new(py, "identity_key")?;
     identity_key::init_submodule(identity_key_submod)?;
     module.add_submodule(identity_key_submod)?;
+
+    let kem_submod = PyModule::new(py, "kem")?;
+    kem::init_kem_submodule(kem_submod)?;
+    module.add_submodule(kem_submod)?;
 
     let protocol_submod = PyModule::new(py, "protocol")?;
     protocol::init_submodule(protocol_submod)?;
