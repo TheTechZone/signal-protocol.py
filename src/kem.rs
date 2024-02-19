@@ -113,7 +113,6 @@ pub struct SecretKey {
     pub key: libsignal_protocol::kem::SecretKey,
 }
 
-/// KeyType is not exposed as part of the Python API.
 pub fn init_kem_submodule(module: &PyModule) -> PyResult<()> {
     module.add_class::<KeyType>()?;
     module.add_class::<KeyPair>()?;
