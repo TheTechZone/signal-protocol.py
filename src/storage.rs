@@ -24,20 +24,32 @@ pub struct InMemSignalProtocolStore {
 }
 
 // todo: deal with iterators
-// #[pymethods]
-// impl InMemSignalProtocolStore {
-//     fn all_pre_key_ids(&self) -> impl Iterator<Item = &PreKeyId>  {
-//         self.store.all_pre_key_ids()
-//     }
+#[pymethods]
+impl InMemSignalProtocolStore {
+    fn all_pre_key_ids(&self) -> PyResult<Vec<PreKeyId>> {
+        Ok(self
+            .store
+            .all_pre_key_ids()
+            .map(|f| PreKeyId { value: *f })
+            .collect())
+    }
 
-//     fn all_signed_pre_key_ids(&self) -> impl Iterator<Item = &SignedPreKeyId> {
-//         self.store.all_signed_pre_key_ids()
-//     }
+    fn all_signed_pre_key_ids(&self) -> PyResult<Vec<SignedPreKeyId>> {
+        Ok(self
+            .store
+            .all_signed_pre_key_ids()
+            .map(|f| SignedPreKeyId { value: *f })
+            .collect())
+    }
 
-//     fn all_kyber_pre_key_ids(&self) -> impl Iterator<Item = &KyberPreKeyId> {
-//         self.store.all_kyber_pre_key_ids()
-//     }
-// }
+    fn all_kyber_pre_key_ids(&self) -> PyResult<Vec<KyberPreKeyId>> {
+        Ok(self
+            .store
+            .all_kyber_pre_key_ids()
+            .map(|f| KyberPreKeyId { value: *f })
+            .collect())
+    }
+}
 
 #[pymethods]
 impl InMemSignalProtocolStore {
