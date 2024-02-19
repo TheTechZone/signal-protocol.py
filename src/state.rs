@@ -7,7 +7,7 @@ use crate::address::DeviceId;
 use crate::curve::{KeyPair, PrivateKey, PublicKey};
 use crate::error::{Result, SignalProtocolError};
 use crate::identity_key::IdentityKey;
-use crate::kem;
+use crate::kem::{self, SecretKey};
 
 use std::convert;
 
@@ -419,23 +419,52 @@ pub struct KyberPreKeyRecord {
 
 #[pymethods]
 impl KyberPreKeyRecord {
-/// todo: implement KyberPreKeyRecord
+    /// todo: implement KyberPreKeyRecord
     #[staticmethod]
-    fn generate(key_type: kem::KeyType, id: KyberPreKeyId, signing_key: PrivateKey) -> PyResult<Self> {
-        let record = libsignal_protocol::KyberPreKeyRecord::generate(key_type.key_type, id.value, &signing_key.key);
+    pub fn generate(
+        key_type: kem::KeyType,
+        id: KyberPreKeyId,
+        signing_key: PrivateKey,
+    ) -> PyResult<Self> {
+        let record = libsignal_protocol::KyberPreKeyRecord::generate(
+            key_type.key_type,
+            id.value,
+            &signing_key.key,
+        );
         match record {
             Ok(r) => Ok(KyberPreKeyRecord { state: r }),
-            Err(err) => Err(SignalProtocolError::new_err(err))
+            Err(err) => Err(SignalProtocolError::new_err(err)),
         }
     }
 
-    // fn get_storage(&self) {
-    //     self.state.get_storage()
-    // }
+    fn get_storage(&self) -> PyResult<KyberPreKeyRecord> {
+        let upstream = self.state.get_storage();
+        let ik = libsignal_protocol::kem::KeyPair::from_public_and_private(
+            &upstream.public_key,
+            &upstream.private_key,
+        );
 
-    // fn from_storage() -> Self {
+        let upstream_state = libsignal_protocol::KyberPreKeyRecord::new(
+            upstream.id.into(),
+            upstream.timestamp,
+            &ik.unwrap(),
+            &upstream.signature,
+        );
 
-    // }
+        Ok(KyberPreKeyRecord {
+            state: upstream_state,
+        })
+    }
+
+    pub fn secret_key(&self) -> PyResult<SecretKey> {
+        let sk = self.state.secret_key();
+        match sk {
+            Ok(key) => Ok(SecretKey { key: key }),
+            Err(_) => Err(SignalProtocolError::err_from_str(
+                "no secret key. have you generated one?".to_string(),
+            )),
+        }
+    }
 }
 
 /// UnacknowledgedPreKeyMessageItems is not exposed as part of the upstream public API.
