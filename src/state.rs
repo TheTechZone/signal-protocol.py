@@ -7,6 +7,7 @@ use crate::address::DeviceId;
 use crate::curve::{KeyPair, PrivateKey, PublicKey};
 use crate::error::{Result, SignalProtocolError};
 use crate::identity_key::IdentityKey;
+use crate::kem;
 
 use std::convert;
 
@@ -416,7 +417,26 @@ pub struct KyberPreKeyRecord {
     pub state: libsignal_protocol::KyberPreKeyRecord,
 }
 
+#[pymethods]
+impl KyberPreKeyRecord {
 /// todo: implement KyberPreKeyRecord
+    #[staticmethod]
+    fn generate(key_type: kem::KeyType, id: KyberPreKeyId, signing_key: PrivateKey) -> PyResult<Self> {
+        let record = libsignal_protocol::KyberPreKeyRecord::generate(key_type.key_type, id.value, &signing_key.key);
+        match record {
+            Ok(r) => Ok(KyberPreKeyRecord { state: r }),
+            Err(err) => Err(SignalProtocolError::new_err(err))
+        }
+    }
+
+    // fn get_storage(&self) {
+    //     self.state.get_storage()
+    // }
+
+    // fn from_storage() -> Self {
+
+    // }
+}
 
 /// UnacknowledgedPreKeyMessageItems is not exposed as part of the upstream public API.
 pub fn init_submodule(module: &PyModule) -> PyResult<()> {
@@ -426,6 +446,7 @@ pub fn init_submodule(module: &PyModule) -> PyResult<()> {
     module.add_class::<SignedPreKeyRecord>()?;
     module.add_class::<PreKeyId>()?;
     module.add_class::<SignedPreKeyId>()?;
+    module.add_class::<KyberPreKeyRecord>()?;
     module
         .add_function(wrap_pyfunction!(generate_n_prekeys, module)?)
         .unwrap();
