@@ -23,10 +23,9 @@ pub struct InMemSignalProtocolStore {
     pub store: libsignal_protocol::InMemSignalProtocolStore,
 }
 
-// todo: deal with iterators
 #[pymethods]
 impl InMemSignalProtocolStore {
-    fn all_pre_key_ids(&self) -> PyResult<Vec<PreKeyId>> {
+    pub fn all_pre_key_ids(&self) -> PyResult<Vec<PreKeyId>> {
         Ok(self
             .store
             .all_pre_key_ids()
@@ -34,7 +33,7 @@ impl InMemSignalProtocolStore {
             .collect())
     }
 
-    fn all_signed_pre_key_ids(&self) -> PyResult<Vec<SignedPreKeyId>> {
+    pub fn all_signed_pre_key_ids(&self) -> PyResult<Vec<SignedPreKeyId>> {
         Ok(self
             .store
             .all_signed_pre_key_ids()
@@ -42,7 +41,7 @@ impl InMemSignalProtocolStore {
             .collect())
     }
 
-    fn all_kyber_pre_key_ids(&self) -> PyResult<Vec<KyberPreKeyId>> {
+    pub fn all_kyber_pre_key_ids(&self) -> PyResult<Vec<KyberPreKeyId>> {
         Ok(self
             .store
             .all_kyber_pre_key_ids()
@@ -92,6 +91,10 @@ impl InMemSignalProtocolStore {
             Some(key) => Ok(Some(IdentityKey { key })),
             None => Ok(None),
         }
+    }
+
+    fn reset_identities(&mut self) {
+        self.store.identity_store.reset();
     }
 }
 
@@ -194,6 +197,23 @@ impl InMemSignalProtocolStore {
     fn get_kyber_pre_key(&mut self, id: KyberPreKeyId) -> Result<KyberPreKeyRecord> {
         let state = block_on(self.store.get_kyber_pre_key(id.value))?;
         Ok(KyberPreKeyRecord { state })
+    }
+
+    fn save_kyber_pre_key(
+        &mut self,
+        kyber_prekey_id: KyberPreKeyId,
+        record: &KyberPreKeyRecord,
+    ) -> Result<()> {
+        Ok(block_on(
+            self.store
+                .save_kyber_pre_key(kyber_prekey_id.value, &record.state),
+        )?)
+    }
+
+    fn mark_kyber_pre_key_used(&mut self, _kyber_prekey_id: KyberPreKeyId) -> Result<()> {
+        Ok(block_on(
+            self.store.mark_kyber_pre_key_used(_kyber_prekey_id.value),
+        )?)
     }
 }
 
