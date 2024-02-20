@@ -7,7 +7,9 @@ use crate::address::DeviceId;
 use crate::curve::{KeyPair, PrivateKey, PublicKey};
 use crate::error::{Result, SignalProtocolError};
 use crate::identity_key::IdentityKey;
+use crate::kem::PublicKey as KemPublicKey;
 use crate::kem::{self, SecretKey};
+use crate::sender_keys;
 
 use std::convert;
 
@@ -94,12 +96,12 @@ pub struct PreKeyBundle {
 
 #[pymethods]
 impl PreKeyBundle {
+    //todo: this constructor will *likely* have to change once kyber rolls out (and it is updated upstream)
     #[new]
     #[pyo3(signature = (registration_id, device_id, pre_key_public,signed_pre_key_id,signed_pre_key_public,signed_pre_key_signature,identity_key))]
     fn new(
         registration_id: u32,
         device_id: DeviceId,
-        // pre_key_id: Option<PreKeyId>,
         pre_key_public: Option<(PreKeyId, PublicKey)>,
         signed_pre_key_id: SignedPreKeyId,
         signed_pre_key_public: PublicKey,
@@ -179,6 +181,43 @@ impl PreKeyBundle {
         Ok(IdentityKey {
             key: *self.state.identity_key()?,
         })
+    }
+
+    fn has_kyber_pre_key(&self) -> bool {
+        self.state.has_kyber_pre_key()
+    }
+
+    fn kyber_pre_key_id(&self) -> Result<Option<KyberPreKeyId>> {
+        // todo: for now suppress errors as they kyber part is not initilized
+        let val = match self.state.kyber_pre_key_id() {
+            Err(_) => return Ok(None),
+            Ok(val) => match val {
+                None => return Ok(None),
+                Some(val) => Some(KyberPreKeyId { value: val }),
+            },
+        };
+        Ok(val)
+    }
+
+    fn kyber_pre_key_public(&self) -> Result<Option<KemPublicKey>> {
+        // todo: for now suppress errors as they kyber part is not initilized
+        let upstream_key = match self.state.kyber_pre_key_public() {
+            Err(_) => return Ok(None),
+            Ok(val) => match val {
+                None => return Ok(None),
+                Some(val) => Some(KemPublicKey { key: val.clone() }),
+            },
+        };
+        Ok(upstream_key)
+    }
+
+    fn kyber_pre_key_signature(&self) -> Result<Option<&[u8]>> {
+        // todo: for now suppress errors as they kyber part is not initilized
+        let sig = match self.state.kyber_pre_key_signature() {
+            Err(_) => return Ok(None),
+            Ok(val) => val,
+        };
+        Ok(sig)
     }
 }
 
