@@ -112,6 +112,7 @@ def initialize_sessions_v3():
         bob_base_key.public_key(),
         None,
         bob_ephemeral_key.public_key(),
+        None,
     )
 
     alice_session = ratchet.initialize_alice_session(alice_params)
