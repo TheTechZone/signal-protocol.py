@@ -151,6 +151,7 @@ def test_ratcheting_session_as_alice():
         bob_signed_prekey_public,
         None,
         bob_ephemeral_public,
+        None,
     )
 
     alice_record = initialize_alice_session(alice_parameters)
