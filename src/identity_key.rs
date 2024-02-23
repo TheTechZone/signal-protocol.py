@@ -43,6 +43,17 @@ impl IdentityKey {
             _ => Err(exceptions::PyNotImplementedError::new_err(())),
         }
     }
+
+    pub fn verify_alternate_identity(
+        &self,
+        other: &IdentityKey,
+        signature: &[u8],
+    ) -> PyResult<bool> {
+        match self.key.verify_alternate_identity(&other.key, signature) {
+            Err(err) => Err(SignalProtocolError::err_from_str(err.to_string())),
+            Ok(result) => Ok(result),
+        }
+    }
 }
 
 #[pyclass]
@@ -95,6 +106,15 @@ impl IdentityKeyPair {
     pub fn serialize(&self, py: Python) -> PyObject {
         PyBytes::new(py, &self.key.serialize()).into()
     }
+
+    // pub fn sign_alternate_identity(&self, py:Python, other: &IdentityKey) ->Result<PyBytes> {
+    //     let mut csprng = OsRng;
+    //     let alt = self.key.sign_alternate_identity(&other.key, &mut csprng);
+    //     match alt {
+    //         Err(err) => return Err(SignalProtocolError::from(err)),
+    //         Ok(data) => Ok(PyBytes::new(py, &data.))
+    //     }
+    // }
 }
 
 pub fn init_submodule(module: &PyModule) -> PyResult<()> {

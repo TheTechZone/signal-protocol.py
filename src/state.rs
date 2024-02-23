@@ -9,7 +9,6 @@ use crate::error::{Result, SignalProtocolError};
 use crate::identity_key::IdentityKey;
 use crate::kem::PublicKey as KemPublicKey;
 use crate::kem::{self, SecretKey};
-use crate::sender_keys;
 
 use std::convert;
 
