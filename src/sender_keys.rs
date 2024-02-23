@@ -1,10 +1,7 @@
 use pyo3::prelude::*;
 use pyo3::types::PyBytes;
 
-use crate::{
-    curve::PublicKey,
-    error::{Result, SignalProtocolError},
-};
+use crate::error::{Result, SignalProtocolError};
 
 #[pyclass]
 #[derive(Clone, Debug)]

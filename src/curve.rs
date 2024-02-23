@@ -7,6 +7,7 @@ use pyo3::wrap_pyfunction;
 use rand::rngs::OsRng;
 
 use crate::error::Result;
+use crate::error::SignalProtocolError;
 
 #[pyfunction]
 pub fn generate_keypair(py: Python) -> PyResult<(PyObject, PyObject)> {
@@ -108,6 +109,15 @@ impl PublicKey {
             CompareOp::Ne => Ok(self.key.serialize() != other.key.serialize()),
             _ => Err(exceptions::PyNotImplementedError::new_err(())),
         }
+    }
+
+    #[staticmethod]
+    pub fn from_public_key_bytes(bytes: &[u8]) -> Result<Self> {
+        let upstream = match libsignal_protocol::PublicKey::from_djb_public_key_bytes(bytes) {
+            Err(err) => return Err(SignalProtocolError::from(err)),
+            Ok(key) => key,
+        };
+        Ok(Self { key: upstream })
     }
 }
 
