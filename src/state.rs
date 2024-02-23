@@ -218,6 +218,21 @@ impl PreKeyBundle {
         };
         Ok(sig)
     }
+
+    fn with_kyber_pre_key(
+        &self,
+        pre_key_id: KyberPreKeyId,
+        public_key: KemPublicKey,
+        signature: &[u8],
+    ) -> Self {
+        PreKeyBundle {
+            state: self.state.clone().with_kyber_pre_key(
+                pre_key_id.value,
+                public_key.key,
+                signature.to_vec(),
+            ),
+        }
+    }
 }
 
 #[pyclass]
