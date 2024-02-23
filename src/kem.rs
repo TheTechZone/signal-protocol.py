@@ -106,11 +106,41 @@ pub struct PublicKey {
     pub key: libsignal_protocol::kem::PublicKey,
 }
 
+#[pymethods]
+impl PublicKey {
+    pub fn serialize(&self, py: Python) -> PyObject {
+        let result = self.key.serialize();
+        PyBytes::new(py, &result).into()
+    }
+
+    #[staticmethod]
+    pub fn deserialize(key: &[u8]) -> Result<Self> {
+        Ok(Self {
+            key: libsignal_protocol::kem::PublicKey::deserialize(key)?,
+        })
+    }
+}
+
 #[pyclass]
 #[derive(Clone)]
 
 pub struct SecretKey {
     pub key: libsignal_protocol::kem::SecretKey,
+}
+
+#[pymethods]
+impl SecretKey {
+    pub fn serialize(&self, py: Python) -> PyObject {
+        let result = self.key.serialize();
+        PyBytes::new(py, &result).into()
+    }
+
+    #[staticmethod]
+    pub fn deserialize(key: &[u8]) -> Result<Self> {
+        Ok(Self {
+            key: libsignal_protocol::kem::SecretKey::deserialize(key)?,
+        })
+    }
 }
 
 pub fn init_kem_submodule(module: &PyModule) -> PyResult<()> {

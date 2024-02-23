@@ -74,6 +74,15 @@ pub struct KyberPreKeyId {
 }
 // todo: handle impl
 
+#[pymethods]
+impl KyberPreKeyId {
+    #[new]
+    fn new(id: u32) -> KyberPreKeyId {
+        KyberPreKeyId {
+            value: libsignal_protocol::KyberPreKeyId::from(id),
+        }
+    }
+}
 #[pyclass]
 #[derive(Clone, Debug)]
 pub struct PreKeysUsed {
@@ -528,6 +537,7 @@ pub fn init_submodule(module: &PyModule) -> PyResult<()> {
     module.add_class::<SignedPreKeyRecord>()?;
     module.add_class::<PreKeyId>()?;
     module.add_class::<SignedPreKeyId>()?;
+    module.add_class::<KyberPreKeyId>()?;
     module.add_class::<KyberPreKeyRecord>()?;
     module
         .add_function(wrap_pyfunction!(generate_n_prekeys, module)?)
