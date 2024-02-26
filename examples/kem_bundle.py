@@ -1,4 +1,5 @@
 from signal_protocol import curve, address, identity_key, state, storage, kem
+from base64 import b64encode, b64decode
 
 alice_identity_key_pair = identity_key.IdentityKeyPair.generate()
 alice_registration_id = 1
@@ -40,3 +41,16 @@ alice_pre_key_bundle = alice_pre_key_bundle.with_kyber_pre_key(
     kyber_pre_key_id, kyber_pre_key_pair.get_public(), kyber_pre_key_signature
 )
 print(alice_pre_key_bundle.has_kyber_pre_key())
+
+
+import base64
+def b64(msg):
+    # base64 encoding helper function
+    return base64.encodebytes(msg).decode("utf-8").strip()
+def to_json(self):
+    return {
+        'identityKey': b64(self.identity_key().serialize()),
+
+    }
+
+setattr(state.PreKeyBundle, 'to_json', to_json)
