@@ -10,6 +10,8 @@ use rand::rngs::OsRng;
 use crate::curve::{PrivateKey, PublicKey};
 use crate::error::{Result, SignalProtocolError};
 
+use base64::{engine::general_purpose, Engine as _};
+
 #[pyclass]
 #[derive(Debug, Clone, Copy)]
 pub struct IdentityKey {
@@ -34,6 +36,10 @@ impl IdentityKey {
 
     pub fn serialize(&self, py: Python) -> PyObject {
         PyBytes::new(py, &self.key.serialize()).into()
+    }
+
+    pub fn to_base64(&self) -> PyResult<String> {
+        Ok(general_purpose::STANDARD.encode(&self.key.serialize()))
     }
 
     fn __richcmp__(&self, other: IdentityKey, op: CompareOp) -> PyResult<bool> {

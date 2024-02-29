@@ -8,6 +8,7 @@ use rand::rngs::OsRng;
 
 use crate::error::Result;
 use crate::error::SignalProtocolError;
+use base64::{engine::general_purpose, Engine as _};
 
 #[pyfunction]
 pub fn generate_keypair(py: Python) -> PyResult<(PyObject, PyObject)> {
@@ -99,6 +100,10 @@ impl PublicKey {
         PyBytes::new(py, &self.key.serialize()).into()
     }
 
+    pub fn to_base64(&self) -> PyResult<String> {
+        Ok(general_purpose::STANDARD.encode(&self.key.serialize()))
+    }
+
     pub fn verify_signature(&self, message: &[u8], signature: &[u8]) -> Result<bool> {
         Ok(self.key.verify_signature(&message, &signature)?)
     }
@@ -113,7 +118,7 @@ impl PublicKey {
 
     #[staticmethod]
     pub fn from_public_key_bytes(bytes: &[u8]) -> Result<Self> {
-        let upstream = match libsignal_protocol::PublicKey::from_djb_public_key_bytes(bytes) {
+        let upstream: libsignal_protocol::PublicKey = match libsignal_protocol::PublicKey::from_djb_public_key_bytes(bytes) {
             Err(err) => return Err(SignalProtocolError::from(err)),
             Ok(key) => key,
         };

@@ -3,6 +3,8 @@ use pyo3::types::PyBytes;
 
 use crate::error::{Result, SignalProtocolError};
 
+use base64::{engine::general_purpose, Engine as _};
+
 #[pyclass]
 #[derive(Debug, Copy, Clone)]
 pub struct KeyType {
@@ -118,6 +120,10 @@ impl PublicKey {
         Ok(Self {
             key: libsignal_protocol::kem::PublicKey::deserialize(key)?,
         })
+    }
+
+    pub fn to_base64(&self) -> PyResult<String> {
+        Ok(general_purpose::STANDARD.encode(&self.key.serialize()))
     }
 }
 

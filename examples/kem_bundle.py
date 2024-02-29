@@ -19,7 +19,7 @@ signed_pre_key_id = state.SignedPreKeyId(22)
 alice_pre_key_bundle = state.PreKeyBundle(
     alice_store.get_local_registration_id(),
     address.DeviceId(1),
-    None,
+    (state.PreKeyId(42), alice_identity_key_pair.public_key()),
     signed_pre_key_id,
     alice_signed_pre_key_pair.public_key(),
     alice_signed_pre_key_signature,
@@ -42,15 +42,16 @@ alice_pre_key_bundle = alice_pre_key_bundle.with_kyber_pre_key(
 )
 print(alice_pre_key_bundle.has_kyber_pre_key())
 
+test = signed_pre_key_id
 
-import base64
-def b64(msg):
-    # base64 encoding helper function
-    return base64.encodebytes(msg).decode("utf-8").strip()
-def to_json(self):
-    return {
-        'identityKey': b64(self.identity_key().serialize()),
+# import base64
+# def b64(msg):
+#     # base64 encoding helper function
+#     return base64.encodebytes(msg).decode("utf-8").strip()
+# def to_json(self):
+#     return {
+#         'identityKey': b64(self.identity_key().serialize()),
 
-    }
+#     }
 
-setattr(state.PreKeyBundle, 'to_json', to_json)
+# setattr(state.PreKeyBundle, 'to_json', to_json)

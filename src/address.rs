@@ -29,6 +29,10 @@ impl DeviceId {
             value: libsignal_protocol::DeviceId::from(device_id),
         }
     }
+
+    fn get_id(&self) -> u32 {
+        u32::from(self.value)
+    }
 }
 
 #[pyclass]
