@@ -5,6 +5,7 @@ use pyo3::types::PyBytes;
 use pyo3::wrap_pyfunction;
 
 use rand::rngs::OsRng;
+use serde::Serialize;
 
 use crate::error::Result;
 use crate::error::SignalProtocolError;
@@ -83,6 +84,15 @@ pub struct PublicKey {
 impl PublicKey {
     pub fn new(key: libsignal_protocol::PublicKey) -> Self {
         PublicKey { key }
+    }
+}
+
+impl Serialize for PublicKey {
+    fn serialize<S>(&self, serializer: S) -> std::prelude::v1::Result<S::Ok, S::Error>
+        where
+            S: serde::Serializer {
+                let encoded_pk = base64::engine::general_purpose::STANDARD.encode(self.key.serialize());
+                serializer.serialize_str(&encoded_pk)
     }
 }
 

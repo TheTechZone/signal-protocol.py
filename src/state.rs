@@ -2,6 +2,8 @@ use libsignal_protocol::GenericSignedPreKey;
 use pyo3::prelude::*;
 use pyo3::types::PyBytes;
 use pyo3::wrap_pyfunction;
+use serde::ser::SerializeStruct;
+use serde::Serialize;
 
 use crate::address::DeviceId;
 use crate::curve::{KeyPair, PrivateKey, PublicKey};
@@ -11,11 +13,6 @@ use crate::kem::PublicKey as KemPublicKey;
 use crate::kem::{self, SecretKey};
 
 use std::convert;
-
-// use base64::{engine::general_purpose, Engine as _};
-use std::collections::HashMap;
-
-// use serde::{Serialize, Deserialize};
 
 // Newtypes from upstream crate not exposed as part of the public API
 #[pyclass]
@@ -63,6 +60,14 @@ impl convert::From<u32> for PreKeyId {
         PreKeyId {
             value: libsignal_protocol::PreKeyId::from(value),
         }
+    }
+}
+
+impl Serialize for PreKeyId {
+    fn serialize<S>(&self, serializer: S) -> std::prelude::v1::Result<S::Ok, S::Error>
+        where
+            S: serde::Serializer {
+                serializer.serialize_u32(u32::from(self.value))
     }
 }
 
@@ -261,42 +266,40 @@ impl PreKeyBundle {
     }
 
     fn to_json(&self) -> PyResult<String> {
-        // let bundle = HashMap::from([
-        //     ("registration_id", self.state.registration_id()),
-        //     ("device_id", self.state.device_id().unwrap().get_id()),
-        //     ("pre_key_id", self.state.pre_key_id().get_id()),
-        //     ("pre_key_public", self.state.pre_key_public().to_base64()),
-        //     ("signed_pre_key_id", self.state.signed_pre_key_id().get_id()),
-        //     ("signed_pre_key_public", self.state.signed_pre_key_public()),
-        //     ("signed_pre_key_signature", self.state.signed_pre_key_signature()),
-        //     ("identity_key", self.state.identity_key().public_key().to_base64()),
-        //     ("has_kyber_pre_key", self.state.has_kyber_pre_key()),
-        //     ("kyber_pre_key_id", self.state.kyber_pre_key_id()),
-        //     ("kyber_pre_key_public", self.state.kyber_pre_key_public()),
-        //     ("kyber_pre_key_signature", self.state.kyber_pre_key_signature()),
-        // ]);
-        
-        // let json = serde_json::to_string(&bundle).unwrap();
-        // Ok(json)
+        match serde_json::to_string(&self) {
+            Err(err) => Err(SignalProtocolError::err_from_str(err.to_string())), 
+            Ok(val) => Ok(val)
+        }
+    }
+}
 
-        let device_id = u32::from(self.state.device_id().ok().unwrap());
+impl Serialize for PreKeyBundle {
+    fn serialize<S>(&self, serializer: S) -> std::prelude::v1::Result<S::Ok, S::Error>
+        where
+            S: serde::Serializer {
+                let mut state = serializer.serialize_struct("PreKeyBundle",12)?;
+                
+                let rid = match self.registration_id() {
+                    Ok(val) => val,
+                    Err(_) => return Err(serde::ser::Error::custom("Both field3 and field5 can't be present"))
+                };
 
-        let bundle = HashMap::from([
-            ("registration_id", self.state.registration_id().ok().unwrap()),
-            ("device_id", device_id),
-            ("pre_key_id", self.state.pre_key_id().ok().unwrap().map(|x| u32::from(x)).unwrap_or(0)),
-            ("pre_key_public", self.state.pre_key_public().ok().unwrap().map(|x| x.to_base64()).unwrap_or("".to_string())),
-            ("signed_pre_key_id", u32::from(self.state.signed_pre_key_id().ok().unwrap())),
-            ("signed_pre_key_public", self.state.signed_pre_key_public().ok().unwrap().to_base64()),
-            ("signed_pre_key_signature", self.state.signed_pre_key_signature().ok().unwrap().to_base64()),
-            ("identity_key", self.state.identity_key().ok().unwrap().public_key().to_base64()),
-            ("has_kyber_pre_key", self.state.has_kyber_pre_key()),
-            ("kyber_pre_key_id", self.state.kyber_pre_key_id().ok().unwrap().map(|x| u32::from(x)).unwrap_or(0)),
-            ("kyber_pre_key_public", self.state.kyber_pre_key_public().ok().unwrap().map(|x| x.to_base64()).unwrap_or("".to_string())),
-            ("kyber_pre_key_signature", self.state.kyber_pre_key_signature().ok().unwrap().map(|x| x.to_base64()).unwrap_or("".to_string())),
-        ]);
-        let json = serde_json::to_string(&bundle).unwrap();
-        Ok(json)
+                let pk_id = match self.pre_key_id() {
+                    Ok(val) => val.unwrap(),
+                    Err(_) => return Err(serde::ser::Error::custom("Both field3 and field5 can't be present"))
+
+                };
+                
+                let pk = match self.pre_key_public() {
+                    Ok(val) => val.unwrap(),
+                    Err(_) => return Err(serde::ser::Error::custom("Both field3 and field5 can't be present"))
+                };
+
+                state.serialize_field("registration_id", &rid);
+                // state.serialize_field("device_id", &self.device_id());
+                state.serialize_field("pre_key_id", &pk_id);
+                state.serialize_field("pre_key_public", &pk);
+                state.end()
     }
 }
 

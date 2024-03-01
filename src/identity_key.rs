@@ -6,11 +6,10 @@ use pyo3::prelude::*;
 use pyo3::types::PyBytes;
 
 use rand::rngs::OsRng;
+use base64::{engine::general_purpose, Engine as _};
 
 use crate::curve::{PrivateKey, PublicKey};
 use crate::error::{Result, SignalProtocolError};
-
-use base64::{engine::general_purpose, Engine as _};
 
 #[pyclass]
 #[derive(Debug, Clone, Copy)]
