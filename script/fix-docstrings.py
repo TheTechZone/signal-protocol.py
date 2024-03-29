@@ -4,6 +4,7 @@ import sys
 import inspect
 import signal_protocol
 import ast
+import re
 import logging
 from pathlib import Path
 
@@ -139,7 +140,7 @@ def stubfile_exists(module_name, stub_folder=STUB_FOLDER):
 
 
 def create_new_docs(curr_doc, docs, symbol):
-    if len(docs) == 0 or curr_doc == docs:
+    if len(docs) == 0 or re.sub("\s+", " ", curr_doc) == re.sub("\s+", " ", docs):
         return  # nothing to do here
     elif len(curr_doc) == 0:
         return docs
@@ -151,7 +152,7 @@ def create_new_docs(curr_doc, docs, symbol):
         {docs}
         >>>>>>>
         """
-        logger.warn(f"Got comflicting docs for symbol {symbol}. MERGING...")
+        logger.warn(f"Got conflicting docs for symbol {symbol}. MERGING...")
         return new_docs
 
 
@@ -179,6 +180,9 @@ def inspect_pyi(file_path, docs_dict):
             node.body.insert(0, docstring_node)
 
         elif isinstance(node, ast.ClassDef):
+            for child in node.body:
+                if isinstance(child, ast.FunctionDef):
+                    child.parent = node
             curr_doc = ast.get_docstring(node)
             if curr_doc is None:
                 curr_doc = ""
@@ -190,10 +194,6 @@ def inspect_pyi(file_path, docs_dict):
             docstring_node = ast.Expr(value=ast.Constant(new_docs))
             # Insert the new docstring node at the beginning of the function body
             node.body.insert(0, docstring_node)
-
-            for child in node.body:
-                if isinstance(child, ast.FunctionDef):
-                    child.parent = node
     return tree
 
 

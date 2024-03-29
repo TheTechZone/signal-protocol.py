@@ -24,11 +24,26 @@ class UUID:
     @property
     def hex(self) -> str: ...
     @property
-    def urn(self) -> str: ...
+    def urn(self) -> str:
+        """Format a Uuid as a URN string, like urn:uuid:67e55044-10b1-426f-9247-bb680e5fe0c8"""
+        ...
+
     @property
-    def variant(self) -> str: ...
+    def variant(self) -> str:
+        """Returns the variant of the UUID structure.
+        This determines the interpretation of the structure of the UUID. This method simply reads the value of the variant byte. It doesn't validate the rest of the UUID as conforming to that variant.
+        """
+        ...
+
     @property
-    def version(self) -> _Int | None: ...
+    def version(self) -> _Int | None:
+        """Returns the version number of the UUID.
+        # References
+
+        * [Version in RFC4122](https://datatracker.ietf.org/doc/html/rfc4122#section-4.1.3)
+        """
+        ...
+
     @property
     def fields(self) -> _FieldsType: ...
     @property

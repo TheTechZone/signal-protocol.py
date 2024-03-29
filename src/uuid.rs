@@ -234,6 +234,7 @@ impl UUID {
             .to_string()
     }
 
+    /// Format a Uuid as a URN string, like urn:uuid:67e55044-10b1-426f-9247-bb680e5fe0c8
     #[getter]
     fn urn(&self) -> String {
         self.handle
@@ -242,11 +243,17 @@ impl UUID {
             .to_string()
     }
 
+    /// Returns the version number of the UUID. 
+    /// # References
+    ///
+    /// * [Version in RFC4122](https://datatracker.ietf.org/doc/html/rfc4122#section-4.1.3)
     #[getter]
     fn version(&self) -> usize {
         self.handle.get_version_num()
     }
 
+    /// Returns the variant of the UUID structure.
+    /// This determines the interpretation of the structure of the UUID. This method simply reads the value of the variant byte. It doesn't validate the rest of the UUID as conforming to that variant.
     #[getter]
     fn variant(&self) -> Option<&'static str> {
         match self.handle.get_variant() {
