@@ -1,8 +1,6 @@
 from typing import List, Optional
-
 from typing_extensions import TypeAlias
 
-# Because UUID has properties called int and bytes we need to rename these temporarily.
 _Int: TypeAlias = int
 _Bytes: TypeAlias = bytes
 _FieldsType: TypeAlias = tuple[int, int, int, int, int, int]
@@ -57,7 +55,16 @@ class UUID:
     def __setstate__(self, state: _Bytes) -> None: ...
 
 def uuid1(node: Optional[int] = None, clock_seq: Optional[int] = None) -> UUID: ...
-def uuid_v1mc() -> UUID: ...
+def uuid_v1mc() -> UUID:
+    """Fast path for uuid1 with a randomly generated MAC address.
+    à la postgres' uuid extension.
+    Further Reading:
+      - https://www.postgresql.org/docs/current/uuid-ossp.html
+      - https://www.edgedb.com/docs/stdlib/uuid#function::std::uuid_generate_v1mc
+      - https://supabase.com/blog/choosing-a-postgres-primary-key#uuidv1
+      -"""
+    ...
+
 def uuid3(namespace: UUID, name: str) -> UUID: ...
 def uuid4() -> UUID: ...
 def uuid4_bulk(n: int) -> List[UUID]: ...
