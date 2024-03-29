@@ -34,6 +34,7 @@ fn random_node_id() -> [u8; 6] {
     ]
 }
 
+/// A Universally Unique Identifier (UUID).
 #[pyclass]
 #[derive(Clone)]
 #[allow(clippy::upper_case_acronyms)]
@@ -243,7 +244,7 @@ impl UUID {
             .to_string()
     }
 
-    /// Returns the version number of the UUID. 
+    /// Returns the version number of the UUID.
     /// # References
     ///
     /// * [Version in RFC4122](https://datatracker.ietf.org/doc/html/rfc4122#section-4.1.3)
@@ -447,6 +448,9 @@ fn uuid4_as_strings_bulk(py: Python, n: usize) -> Vec<String> {
     })
 }
 
+/// Creates a random UUID.
+///
+/// This utilises the operating system's RNG as the source of random numbers
 #[pyfunction(name = "uuid4")]
 fn uuid4() -> UUID {
     UUID {
@@ -491,7 +495,6 @@ fn uuid1(py: Python, node: Option<u64>, clock_seq: Option<u16>) -> PyResult<UUID
 ///   - https://www.postgresql.org/docs/current/uuid-ossp.html
 ///   - https://www.edgedb.com/docs/stdlib/uuid#function::std::uuid_generate_v1mc
 ///   - https://supabase.com/blog/choosing-a-postgres-primary-key#uuidv1
-///   -
 #[pyfunction(name = "uuid_v1mc")]
 fn uuid_v1mc() -> UUID {
     UUID {

@@ -140,7 +140,7 @@ def stubfile_exists(module_name, stub_folder=STUB_FOLDER):
 
 
 def create_new_docs(curr_doc, docs, symbol):
-    if len(docs) == 0 or re.sub("\s+", " ", curr_doc) == re.sub("\s+", " ", docs):
+    if len(docs) == 0 or re.sub(r"\s+", " ", curr_doc) == re.sub(r"\s+", " ", docs):
         return  # nothing to do here
     elif len(curr_doc) == 0:
         return docs

@@ -6,6 +6,8 @@ _Bytes: TypeAlias = bytes
 _FieldsType: TypeAlias = tuple[int, int, int, int, int, int]
 
 class UUID:
+    """A Universally Unique Identifier (UUID)."""
+
     def __init__(
         self,
         hex: str | None = ...,
@@ -71,17 +73,43 @@ class UUID:
 
 def uuid1(node: Optional[int] = None, clock_seq: Optional[int] = None) -> UUID: ...
 def uuid_v1mc() -> UUID:
-    """Fast path for uuid1 with a randomly generated MAC address.
+    """<<<<<<<
+            <<<<<<<
+            Fast path for uuid1 with a randomly generated MAC address.
     à la postgres' uuid extension.
     Further Reading:
       - https://www.postgresql.org/docs/current/uuid-ossp.html
       - https://www.edgedb.com/docs/stdlib/uuid#function::std::uuid_generate_v1mc
       - https://supabase.com/blog/choosing-a-postgres-primary-key#uuidv1
-      -"""
+      -
+            =======
+            Fast path for uuid1 with a randomly generated MAC address.
+    à la postgres' uuid extension.
+    Further Reading:
+      - https://www.postgresql.org/docs/current/uuid-ossp.html
+      - https://www.edgedb.com/docs/stdlib/uuid#function::std::uuid_generate_v1mc
+      - https://supabase.com/blog/choosing-a-postgres-primary-key#uuidv1
+            >>>>>>>
+            =======
+            Fast path for uuid1 with a randomly generated MAC address.
+    à la postgres' uuid extension.
+    Further Reading:
+      - https://www.postgresql.org/docs/current/uuid-ossp.html
+      - https://www.edgedb.com/docs/stdlib/uuid#function::std::uuid_generate_v1mc
+      - https://supabase.com/blog/choosing-a-postgres-primary-key#uuidv1
+            >>>>>>>
+    """
+    "<<<<<<<\n            Fast path for uuid1 with a randomly generated MAC address.\n    à la postgres' uuid extension.\n    Further Reading:\n      - https://www.postgresql.org/docs/current/uuid-ossp.html\n      - https://www.edgedb.com/docs/stdlib/uuid#function::std::uuid_generate_v1mc\n      - https://supabase.com/blog/choosing-a-postgres-primary-key#uuidv1\n      -\n            =======\n            Fast path for uuid1 with a randomly generated MAC address.\n    à la postgres' uuid extension.\n    Further Reading:\n      - https://www.postgresql.org/docs/current/uuid-ossp.html\n      - https://www.edgedb.com/docs/stdlib/uuid#function::std::uuid_generate_v1mc\n      - https://supabase.com/blog/choosing-a-postgres-primary-key#uuidv1\n            >>>>>>>\n    "
+    "Fast path for uuid1 with a randomly generated MAC address.\n    à la postgres' uuid extension.\n    Further Reading:\n      - https://www.postgresql.org/docs/current/uuid-ossp.html\n      - https://www.edgedb.com/docs/stdlib/uuid#function::std::uuid_generate_v1mc\n      - https://supabase.com/blog/choosing-a-postgres-primary-key#uuidv1\n      -"
     ...
 
 def uuid3(namespace: UUID, name: str) -> UUID: ...
-def uuid4() -> UUID: ...
+def uuid4() -> UUID:
+    """Creates a random UUID.
+
+    This utilises the operating system's RNG as the source of random numbers"""
+    ...
+
 def uuid4_bulk(n: int) -> List[UUID]: ...
 def uuid4_as_strings_bulk(n: int) -> List[str]: ...
 def uuid5(namespace: UUID, name: str) -> UUID: ...
