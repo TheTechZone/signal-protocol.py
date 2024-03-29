@@ -28,6 +28,9 @@ mod uuid;
 /// We do not expose a Python submodule for HKDF (a module in the upstream crate).
 #[pymodule]
 fn signal_protocol(py: Python, module: &PyModule) -> PyResult<()> {
+    // A good place to install the Rust -> Python logger.
+    pyo3_log::init();
+
     let address_submod = PyModule::new(py, "address")?;
     address::init_submodule(address_submod)?;
     module.add_submodule(address_submod)?;
