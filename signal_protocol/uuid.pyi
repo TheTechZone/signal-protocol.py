@@ -28,7 +28,7 @@ class UUID:
     @property
     def urn(self) -> str:
         """Format a Uuid as a URN string, like urn:uuid:67e55044-10b1-426f-9247-bb680e5fe0c8
-        
+
         Note: URN - Uniform Resource Names
         """
         ...
