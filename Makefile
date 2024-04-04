@@ -57,6 +57,8 @@ clean: ## Clean up
 	@[ -d ./build ] && rm -rf build || true
 	@[ -d ./dist ] && rm -rf dist || true
 	@[ -d ./target ] && rm -rf target || true
+	@[ -d ./__pycache__ ] && rm -rf ./__pycache__ || true
+	@[ -d ./signal_protocol/__pycache__ ] && rm -rf ./signal_protocol/__pycache__ || true
 	@[ -d ./tests/__pycache__ ] && rm -rf ./tests/__pycache__ || true
 
 .DEFAULT_GOAL := help
