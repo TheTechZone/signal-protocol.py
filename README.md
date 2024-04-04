@@ -125,6 +125,23 @@ protocol store), you can encrypt messages:
 ciphertext = session_cipher.message_encrypt(store, recipient_address, b"hello")
 ```
 
+### Adding logging support
+The rust library is configured to send its logs to Python's [logging](https://docs.python.org/3/library/logging.html) system.
+
+To access these message, your Python codebase must be configure accordingly to recieve logs and output them somewhere:
+```py3
+import logging
+
+FORMAT = '%(levelname)s %(name)s %(asctime)-15s %(filename)s:%(lineno)d %(message)s'
+logging.basicConfig(format=FORMAT)
+logging.getLogger().setLevel(logging.INFO)
+# ... log something here
+```
+For more details on configuring the logger, check the Python docs.
+
+As per PyO3's docs:
+> It is important to initialize the Python loggers *first*, **before calling any Rust functions** that may log. This limitation can be worked around if it is not possible to satisfy, read the documentation about caching.
+
 ## Developer Getting Started
 
 You will need both [Rust](https://rustup.rs/) and Python 3.10+ installed on your system. Since libsignal uses protocol buffers for message serialization, you will also need to have [protoc](https://grpc.io/docs/protoc-installation/) available on your system.
