@@ -158,6 +158,11 @@ You can use the tests as a reference for how to use the library.
 When developing, simply run `python -m pip install --editable .` as you make changes to rebuild the library.
 This script will handle compilation on the Rust side.
 
+To setup the hooks for the repository:
+```bash
+git config core.hooksPath hooks
+```
+
 # Building wheels
 
 See instructions [here](https://github.com/PyO3/setuptools-rust#binary-wheels-on-linux). In brief:
