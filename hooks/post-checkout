@@ -1,0 +1,6 @@
+#!/usr/bin/sh
+#
+# A hook to rebuild the rust/python library once a branch has been changed
+# (via checkout / switch)
+
+make dev
