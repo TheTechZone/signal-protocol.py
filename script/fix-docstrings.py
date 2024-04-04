@@ -7,7 +7,7 @@ import ast
 import re
 import logging
 from pathlib import Path
-
+import difflib
 
 class CustomFormatter(logging.Formatter):
 
@@ -32,6 +32,61 @@ class CustomFormatter(logging.Formatter):
         log_fmt = self.FORMATS.get(record.levelno)
         formatter = logging.Formatter(log_fmt)
         return formatter.format(record)
+
+def merge_multiline_strings(text1:str, text2:str)-> str:
+    # Split the strings into lists of lines
+    lines1 = text1.splitlines(keepends=True)
+    lines2 = text2.splitlines(keepends=True)
+    
+    # Use difflib to compare the lines
+    differ = difflib.Differ()
+    diff = differ.compare(lines1, lines2)
+    
+    # Initialize variables to track the state of the merge
+    merged_lines = []
+    conflict_started = False
+    delim_added = False
+
+
+    for line in diff:
+        # Check if the line is part of a conflict
+        if line.startswith('- '):
+            if not conflict_started:
+                merged_lines.append('\n<<<<<<<')
+                conflict_started = True
+                delim_added = False
+
+            merged_lines.append(line[2:])
+        elif line.startswith('+ '):
+            if not conflict_started:
+                merged_lines.append('\n<<<<<<<')
+                conflict_started = True
+                delim_added = False
+            elif not delim_added:
+                merged_lines.append('=======')
+                delim_added = True
+
+            merged_lines.append(line[2:])
+        elif line.startswith(' '):
+            # If a conflict has started, close it before adding the common line
+            if conflict_started:
+                if not delim_added:
+                    merged_lines.append('=======')
+                    delim_added = True
+                merged_lines.append(line[2:])
+                merged_lines.append('\n>>>>>>>')
+                conflict_started = False
+            else:
+                merged_lines.append(line[2:])
+    # Close any open conflict
+    if conflict_started:
+        if not delim_added:
+            merged_lines.append('=======')
+        merged_lines.append('>>>>>>>')
+    
+    # Join the merged lines back into a single string
+    merged_string = '\n'.join(merged_lines)+"\n"
+    return merged_string
 
 
 logger = logging.getLogger("stub_fixer")
@@ -140,19 +195,22 @@ def stubfile_exists(module_name, stub_folder=STUB_FOLDER):
 
 
 def create_new_docs(curr_doc, docs, symbol):
-    if len(docs) == 0 or re.sub(r"\s+", " ", curr_doc) == re.sub(r"\s+", " ", docs):
+    no_space_1 = re.sub(r"\s+", " ", curr_doc)
+    no_space_2 = re.sub(r"\s+", " ", docs)
+    if len(docs) == 0 or no_space_1 == no_space_2 or no_space_2 in no_space_1:
         return  # nothing to do here
     elif len(curr_doc) == 0:
         return docs
     else:
         # we have two diffrent docs... merging
-        new_docs = f"""<<<<<<<
-        {curr_doc}
-        =======
-        {docs}
-        >>>>>>>
-        """
-        logger.warn(f"Got conflicting docs for symbol {symbol}. MERGING...")
+        # new_docs = f"""<<<<<<<
+        # {curr_doc}
+        # =======x
+        # {docs}
+        # >>>>>>>
+        # """
+        new_docs = merge_multiline_strings(curr_doc, docs)
+        logger.warning(f"Got conflicting docs for symbol {symbol}. MERGING...")
         return new_docs
 
 
@@ -176,6 +234,9 @@ def inspect_pyi(file_path, docs_dict):
             if new_docs is None:
                 continue
             docstring_node = ast.Expr(value=ast.Constant(new_docs))
+
+            if isinstance(node.body[0].value, ast.Constant):
+                node.body = node.body[1:]
             # Insert the new docstring node at the beginning of the function body
             node.body.insert(0, docstring_node)
 
@@ -192,6 +253,9 @@ def inspect_pyi(file_path, docs_dict):
             if new_docs is None:
                 continue
             docstring_node = ast.Expr(value=ast.Constant(new_docs))
+            
+            if isinstance(node.body[0].value, ast.Constant):
+                node.body = node.body[1:]
             # Insert the new docstring node at the beginning of the function body
             node.body.insert(0, docstring_node)
     return tree
