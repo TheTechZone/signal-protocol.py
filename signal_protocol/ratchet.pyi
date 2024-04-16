@@ -1,0 +1,143 @@
+from curve import KeyPair, PublicKey
+from identity_key import IdentityKey, IdentityKeyPair
+from protocol import SignalMessage
+from typing import Optional
+from kem import KemPair, KemSerializedCiphertext
+from state import SessionRecord
+
+class AliceSignalProtocolParameters:
+    """
+    This class represents the protocol parameters for Alice in the Signal Protocol.
+    """
+    def our_identity_key_pair(self) -> KeyPair:
+        """
+        Returns Alice's identity key pair.
+
+        Returns:
+            KeyPair: Alice's identity key pair.
+        """
+        ...
+
+    def our_base_key_pair(self) -> KeyPair:
+        """
+        Returns Alice's base key pair.
+
+        Returns:
+            KeyPair: Alice's base key pair.
+        """
+        ...
+
+    def their_identity_key(self) -> IdentityKey:
+        """
+        Returns the other party's identity key.
+
+        Returns:
+            IdentityKey: The other party's identity key.
+        """
+        ...
+
+    def their_signed_pre_key(self) -> PublicKey:
+        """
+        Returns the other party's signed pre-key.
+
+        Returns:
+            SignedPreKey: The other party's signed pre-key.
+        """
+        ...
+
+    def their_one_time_pre_key(self) -> Optional[PublicKey]:
+        """
+        Returns the other party's one-time pre-key.
+
+        Returns:
+            Optional[OneTimePreKey]: The other party's one-time pre-key, if it exists.
+        """
+        ...
+
+    def their_ratchet_key(self) -> PublicKey:
+        """
+        Returns the other party's ratchet key.
+
+        Returns:
+            RatchetKey: The other party's ratchet key.
+        """
+        ...
+
+
+class BobSignalProtocolParameters:
+    """
+    This class represents the protocol parameters for Bob in the Signal Protocol.
+    """
+    def our_identity_key_pair(self) -> KeyPair:
+        """
+        Returns Bob's identity key pair.
+
+        Returns:
+            KeyPair: Bob's identity key pair.
+        """
+        ...
+
+    def our_signed_pre_key_pair(self) -> KeyPair:
+        """
+        Returns Bob's signed pre-key pair.
+
+        Returns:
+            KeyPair: Bob's signed pre-key pair.
+        """
+        ...
+
+    def our_one_time_pre_key_pair(self) -> Optional[KeyPair]:
+        """
+        Returns Bob's one-time pre-key pair.
+
+        Returns:
+            Optional[KeyPair]: Bob's one-time pre-key pair, if it exists.
+        """
+        ...
+
+    def our_ratchet_key_pair(self) -> KeyPair:
+        """
+        Returns Bob's ratchet key pair.
+
+        Returns:
+            KeyPair: Bob's ratchet key pair.
+        """
+        ...
+
+    def their_identity_key(self) -> IdentityKey:
+        """
+        Returns the other party's identity key.
+
+        Returns:
+            IdentityKey: The other party's identity key.
+        """
+        ...
+
+    def their_base_key(self) -> PublicKey:
+        """
+        Returns the other party's base key.
+
+        Returns:
+            BaseKey: The other party's base key.
+        """
+        ...
+
+
+def initialize_alice_session() -> SessionRecord:
+    """
+    Initializes a new session for Alice.
+
+    Returns:
+        Session: The new session for Alice.
+    """
+    ...
+
+
+def initialize_bob_session() -> SessionRecord:
+    """
+    Initializes a new session for Bob.
+
+    Returns:
+        Session: The new session for Bob.
+    """
+    ...
