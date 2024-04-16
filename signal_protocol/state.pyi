@@ -37,11 +37,10 @@ class PreKeyBundle:
         """Returns the identity key."""
         ...
 
-
 class PreKeyId:
     """Represents a pre-key ID."""
-    ...
 
+    ...
 
 class PreKeyRecord:
     """Represents a pre-key record."""
@@ -70,7 +69,6 @@ class PreKeyRecord:
     def serialize(self) -> bytes:
         """Serializes the pre-key record into bytes."""
         ...
-
 
 class SessionRecord:
     """Represents a session record."""
@@ -129,10 +127,14 @@ class SessionRecord:
         """Returns the sender chain key in bytes."""
         ...
 
-
 class SignedPreKeyId:
     """Represents a signed pre-key ID."""
+
     ...
+
+class KyberPreKeyRecord: ...
+class KyberPreKeyId: ...
+class PreKeysUsed: ...
 
 class SignedPreKeyRecord:
     """Represents a signed pre-key record."""
@@ -171,5 +173,27 @@ class SignedPreKeyRecord:
         ...
 
 def generate_n_prekeys(n: int) -> list[PreKeyRecord]:
-    """Generates n pre-keys."""
+    """
+    Helper function for generating N prekeys.
+
+    Returns a list of PreKeyRecords.
+
+
+
+    # Example
+
+
+
+    ```
+
+    from signal_protocol import curve, state
+
+
+
+    prekeyid = 1
+
+    manykeys = state.generate_n_prekeys(100, prekeyid)  # generates 100 keys
+
+    ```
+    """
     ...

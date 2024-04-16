@@ -2,13 +2,23 @@ from identity_key import IdentityKeyPair, IdentityKey
 from address import ProtocolAddress
 from sender_keys import SenderKeyRecord
 from uuid import UUID
-from state import SessionRecord, PreKeyId, PreKeyRecord, SignedPreKeyId, SignedPreKeyRecord, SenderKeyRecord, KyberPreKeyId, KyberPreKeyRecord
+from state import (
+    SessionRecord,
+    PreKeyId,
+    PreKeyRecord,
+    SignedPreKeyId,
+    SignedPreKeyRecord,
+    SenderKeyRecord,
+    KyberPreKeyId,
+    KyberPreKeyRecord,
+)
 from typing import Optional
 
 class InMemSignalProtocolStore:
     """
     In-memory signal protocol store.
     """
+
     ...
 
     def get_identity_key_pair(self) -> IdentityKeyPair:
@@ -116,7 +126,9 @@ class InMemSignalProtocolStore:
         """
         ...
 
-    def save_signed_pre_key(self, id: SignedPreKeyId, record: SignedPreKeyRecord) -> None:
+    def save_signed_pre_key(
+        self, id: SignedPreKeyId, record: SignedPreKeyRecord
+    ) -> None:
         """
         Saves a signed pre-key.
 
@@ -126,7 +138,9 @@ class InMemSignalProtocolStore:
         """
         ...
 
-    def store_sender_key(self, sender: ProtocolAddress, distribution_id:UUID, record: SenderKeyRecord) -> None:
+    def store_sender_key(
+        self, sender: ProtocolAddress, distribution_id: UUID, record: SenderKeyRecord
+    ) -> None:
         """
         Stores a sender key.
 
@@ -136,7 +150,9 @@ class InMemSignalProtocolStore:
         """
         ...
 
-    def load_sender_key(self, sender: ProtocolAddress, distribution_id: UUID) -> SenderKeyRecord:
+    def load_sender_key(
+        self, sender: ProtocolAddress, distribution_id: UUID
+    ) -> SenderKeyRecord:
         """
         Loads a sender key.
 

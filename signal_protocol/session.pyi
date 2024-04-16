@@ -4,7 +4,12 @@ from storage import InMemSignalProtocolStore
 from state import PreKeyBundle, SessionRecord, PreKeysUsed
 from typing import Optional
 
-def process_prekey(message: PreKeySignalMessage, remote_address: ProtocolAddress, session_record: SessionRecord, protocol_store: InMemSignalProtocolStore) -> Optional[PreKeysUsed]:
+def process_prekey(
+    message: PreKeySignalMessage,
+    remote_address: ProtocolAddress,
+    session_record: SessionRecord,
+    protocol_store: InMemSignalProtocolStore,
+) -> Optional[PreKeysUsed]:
     """
     Processes a prekey message using a session record and a protocol store.
 
@@ -19,7 +24,11 @@ def process_prekey(message: PreKeySignalMessage, remote_address: ProtocolAddress
     """
     ...
 
-def process_prekey_bundle(remote_address: ProtocolAddress, protocol_store: InMemSignalProtocolStore, bundle: PreKeyBundle) -> None:
+def process_prekey_bundle(
+    remote_address: ProtocolAddress,
+    protocol_store: InMemSignalProtocolStore,
+    bundle: PreKeyBundle,
+) -> None:
     """
     Processes a prekey bundle using a protocol store.
 

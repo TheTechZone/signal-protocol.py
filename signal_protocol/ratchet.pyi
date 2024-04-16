@@ -9,6 +9,7 @@ class AliceSignalProtocolParameters:
     """
     This class represents the protocol parameters for Alice in the Signal Protocol.
     """
+
     def our_identity_key_pair(self) -> KeyPair:
         """
         Returns Alice's identity key pair.
@@ -63,11 +64,11 @@ class AliceSignalProtocolParameters:
         """
         ...
 
-
 class BobSignalProtocolParameters:
     """
     This class represents the protocol parameters for Bob in the Signal Protocol.
     """
+
     def our_identity_key_pair(self) -> KeyPair:
         """
         Returns Bob's identity key pair.
@@ -122,7 +123,6 @@ class BobSignalProtocolParameters:
         """
         ...
 
-
 def initialize_alice_session() -> SessionRecord:
     """
     Initializes a new session for Alice.
@@ -131,7 +131,6 @@ def initialize_alice_session() -> SessionRecord:
         Session: The new session for Alice.
     """
     ...
-
 
 def initialize_bob_session() -> SessionRecord:
     """

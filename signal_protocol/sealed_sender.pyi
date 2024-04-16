@@ -7,53 +7,6 @@ class SealedSenderDecryptionResult:
     """
     This class represents the result of a sealed sender decryption operation.
     """
-    def sealed_sender_decrypt(ciphertext: bytes, trust_root: PublicKey, timestamp: int, local_e164: Optional[str], local_uuid: str, local_device_id: int, protocol_store: InMemSignalProtocolStore) -> SealedSenderDecryptionResult:
-        """
-        Decrypts a sealed sender message.
-
-        Args:
-            ciphertext (bytes): The sealed sender message.
-            trust_root (PublicKey): The trust root.
-            timestamp (int): The timestamp.
-            local_e164 (str): The local E164 identifier.
-            local_uuid (str): The local UUID.
-            local_device_id (int): The local device ID.
-            protocol_store (InMemSignalProtocolStore): The protocol store.
-
-        Returns:
-            SealedSenderDecryptionResult: The result of the decryption operation.
-        """
-        ...
-
-
-    def sealed_sender_decrypt_to_usmc(ciphertext: bytes, trust_root: PublicKey) -> UnidentifiedSenderMessageContent:
-        """
-        Decrypts a sealed sender message to an UnidentifiedSenderMessageContent.
-
-        Args:
-            ciphertext (bytes): The sealed sender message.
-            trust_root (PublicKey): The trust root.
-
-        Returns:
-            UnidentifiedSenderMessageContent: The decrypted message content.
-        """
-        ...
-
-
-    def sealed_sender_encrypt(destination: ProtocolAddress, sender_cert: SenderCertificate, ptext: bytes, protocol_store: InMemSignalProtocolStore) -> bytes:
-            """
-            Encrypts a message as a sealed sender message.
-
-            Args:
-                destination (ProtocolAddress): The recipient's address.
-                sender_cert (SenderCertificate): The sender's certificate.
-                ptext (bytes): The message to encrypt.
-                protocol_store (InMemSignalProtocolStore): The protocol store.
-
-            Returns:
-                bytes: The encrypted message.
-            """
-            ...
 
     def sender_uuid(self) -> str:
         """
@@ -91,11 +44,11 @@ class SealedSenderDecryptionResult:
         """
         ...
 
-
 class SenderCertificate:
     """
     This class represents a sender's certificate.
     """
+
     def deserialize(self, data: bytes) -> SenderCertificate:
         """
         Deserializes a sender's certificate from bytes.
@@ -201,11 +154,11 @@ class SenderCertificate:
         """
         ...
 
-
 class ServerCertificate:
     """
     This class represents a server's certificate.
     """
+
     def deserialize(self, data: bytes) -> ServerCertificate:
         """
         Deserializes a server's certificate from bytes.
@@ -275,11 +228,11 @@ class ServerCertificate:
         """
         ...
 
-
 class UnidentifiedSenderMessageContent:
     """
     This class represents the content of a message from an unidentified sender.
     """
+
     def deserialize(self, data: bytes) -> UnidentifiedSenderMessageContent:
         """
         Deserializes the message content from bytes.
@@ -328,3 +281,63 @@ class UnidentifiedSenderMessageContent:
         """
         ...
 
+def sealed_sender_decrypt(
+    ciphertext: bytes,
+    trust_root: PublicKey,
+    timestamp: int,
+    local_e164: Optional[str],
+    local_uuid: str,
+    local_device_id: int,
+    protocol_store: InMemSignalProtocolStore,
+) -> SealedSenderDecryptionResult:
+    """
+    Decrypts a sealed sender message.
+
+    Args:
+        ciphertext (bytes): The sealed sender message.
+        trust_root (PublicKey): The trust root.
+        timestamp (int): The timestamp.
+        local_e164 (str): The local E164 identifier.
+        local_uuid (str): The local UUID.
+        local_device_id (int): The local device ID.
+        protocol_store (InMemSignalProtocolStore): The protocol store.
+
+    Returns:
+        SealedSenderDecryptionResult: The result of the decryption operation.
+    """
+    ...
+
+def sealed_sender_decrypt_to_usmc(
+    ciphertext: bytes, trust_root: PublicKey
+) -> UnidentifiedSenderMessageContent:
+    """
+    Decrypts a sealed sender message to an UnidentifiedSenderMessageContent.
+
+    Args:
+        ciphertext (bytes): The sealed sender message.
+        trust_root (PublicKey): The trust root.
+
+    Returns:
+        UnidentifiedSenderMessageContent: The decrypted message content.
+    """
+    ...
+
+def sealed_sender_encrypt(
+    destination: ProtocolAddress,
+    sender_cert: SenderCertificate,
+    ptext: bytes,
+    protocol_store: InMemSignalProtocolStore,
+) -> bytes:
+    """
+    Encrypts a message as a sealed sender message.
+
+    Args:
+        destination (ProtocolAddress): The recipient's address.
+        sender_cert (SenderCertificate): The sender's certificate.
+        ptext (bytes): The message to encrypt.
+        protocol_store (InMemSignalProtocolStore): The protocol store.
+
+    Returns:
+        bytes: The encrypted message.
+    """
+    ...
