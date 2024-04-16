@@ -1,8 +1,9 @@
-from curve import PublicKey, PrivateKey
+from .curve import PublicKey, PrivateKey
 
 class IdentityKey:
     """Represents an identity key in the Signal Protocol."""
 
+    def __init__(self, public_key_bytes: bytes) -> None: ...
     def public_key(self) -> PublicKey:
         """
         Returns the public key of the identity key.
@@ -24,8 +25,7 @@ class IdentityKey:
 class IdentityKeyPair:
     """Represents an identity key pair in the Signal Protocol."""
 
-    @staticmethod
-    def new(identity_key: IdentityKey, private_key: PrivateKey) -> IdentityKeyPair:
+    def __init__(identity_key: IdentityKey, private_key: PrivateKey) -> None:
         """
         Creates a new IdentityKeyPair.
 

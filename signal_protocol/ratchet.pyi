@@ -1,12 +1,24 @@
-from curve import KeyPair, PublicKey
-from identity_key import IdentityKey
-from typing import Optional
-from state import SessionRecord
+from .curve import KeyPair, PublicKey
+from .identity_key import IdentityKey, IdentityKeyPair
+from typing import Optional, Any
+from .state import SessionRecord
 
 class AliceSignalProtocolParameters:
     """
     This class represents the protocol parameters for Alice in the Signal Protocol.
     """
+
+    def __init__(
+        self,
+        our_identity_key_pair: IdentityKeyPair,
+        our_base_key_pair: KeyPair,
+        their_identity_key: IdentityKey,
+        their_signed_pre_key: PublicKey,
+        _their_one_time_pre_key: Optional[PublicKey],
+        their_ratchet_key: PublicKey,
+    ) -> None:
+        """TODO: revise when their_otpk is used"""
+        ...
 
     def our_identity_key_pair(self) -> KeyPair:
         """
@@ -66,6 +78,20 @@ class BobSignalProtocolParameters:
     """
     This class represents the protocol parameters for Bob in the Signal Protocol.
     """
+
+    def __init__(
+        self,
+        our_identity_key_pair: IdentityKeyPair,
+        our_signed_pre_key_pair: KeyPair,
+        our_one_time_pre_key_pair: Optional[KeyPair],
+        our_ratchet_key_pair: KeyPair,
+        our_kyber_pre_key_pair: Optional[Any],
+        their_identity_key: IdentityKey,
+        their_base_key: PublicKey,
+        _their_kyber_ciphertext: Optional[Any],
+    ) -> None:
+        """TODO: adapt when done"""
+        ...
 
     def our_identity_key_pair(self) -> KeyPair:
         """

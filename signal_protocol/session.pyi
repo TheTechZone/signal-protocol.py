@@ -1,7 +1,7 @@
-from address import ProtocolAddress
-from protocol import PreKeySignalMessage
-from storage import InMemSignalProtocolStore
-from state import PreKeyBundle, SessionRecord, PreKeysUsed
+from .address import ProtocolAddress
+from .protocol import PreKeySignalMessage
+from .storage import InMemSignalProtocolStore
+from .state import PreKeyBundle, SessionRecord, PreKeysUsed
 from typing import Optional
 
 def process_prekey(

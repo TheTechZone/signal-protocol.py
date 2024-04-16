@@ -1,6 +1,8 @@
-from curve import PublicKey
-from identity_key import IdentityKey
-from uuid import UUID
+from .curve import PublicKey, PrivateKey
+from .identity_key import IdentityKey
+from .state import PreKeyId, SignedPreKeyId
+from .uuid import UUID
+from typing import Optional, Self
 
 class CiphertextMessage:
     """
@@ -45,6 +47,20 @@ class PreKeySignalMessage:
     Represents a pre-key signal message in the Signal Protocol.
     CiphertextMessageType::PreKey => 3
     """
+
+    def __new__(
+        self,
+        message_version: int,
+        registration_id: int,
+        pre_key_id: Optional[PreKeyId],
+        signed_pre_key_id: SignedPreKeyId,
+        kyber_payload: KyberPayload,
+        base_key: PublicKey,
+        identity_key: IdentityKey,
+        message: SignalMessage,
+    ) -> tuple[PreKeySignalMessage, CiphertextMessage]:
+        """TODO: not sure if the return is valid python but that's the rust annotation"""
+        ...
 
     @staticmethod
     def try_from(data: bytes) -> PreKeySignalMessage:
@@ -137,6 +153,15 @@ class SenderKeyDistributionMessage:
     CiphertextMessageType::SenderKeyDistribution => 5
     """
 
+    def __init__(
+        self,
+        message_version: int,
+        distribution_id: UUID,
+        chain_id: int,
+        iteration: int,
+        chain_key_bytes: bytes,
+        signing_key: PublicKey,
+    ) -> None: ...
     @staticmethod
     def try_from(data: bytes) -> SenderKeyDistributionMessage:
         """
@@ -200,6 +225,18 @@ class SenderKeyMessage:
     Represents a sender key message in the Signal Protocol.
     CiphertextMessageType::SenderKey => 4
     """
+
+    def __init__(
+        self,
+        message_version: int,
+        distribution_id: UUID,
+        chain_id: int,
+        iteration: int,
+        ciphertext: bytes,
+        signature_key: PrivateKey,
+    ) -> None:
+        """TODO: see the __init__ vs __new__ thing"""
+        ...
 
     @staticmethod
     def try_from(data: bytes) -> SenderKeyMessage:
@@ -287,6 +324,18 @@ class SignalMessage:
     CiphertextMessageType::Whisper
     """
 
+    def __init__(
+        self,
+        messsage_version: int,
+        mac_key: bytes,
+        sender_ratchet_key: PublicKey,
+        counter: int,
+        previous_counter: int,
+        ciphertext: bytes,
+        sender_identity_key: IdentityKey,
+        receiver_identity_key: IdentityKey,
+    ) -> None: ...
+    def __new__(cls) -> tuple[Self, CiphertextMessage]: ...
     @staticmethod
     def try_from(data: bytes) -> SignalMessage:
         """
@@ -363,3 +412,5 @@ class SignalMessage:
             bool: True if the MAC is valid, False otherwise.
         """
         ...
+
+class KyberPayload: ...  # TODO: handle once the rust exports it

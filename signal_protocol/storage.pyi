@@ -1,8 +1,8 @@
-from identity_key import IdentityKeyPair, IdentityKey
-from address import ProtocolAddress
-from sender_keys import SenderKeyRecord
-from uuid import UUID
-from state import (
+from .identity_key import IdentityKeyPair, IdentityKey
+from .address import ProtocolAddress
+from .sender_keys import SenderKeyRecord
+from .uuid import UUID
+from .state import (
     SessionRecord,
     PreKeyId,
     PreKeyRecord,
@@ -18,6 +18,8 @@ class InMemSignalProtocolStore:
     """
     In-memory signal protocol store.
     """
+
+    def __init__(self, key_pair: IdentityKeyPair, registration_id: int) -> None: ...
 
     ...
 

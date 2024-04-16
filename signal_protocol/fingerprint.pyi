@@ -3,15 +3,15 @@ from identity_key import IdentityKey
 class Fingerprint:
     """Represents a fingerprint of a Signal Protocol conversation."""
 
-    @staticmethod
-    def new(
+    def __init__(
+        self,
         version: int,
         iterations: int,
         local_id: bytes,
         local_key: IdentityKey,
         remote_id: bytes,
         remote_key: IdentityKey,
-    ) -> Fingerprint:
+    ) -> None:
         """
         Creates a new Fingerprint.
 

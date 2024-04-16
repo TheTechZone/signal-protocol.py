@@ -1,6 +1,6 @@
-from address import ProtocolAddress
-from protocol import CiphertextMessage, PreKeySignalMessage, SignalMessage
-from storage import InMemSignalProtocolStore
+from .address import ProtocolAddress
+from .protocol import CiphertextMessage, PreKeySignalMessage, SignalMessage
+from .storage import InMemSignalProtocolStore
 
 def message_decrypt(
     protocol_store: InMemSignalProtocolStore,

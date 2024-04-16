@@ -1,8 +1,8 @@
 from typing import Tuple
-from address import ProtocolAddress
-from storage import InMemSignalProtocolStore
-from protocol import SenderKeyDistributionMessage
-from uuid import UUID
+from .address import ProtocolAddress
+from .storage import InMemSignalProtocolStore
+from .protocol import SenderKeyDistributionMessage
+from .uuid import UUID
 
 def create_sender_key_distribution_message(
     protocol_store: InMemSignalProtocolStore,
