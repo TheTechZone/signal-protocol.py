@@ -5,16 +5,13 @@ from uuid import UUID
 
 class CiphertextMessage:
     """
-    <<<<<<<
-    Represents a ciphertext message in the Signal Protocol.
-    =======
-    CiphertextMessage is a Rust enum in the upstream crate. Mapping of enums to Python enums
+Represents a ciphertext message in the Signal Protocol.
+CiphertextMessage is a Rust enum in the upstream crate. Mapping of enums to Python enums
 
-    is not supported in pyo3. We map the Rust enum and its variants to Python as a superclass
+is not supported in pyo3. We map the Rust enum and its variants to Python as a superclass
 
-    (for CiphertextMessage) and subclasses (for variants of CiphertextMessage).
-    >>>>>>>
-    """
+(for CiphertextMessage) and subclasses (for variants of CiphertextMessage).
+"""
 
     def serialize(self) -> bytes:
         """
@@ -36,22 +33,17 @@ class CiphertextMessage:
 
 class KemKeyPair:
     """Represents a KEM key pair in the Signal Protocol."""
-
     ...
 
 class KemSerializedCiphertext:
     """Represents a serialized KEM ciphertext in the Signal Protocol."""
-
     ...
 
 class PreKeySignalMessage:
     """
-    <<<<<<<
-    Represents a pre-key signal message in the Signal Protocol.
-    =======
-    CiphertextMessageType::PreKey => 3
-    >>>>>>>
-    """
+Represents a pre-key signal message in the Signal Protocol.
+CiphertextMessageType::PreKey => 3
+"""
 
     @staticmethod
     def try_from(data: bytes) -> PreKeySignalMessage:
@@ -140,12 +132,9 @@ class PreKeySignalMessage:
 
 class SenderKeyDistributionMessage:
     """
-    <<<<<<<
-    Represents a sender key distribution message in the Signal Protocol.
-    =======
-    CiphertextMessageType::SenderKeyDistribution => 5
-    >>>>>>>
-    """
+Represents a sender key distribution message in the Signal Protocol.
+CiphertextMessageType::SenderKeyDistribution => 5
+"""
 
     @staticmethod
     def try_from(data: bytes) -> SenderKeyDistributionMessage:
@@ -207,12 +196,9 @@ class SenderKeyDistributionMessage:
 
 class SenderKeyMessage:
     """
-    <<<<<<<
-    Represents a sender key message in the Signal Protocol.
-    =======
-    CiphertextMessageType::SenderKey => 4
-    >>>>>>>
-    """
+Represents a sender key message in the Signal Protocol.
+CiphertextMessageType::SenderKey => 4
+"""
 
     @staticmethod
     def try_from(data: bytes) -> SenderKeyMessage:
@@ -296,12 +282,9 @@ class SenderKeyMessage:
 
 class SignalMessage:
     """
-    <<<<<<<
-    Represents a signal message in the Signal Protocol.
-    =======
-    CiphertextMessageType::Whisper
-    >>>>>>>
-    """
+Represents a signal message in the Signal Protocol.
+CiphertextMessageType::Whisper
+"""
 
     @staticmethod
     def try_from(data: bytes) -> SignalMessage:
@@ -361,12 +344,7 @@ class SignalMessage:
         """
         ...
 
-    def verify_mac(
-        self,
-        sender_identity_key: IdentityKey,
-        receiver_identity_key: IdentityKey,
-        mac_key: bytes,
-    ) -> bool:
+    def verify_mac(self, sender_identity_key: IdentityKey, receiver_identity_key: IdentityKey, mac_key: bytes) -> bool:
         """
         Verifies the MAC of the signal message.
 
