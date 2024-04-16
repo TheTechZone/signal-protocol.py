@@ -11,7 +11,7 @@ class Fingerprint:
         local_key: IdentityKey,
         remote_id: bytes,
         remote_key: IdentityKey,
-    ) -> "Fingerprint":
+    ) -> Fingerprint:
         """
         Creates a new Fingerprint.
 

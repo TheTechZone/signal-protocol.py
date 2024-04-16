@@ -1,8 +1,6 @@
 from curve import KeyPair, PublicKey
-from identity_key import IdentityKey, IdentityKeyPair
-from protocol import SignalMessage
+from identity_key import IdentityKey
 from typing import Optional
-from kem import KemPair, KemSerializedCiphertext
 from state import SessionRecord
 
 class AliceSignalProtocolParameters:

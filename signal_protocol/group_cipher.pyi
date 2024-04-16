@@ -1,8 +1,8 @@
 from typing import Tuple
-from .address import ProtocolAddress
-from .storage import InMemSignalProtocolStore
-from .protocol import SenderKeyDistributionMessage
-from .uuid import UUID
+from address import ProtocolAddress
+from storage import InMemSignalProtocolStore
+from protocol import SenderKeyDistributionMessage
+from uuid import UUID
 
 def create_sender_key_distribution_message(
     protocol_store: InMemSignalProtocolStore,
@@ -64,7 +64,7 @@ def process_sender_key_distribution_message(
     protocol_store: InMemSignalProtocolStore,
 ) -> None:
     """
-    Processes a sender key distribution message.
+    Processes a sender key distribution message. It updated the protocol store inplace.
 
     Args:
         protocol_store (InMemSignalProtocolStore): The protocol store.

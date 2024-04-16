@@ -1,6 +1,5 @@
-from curve import PublicKey, PrivateKey
+from curve import PublicKey
 from identity_key import IdentityKey
-from state import PreKeyId, SignedPreKeyId
 from uuid import UUID
 
 class CiphertextMessage:

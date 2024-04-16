@@ -1,5 +1,5 @@
-from address import DeviceId, ProtocolAddress
-from curve import PublicKey, PrivateKey
+from address import ProtocolAddress
+from curve import PublicKey
 from storage import InMemSignalProtocolStore
 from typing import Optional
 
