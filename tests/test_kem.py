@@ -33,7 +33,7 @@ def test_sanity():
     assert ss == ss2, "Decapsulation failed"
 
 def test_serialize():
-    test_data_dir = Path("./data").resolve()
+    test_data_dir = (Path(__file__).parent  / "data").resolve()
     pk_bytes = b"\x08" + (test_data_dir / "pk.dat").read_bytes()
     sk_bytes = b"\x08" + (test_data_dir / "sk.dat").read_bytes()
     
@@ -53,7 +53,7 @@ def test_serialize():
     assert serialized_sk == reserialized_sk
 
 def test_kyber_1024():
-    test_data_dir = Path("./data").resolve()
+    test_data_dir = (Path(__file__).parent  / "data").resolve()
     pk_bytes = b"\x08" + (test_data_dir / "pk.dat").read_bytes()
     sk_bytes = b"\x08" + (test_data_dir / "sk.dat").read_bytes()
     

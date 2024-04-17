@@ -76,6 +76,7 @@ impl KeyPair {
     /// holder of the corresponding `SecretKey` who can then use it to `decapsulate` the same
     /// `SharedSecret`.
     pub fn encapsulate(&self, py: Python) -> (PyObject, PyObject) {
+        // we could use get_public().encapsulate() but that does an extra copy operation for no good reason
         let (ss, ctxt) = self.key.public_key.encapsulate();
         return (PyBytes::new(py, &ss).into(), PyBytes::new(py, &ctxt).into());
     }
@@ -83,6 +84,7 @@ impl KeyPair {
     /// Decapsulates a `SharedSecret` that was encapsulated into a `Ciphertext` by a holder of
     /// the corresponding `PublicKey`.
     pub fn decapsulate(&self, py: Python, ct_bytes: &[u8]) -> PyResult<PyObject> {
+        // we could use get_private().decapsulate() but that does an extra copy operation for no good reason
         let ctxt = libsignal_protocol::kem::SerializedCiphertext::from(ct_bytes);
         let ss = self.key.secret_key.decapsulate(&ctxt);
         match ss {
@@ -128,6 +130,14 @@ impl PublicKey {
     fn __eq__(&self, other: &Self) -> bool {
         self.key.eq(&other.key)
     }
+
+    /// Create a `SharedSecret` and a `Ciphertext`. The `Ciphertext` can be safely sent to the
+    /// holder of the corresponding `SecretKey` who can then use it to `decapsulate` the same
+    /// `SharedSecret`.
+    pub fn encapsulate(&self, py: Python) -> (PyObject, PyObject) {
+        let (ss, ctxt) = self.key.encapsulate();
+        return (PyBytes::new(py, &ss).into(), PyBytes::new(py, &ctxt).into());
+    }
 }
 
 #[pyclass]
@@ -149,6 +159,17 @@ impl SecretKey {
         Ok(Self {
             key: libsignal_protocol::kem::SecretKey::deserialize(key)?,
         })
+    }
+
+    /// Decapsulates a `SharedSecret` that was encapsulated into a `Ciphertext` by a holder of
+    /// the corresponding `PublicKey`.
+    pub fn decapsulate(&self, py: Python, ct_bytes: &[u8]) -> PyResult<PyObject> {
+        let ctxt = libsignal_protocol::kem::SerializedCiphertext::from(ct_bytes);
+        let ss = self.key.decapsulate(&ctxt);
+        match ss {
+            Ok(shared_secret) => Ok(PyBytes::new(py, &shared_secret).into()),
+            Err(err) => Err(SignalProtocolError::new_err(err)),
+        }
     }
 }
 
