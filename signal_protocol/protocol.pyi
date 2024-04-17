@@ -58,10 +58,7 @@ class PreKeySignalMessage:
         base_key: PublicKey,
         identity_key: IdentityKey,
         message: SignalMessage,
-    ) -> tuple[PreKeySignalMessage, CiphertextMessage]:
-        """TODO: not sure if the return is valid python but that's the rust annotation"""
-        ...
-
+    ) -> tuple[PreKeySignalMessage, CiphertextMessage]: ...
     @staticmethod
     def try_from(data: bytes) -> PreKeySignalMessage:
         """
@@ -226,18 +223,14 @@ class SenderKeyMessage:
     CiphertextMessageType::SenderKey => 4
     """
 
-    def __init__(
-        self,
+    def __new__(
         message_version: int,
         distribution_id: UUID,
         chain_id: int,
         iteration: int,
         ciphertext: bytes,
         signature_key: PrivateKey,
-    ) -> None:
-        """TODO: see the __init__ vs __new__ thing"""
-        ...
-
+    ) -> tuple[SenderKeyMessage, CiphertextMessage]: ...
     @staticmethod
     def try_from(data: bytes) -> SenderKeyMessage:
         """
