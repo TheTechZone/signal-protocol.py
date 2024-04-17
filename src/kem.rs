@@ -72,11 +72,16 @@ impl KeyPair {
         self.key.secret_key.serialize().len()
     }
 
+    /// Create a `SharedSecret` and a `Ciphertext`. The `Ciphertext` can be safely sent to the
+    /// holder of the corresponding `SecretKey` who can then use it to `decapsulate` the same
+    /// `SharedSecret`.
     pub fn encapsulate(&self, py: Python) -> (PyObject, PyObject) {
         let (ss, ctxt) = self.key.public_key.encapsulate();
         return (PyBytes::new(py, &ss).into(), PyBytes::new(py, &ctxt).into());
     }
 
+    /// Decapsulates a `SharedSecret` that was encapsulated into a `Ciphertext` by a holder of
+    /// the corresponding `PublicKey`.
     pub fn decapsulate(&self, py: Python, ct_bytes: &[u8]) -> PyResult<PyObject> {
         let ctxt = libsignal_protocol::kem::SerializedCiphertext::from(ct_bytes);
         let ss = self.key.secret_key.decapsulate(&ctxt);
@@ -119,6 +124,10 @@ impl PublicKey {
             key: libsignal_protocol::kem::PublicKey::deserialize(key)?,
         })
     }
+
+    fn __eq__(&self, other: &Self) -> bool {
+        self.key.eq(&other.key)
+    }
 }
 
 #[pyclass]
@@ -143,8 +152,32 @@ impl SecretKey {
     }
 }
 
+/// Represents a Kyber serialized ciphertext. The first byte is a KeyType prefix
+#[pyclass]
+#[derive(Clone, Debug)]
+pub struct SerializedCiphertext {
+    pub state: libsignal_protocol::kem::SerializedCiphertext,
+}
+
+#[pymethods]
+impl SerializedCiphertext {
+    #[new]
+    pub fn new(value: &[u8]) -> PyResult<Self> {
+        let kem_ctxt = libsignal_protocol::kem::SerializedCiphertext::from(value);
+        Ok(SerializedCiphertext { state: kem_ctxt })
+    }
+    
+    /// Get the raw Kyber ciphertext bytes, without the KeyType prefix.
+    fn raw(&self, py: Python) -> PyObject {
+        PyBytes::new(py, &(&*self.state)[1..]).into()
+    }
+}
+
 pub fn init_kem_submodule(module: &PyModule) -> PyResult<()> {
     module.add_class::<KeyType>()?;
     module.add_class::<KeyPair>()?;
+    module.add_class::<PublicKey>()?;
+    module.add_class::<SecretKey>()?;
+    module.add_class::<SerializedCiphertext>()?;
     Ok(())
 }
