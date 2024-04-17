@@ -119,7 +119,7 @@ impl SenderKeyRecord {
 }
 
 pub fn init_submodule(module: &PyModule) -> PyResult<()> {
-    module.add_class::<SenderKeyName>()?;
+    //module.add_class::<SenderKeyName>()?;
     module.add_class::<SenderKeyRecord>()?;
     Ok(())
 }
