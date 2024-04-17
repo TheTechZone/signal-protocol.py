@@ -187,7 +187,7 @@ impl SerializedCiphertext {
         let kem_ctxt = libsignal_protocol::kem::SerializedCiphertext::from(value);
         Ok(SerializedCiphertext { state: kem_ctxt })
     }
-    
+
     /// Get the raw Kyber ciphertext bytes, without the KeyType prefix.
     fn raw(&self, py: Python) -> PyObject {
         PyBytes::new(py, &(&*self.state)[1..]).into()
