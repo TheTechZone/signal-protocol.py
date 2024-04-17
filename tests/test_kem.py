@@ -1,3 +1,4 @@
+from pathlib import Path
 from dataclasses import dataclass
 from signal_protocol import kem
 
@@ -30,3 +31,37 @@ def test_sanity():
     # todo: might make more sense to expose kp.get_private().decapsulate(ctxt)
     ss2 = keypair.decapsulate(ctxt)
     assert ss == ss2, "Decapsulation failed"
+
+def test_serialize():
+    test_data_dir = Path("./data").resolve()
+    pk_bytes = b"\x08" + (test_data_dir / "pk.dat").read_bytes()
+    sk_bytes = b"\x08" + (test_data_dir / "sk.dat").read_bytes()
+    
+    assert len(pk_bytes) == KYBER1024_PARAMS.PK_LENGTH + 1
+    assert len(sk_bytes) == KYBER1024_PARAMS.SK_LENGTH + 1
+
+    kp = kem.KeyPair.from_public_and_private(pk_bytes, sk_bytes)
+
+    serialized_pk, serialized_sk = kp.get_public().serialize(), kp.get_private().serialize()
+    assert serialized_pk == pk_bytes
+    assert serialized_sk == sk_bytes
+
+    pk, sk = kem.PublicKey.deserialize(serialized_pk), kem.SecretKey.deserialize(serialized_sk)
+    reserialized_pk, reserialized_sk = pk.serialize(), sk.serialize()
+
+    assert serialized_pk == reserialized_pk
+    assert serialized_sk == reserialized_sk
+
+def test_kyber_1024():
+    test_data_dir = Path("./data").resolve()
+    pk_bytes = b"\x08" + (test_data_dir / "pk.dat").read_bytes()
+    sk_bytes = b"\x08" + (test_data_dir / "sk.dat").read_bytes()
+    
+    assert len(pk_bytes) == KYBER1024_PARAMS.PK_LENGTH + 1
+    assert len(sk_bytes) == KYBER1024_PARAMS.SK_LENGTH + 1
+
+    kp = kem.KeyPair.from_public_and_private(pk_bytes, sk_bytes)
+    # todo: might make more sense to expose kp.get_public().decapsulate(ctxt)
+    ss_for_sender, ct = kp.encapsulate()
+    ss_for_recipient = kp.decapsulate(ct)
+    assert ss_for_sender == ss_for_recipient, "The two parties don't share the same secret"
