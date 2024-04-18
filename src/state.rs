@@ -543,9 +543,11 @@ pub fn init_submodule(module: &PyModule) -> PyResult<()> {
     module.add_class::<PreKeyRecord>()?;
     module.add_class::<SessionRecord>()?;
     module.add_class::<SignedPreKeyRecord>()?;
+    module.add_class::<KyberPreKeyRecord>()?;
     module.add_class::<PreKeyId>()?;
     module.add_class::<SignedPreKeyId>()?;
     module.add_class::<KyberPreKeyId>()?;
+    module.add_class::<PreKeysUsed>()?;
     module.add_class::<KyberPreKeyRecord>()?;
     module
         .add_function(wrap_pyfunction!(generate_n_prekeys, module)?)

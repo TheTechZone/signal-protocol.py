@@ -1,4 +1,5 @@
 black
+astor
 setuptools
 setuptools-rust
 wheel
