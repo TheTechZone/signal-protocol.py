@@ -26,6 +26,7 @@ DEVICE_ID = 1
 PRE_KYBER_MESSAGE_VERSION = 3
 KYBER_AWARE_MESSAGE_VERSION = 4
 
+
 def test_basic_prekey_v3():
     alice_address = address.ProtocolAddress("+14151111111", DEVICE_ID)
     bob_address = address.ProtocolAddress("+14151111112", DEVICE_ID)
@@ -211,6 +212,7 @@ def test_basic_prekey_v3():
 
     with pytest.raises(SignalProtocolException):
         session.process_prekey_bundle(bob_address, alice_store, bob_pre_key_bundle)
+
 
 def test_bad_signed_pre_key_signature():
     bob_address = address.ProtocolAddress("+14151111112", DEVICE_ID)
