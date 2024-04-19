@@ -75,6 +75,28 @@ impl Aes256GcmDecryption {
     }
 }
 
+#[pyclass]
+pub struct Aes256Ctr32 {
+    inner : signal_crypto::Aes256Ctr32
+}
+
+#[pymethods]
+impl Aes256Ctr32 {
+    #[new]
+    pub fn new(key: &[u8], nonce: &[u8], init_ctr: u32) -> PyResult<Self> {
+        match signal_crypto::Aes256Ctr32::from_key(key, nonce, init_ctr) {
+            Err(err) => Err(SignalProtocolError::err_from_str(err.to_string())),
+            Ok(algo) => Ok(Self {inner : algo})
+        }
+    }
+
+    fn process(&mut self,py: Python, data: &[u8]) -> PyResult<PyObject> {
+        let mut buf: Vec<u8> = Vec::from(data).clone();
+        self.inner.process(&mut buf);
+        Ok(PyBytes::new(py, &buf).into())
+    }
+}
+
 #[pyfunction]
 pub fn aes_256_gcm_encrypt(
     py: Python,
@@ -175,6 +197,7 @@ impl CryptographicMac {
 pub fn init_submodule(module: &PyModule) -> PyResult<()> {
     module.add_class::<Aes256GcmEncryption>()?;
     module.add_class::<Aes256GcmDecryption>()?;
+    module.add_class::<Aes256Ctr32>()?;
     module.add_class::<CryptographicHash>()?;
     module.add_class::<CryptographicMac>()?;
     module.add_wrapped(wrap_pyfunction!(aes_256_cbc_encrypt))?;
