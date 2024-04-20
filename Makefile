@@ -47,11 +47,18 @@ test: ## Run the Python test suite
 	. .venv/bin/activate && pytest -v tests/
 
 .PHONY:
+stubs: ## Sync python stubs files with the rust codebase - in particular docstrings
+	. .venv/bin/activate && python3 script/fix-docstrings.py && black signal_protocol/*.pyi
+
+.PHONY:
 clean: ## Clean up
 	@[ -d ./.pytest_cache ] && rm -rf .pytest_cache || true
 	@[ -d ./signal_protocol.egg-info ] && rm -rf ./signal_protocol.egg-info || true
 	@[ -d ./build ] && rm -rf build || true
+	@[ -d ./dist ] && rm -rf dist || true
 	@[ -d ./target ] && rm -rf target || true
+	@[ -d ./__pycache__ ] && rm -rf ./__pycache__ || true
+	@[ -d ./signal_protocol/__pycache__ ] && rm -rf ./signal_protocol/__pycache__ || true
 	@[ -d ./tests/__pycache__ ] && rm -rf ./tests/__pycache__ || true
 
 .DEFAULT_GOAL := help

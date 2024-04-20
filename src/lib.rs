@@ -1,6 +1,7 @@
 use pyo3::prelude::*;
 
 mod address;
+mod base_crypto;
 mod curve;
 mod error;
 mod fingerprint;
@@ -29,6 +30,9 @@ mod uuid;
 /// We do not expose a Python submodule for HKDF (a module in the upstream crate).
 #[pymodule]
 fn signal_protocol(py: Python, module: &PyModule) -> PyResult<()> {
+    // A good place to install the Rust -> Python logger.
+    pyo3_log::init();
+
     let address_submod = PyModule::new(py, "address")?;
     address::init_submodule(address_submod)?;
     module.add_submodule(address_submod)?;
@@ -92,10 +96,16 @@ fn signal_protocol(py: Python, module: &PyModule) -> PyResult<()> {
     let uuid_submod = PyModule::new(py, "uuid")?;
     uuid::init_submodule(uuid_submod)?;
     module.add_submodule(uuid_submod)?;
+
+    let crypto_submod = PyModule::new(py, "crypto")?; // todo: make expose this under a clearer name
+    base_crypto::init_submodule(crypto_submod)?;
+    module.add_submodule(crypto_submod)?;
+
     // Workaround to enable imports from submodules. Upstream issue: pyo3 issue #759
     // https://github.com/PyO3/pyo3/issues/759#issuecomment-653964601
     let mods = [
         "address",
+        "crypto",
         "curve",
         "error",
         "fingerprint",

@@ -89,10 +89,11 @@ impl PublicKey {
 
 impl Serialize for PublicKey {
     fn serialize<S>(&self, serializer: S) -> std::prelude::v1::Result<S::Ok, S::Error>
-        where
-            S: serde::Serializer {
-                let encoded_pk = base64::engine::general_purpose::STANDARD.encode(self.key.serialize());
-                serializer.serialize_str(&encoded_pk)
+    where
+        S: serde::Serializer,
+    {
+        let encoded_pk = base64::engine::general_purpose::STANDARD.encode(self.key.serialize());
+        serializer.serialize_str(&encoded_pk)
     }
 }
 
@@ -128,10 +129,11 @@ impl PublicKey {
 
     #[staticmethod]
     pub fn from_public_key_bytes(bytes: &[u8]) -> Result<Self> {
-        let upstream: libsignal_protocol::PublicKey = match libsignal_protocol::PublicKey::from_djb_public_key_bytes(bytes) {
-            Err(err) => return Err(SignalProtocolError::from(err)),
-            Ok(key) => key,
-        };
+        let upstream: libsignal_protocol::PublicKey =
+            match libsignal_protocol::PublicKey::from_djb_public_key_bytes(bytes) {
+                Err(err) => return Err(SignalProtocolError::from(err)),
+                Ok(key) => key,
+            };
         Ok(Self { key: upstream })
     }
 }

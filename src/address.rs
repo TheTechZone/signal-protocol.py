@@ -1,6 +1,10 @@
 use pyo3::prelude::*;
 use std::convert;
 
+/// The type used in memory to represent a device, i.e. a particular Signal client instance which represents some user.
+///
+/// Used in ProtocolAddress.
+/// *N.B* the DeviceID ranges from 1 (primary device) to n (the maximum number of devices per user), Any DeviceID > 1 will implictly represent a secondary device.
 #[pyclass]
 #[derive(Clone, Debug)]
 pub struct DeviceId {

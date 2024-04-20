@@ -65,9 +65,10 @@ impl convert::From<u32> for PreKeyId {
 
 impl Serialize for PreKeyId {
     fn serialize<S>(&self, serializer: S) -> std::prelude::v1::Result<S::Ok, S::Error>
-        where
-            S: serde::Serializer {
-                serializer.serialize_u32(u32::from(self.value))
+    where
+        S: serde::Serializer,
+    {
+        serializer.serialize_u32(u32::from(self.value))
     }
 }
 
@@ -267,39 +268,51 @@ impl PreKeyBundle {
 
     fn to_json(&self) -> PyResult<String> {
         match serde_json::to_string(&self) {
-            Err(err) => Err(SignalProtocolError::err_from_str(err.to_string())), 
-            Ok(val) => Ok(val)
+            Err(err) => Err(SignalProtocolError::err_from_str(err.to_string())),
+            Ok(val) => Ok(val),
         }
     }
 }
 
 impl Serialize for PreKeyBundle {
     fn serialize<S>(&self, serializer: S) -> std::prelude::v1::Result<S::Ok, S::Error>
-        where
-            S: serde::Serializer {
-                let mut state = serializer.serialize_struct("PreKeyBundle",12)?;
-                
-                let rid = match self.registration_id() {
-                    Ok(val) => val,
-                    Err(_) => return Err(serde::ser::Error::custom("Both field3 and field5 can't be present"))
-                };
+    where
+        S: serde::Serializer,
+    {
+        let mut state = serializer.serialize_struct("PreKeyBundle", 12)?;
 
-                let pk_id = match self.pre_key_id() {
-                    Ok(val) => val.unwrap(),
-                    Err(_) => return Err(serde::ser::Error::custom("Both field3 and field5 can't be present"))
+        let rid = match self.registration_id() {
+            Ok(val) => val,
+            Err(_) => {
+                return Err(serde::ser::Error::custom(
+                    "Both field3 and field5 can't be present",
+                ))
+            }
+        };
 
-                };
-                
-                let pk = match self.pre_key_public() {
-                    Ok(val) => val.unwrap(),
-                    Err(_) => return Err(serde::ser::Error::custom("Both field3 and field5 can't be present"))
-                };
+        let pk_id = match self.pre_key_id() {
+            Ok(val) => val.unwrap(),
+            Err(_) => {
+                return Err(serde::ser::Error::custom(
+                    "Both field3 and field5 can't be present",
+                ))
+            }
+        };
 
-                state.serialize_field("registration_id", &rid);
-                // state.serialize_field("device_id", &self.device_id());
-                state.serialize_field("pre_key_id", &pk_id);
-                state.serialize_field("pre_key_public", &pk);
-                state.end()
+        let pk = match self.pre_key_public() {
+            Ok(val) => val.unwrap(),
+            Err(_) => {
+                return Err(serde::ser::Error::custom(
+                    "Both field3 and field5 can't be present",
+                ))
+            }
+        };
+
+        state.serialize_field("registration_id", &rid);
+        // state.serialize_field("device_id", &self.device_id());
+        state.serialize_field("pre_key_id", &pk_id);
+        state.serialize_field("pre_key_public", &pk);
+        state.end()
     }
 }
 
@@ -594,10 +607,11 @@ pub fn init_submodule(module: &PyModule) -> PyResult<()> {
     module.add_class::<PreKeyRecord>()?;
     module.add_class::<SessionRecord>()?;
     module.add_class::<SignedPreKeyRecord>()?;
+    module.add_class::<KyberPreKeyRecord>()?;
     module.add_class::<PreKeyId>()?;
     module.add_class::<SignedPreKeyId>()?;
     module.add_class::<KyberPreKeyId>()?;
-    module.add_class::<KyberPreKeyRecord>()?;
+    module.add_class::<PreKeysUsed>()?;
     module
         .add_function(wrap_pyfunction!(generate_n_prekeys, module)?)
         .unwrap();
