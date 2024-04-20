@@ -77,7 +77,7 @@ impl Aes256GcmDecryption {
 
 #[pyclass]
 pub struct Aes256Ctr32 {
-    inner: signal_crypto::Aes256Ctr32,
+    inner : signal_crypto::Aes256Ctr32
 }
 
 #[pymethods]
@@ -86,11 +86,11 @@ impl Aes256Ctr32 {
     pub fn new(key: &[u8], nonce: &[u8], init_ctr: u32) -> PyResult<Self> {
         match signal_crypto::Aes256Ctr32::from_key(key, nonce, init_ctr) {
             Err(err) => Err(SignalProtocolError::err_from_str(err.to_string())),
-            Ok(algo) => Ok(Self { inner: algo }),
+            Ok(algo) => Ok(Self {inner : algo})
         }
     }
 
-    fn process(&mut self, py: Python, data: &[u8]) -> PyResult<PyObject> {
+    fn process(&mut self,py: Python, data: &[u8]) -> PyResult<PyObject> {
         let mut buf: Vec<u8> = Vec::from(data).clone();
         self.inner.process(&mut buf);
         Ok(PyBytes::new(py, &buf).into())

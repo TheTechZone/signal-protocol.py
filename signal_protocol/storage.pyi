@@ -19,6 +19,7 @@ class InMemSignalProtocolStore:
     """
 
     def __init__(self, key_pair: IdentityKeyPair, registration_id: int) -> None: ...
+
     def get_identity_key_pair(self) -> IdentityKeyPair:
         """
         Gets the identity key pair.
