@@ -1,4 +1,4 @@
-from identity_key import IdentityKey
+from .identity_key import IdentityKey
 
 class Fingerprint:
     """Represents a fingerprint of a Signal Protocol conversation."""

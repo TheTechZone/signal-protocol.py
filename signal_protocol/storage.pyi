@@ -8,7 +8,6 @@ from .state import (
     PreKeyRecord,
     SignedPreKeyId,
     SignedPreKeyRecord,
-    SenderKeyRecord,
     KyberPreKeyId,
     KyberPreKeyRecord,
 )
