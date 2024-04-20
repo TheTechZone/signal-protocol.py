@@ -25,7 +25,7 @@ class IdentityKey:
 class IdentityKeyPair:
     """Represents an identity key pair in the Signal Protocol."""
 
-    def __init__(identity_key: IdentityKey, private_key: PrivateKey) -> None:
+    def __init__(self, identity_key: IdentityKey, private_key: PrivateKey) -> None:
         """
         Creates a new IdentityKeyPair.
 
