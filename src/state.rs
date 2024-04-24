@@ -82,6 +82,20 @@ impl KyberPreKeyId {
             value: libsignal_protocol::KyberPreKeyId::from(id),
         }
     }
+
+    fn __str__(&self) -> PyResult<String> {
+        Ok(String::from(format!(
+            "{}",
+            self.value        
+        )))
+    }
+
+    fn __repr__(&self) -> PyResult<String> {
+        Ok(String::from(format!(
+            "KyberPreKeyId({})",
+            self.value,
+        )))
+    }
 }
 #[pyclass]
 #[derive(Clone, Debug)]
