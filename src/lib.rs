@@ -8,6 +8,7 @@ mod error;
 mod fingerprint;
 mod group_cipher;
 mod identity_key;
+mod pin;
 mod protocol;
 mod ratchet;
 mod sealed_sender;
@@ -100,6 +101,10 @@ fn signal_protocol(py: Python, module: &PyModule) -> PyResult<()> {
     let device_transfer = PyModule::new(py, "device_transfer")?;
     device_transfer::init_submodule(device_transfer)?;
     module.add_submodule(device_transfer)?;
+
+    let pin = PyModule::new(py, "pin")?;
+    pin::init_submodule(pin)?;
+    module.add_submodule(pin)?;
     // Workaround to enable imports from submodules. Upstream issue: pyo3 issue #759
     // https://github.com/PyO3/pyo3/issues/759#issuecomment-653964601
     let mods = [
@@ -111,6 +116,7 @@ fn signal_protocol(py: Python, module: &PyModule) -> PyResult<()> {
         "fingerprint",
         "group_cipher",
         "identity_key",
+        "pin",
         "protocol",
         "ratchet",
         "sealed_sender",
