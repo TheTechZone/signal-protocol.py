@@ -338,9 +338,6 @@ impl PreKeyBundle {
     fn to_dict(&self, py: Python) -> PyResult<PyObject> {
         let dict: &PyDict = [
             ("registration_id", 0),
-            ("device_id", 0)
-            // ("registration_id", self.registration_id().unwrap().to_object(py)),
-            // ("device_id", u32::from(device_id).to_object(py)),
         ].into_py_dict(py);
         
         // Helper function to set an item in the dictionary if the result is Ok and Some
@@ -366,101 +363,6 @@ impl PreKeyBundle {
         set_if_ok(&dict, "kyber_pre_key_sign", self.kyber_pre_key_signature(), |sign| base64::engine::general_purpose::STANDARD.encode(sign).to_object(py));
         set_if_ok(&dict, "kyber_pre_key_public", self.kyber_pre_key_public(), |key| key.to_base64().unwrap().to_object(py));
 
-
-        // match self.pre_key_id() {
-        //     Ok(val) => {
-        //         match val {
-        //             Some(key) => {
-        //                 let _ = dict.set_item("pre_key_id", key.get_id());
-        //             },
-        //             None => {}
-        //         }
-        //     },
-        //     Err(_) => {}
-        // }
-
-        // match self.pre_key_public() {
-        //     Ok(val) => {
-        //         match val {
-        //             Some(key) => {
-        //                 let _ = dict.set_item("pre_key_public", key.to_base64().unwrap());
-        //             },
-        //             None => {}
-        //         }
-        //     },
-        //     Err(_) => {}
-        // }
-
-        // match self.signed_pre_key_id() {
-        //     Ok(val) => {
-        //         let _ = dict.set_item("signed_pre_key_id", val.get_id());
-        //     },
-        //     Err(_) => {}
-        // }
-
-        // match self.signed_pre_key_public() {
-        //     Ok(val) => {
-        //         let _ = dict.set_item("signed_pre_key_public", val.to_base64().unwrap());
-        //     },
-        //     Err(_) => {}
-        // }
-
-        
-        // // TODO: a bit ugly
-        // match self.signed_pre_key_signature(py) {
-        //     Ok(_) => {
-        //         let _ = dict.set_item("signed_pre_key_sign", base64::engine::general_purpose::STANDARD.encode(
-        //             self.state.signed_pre_key_signature().unwrap()
-        //         ));
-        //     },
-        //     Err(_) => {}
-        // }
-
-        // match self.identity_key() {
-        //     Ok(val) => {
-        //         let _ = dict.set_item("identity_key_public", val.to_base64().unwrap());
-        //     },
-        //     Err(_) => {}
-        // }
-
-        // match self.kyber_pre_key_id() {
-        //     Ok(val) => {
-        //         match val {
-        //             Some(id) => {
-        //                 let _ = dict.set_item("kyber_pre_key_id", id.get_id());
-        //             },
-        //             None => {}
-        //         }            
-        //     },
-        //     Err(_) => {}
-        // }
-
-        // match self.kyber_pre_key_signature() {
-        //     Ok(val) => {
-        //         match val {
-        //             Some(sign) => {
-        //                 let _ = dict.set_item("kyber_pre_key_sign", base64::engine::general_purpose::STANDARD.encode(sign));
-        //             },
-        //             None => {}
-        //         }            
-        //     },
-        //     Err(_) => {}
-        // }
-
-        // // TODO: cleanup
-        // match self.kyber_pre_key_public() {
-        //     Ok(val) => {
-        //         match val {
-        //             Some(key) => {
-        //                 let _ = dict.set_item("kyber_pre_key_public", key.to_base64().unwrap());
-        //             },
-        //             None => {}
-        //         }
-        //     },
-        //     Err(_) => {}
-        // }
-
-        // dict.set_item("pre_key_public", )
         Ok(dict.into())
     }
 }
