@@ -127,7 +127,7 @@ def initialize_sessions_v3():
         bob_base_key,
         None,
         bob_ephemeral_key,
-        None,  # todo: kyber
+        None,  # TODO: kyber
         alice_identity.identity_key(),
         alice_base_key.public_key(),
         _kyber_ctxt,
