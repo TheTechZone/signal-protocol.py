@@ -1,6 +1,7 @@
 import pytest
 
 from signal_protocol.state import SessionRecord
+from signal_protocol.kem import SerializedCiphertext, KeyPair as KyberKeyPair, KeyType
 
 # from signal_protocol.protocol import KemSerializedCiphertext
 from signal_protocol.curve import KeyPair, PrivateKey, PublicKey
@@ -11,6 +12,10 @@ from signal_protocol.ratchet import (
     AliceSignalProtocolParameters,
     initialize_alice_session,
 )
+
+PRE_KYBER_MESSAGE_VERSION = 3
+KYBER_AWARE_MESSAGE_VERSION = 4
+KYBER_1024_KEY_TYPE = KeyType(0)
 
 
 def test_ratcheting_session_as_bob():
@@ -70,7 +75,8 @@ def test_ratcheting_session_as_bob():
 
     alice_identity_public = IdentityKey(alice_identity_public_bytes)
 
-    _kyber_ctxt = b""
+    _kyber_ctxt = SerializedCiphertext(b"")
+    _kyber_keypair = KyberKeyPair.generate(KYBER_1024_KEY_TYPE)
 
     bob_parameters = BobSignalProtocolParameters(
         bob_identity_key_pair,
@@ -80,7 +86,7 @@ def test_ratcheting_session_as_bob():
         None,  # TODO: no kyber yet
         alice_identity_public,
         alice_base_public_key,
-        _kyber_ctxt,  # and no kyber ctxt
+        None,  # and no kyber ctxt
     )
 
     bob_record = initialize_bob_session(bob_parameters)
@@ -161,3 +167,67 @@ def test_ratcheting_session_as_alice():
     assert alice_record.get_receiver_chain_key_bytes(
         bob_ephemeral_public
     ) == bytes.fromhex(expected_receiver_chain)
+    assert (
+        alice_record.session_version() == PRE_KYBER_MESSAGE_VERSION
+    ), f"Expected PRE_KYBER communication (version: {PRE_KYBER_MESSAGE_VERSION})"
+
+
+def test_alice_and_bob_agree_on_chain_keys_with_kyber():
+    alice_identity_key_pair = IdentityKeyPair.generate()
+    alice_base_key_pair = KeyPair.generate()
+
+    bob_ephemeral_key_pair = KeyPair.generate()
+    bob_identity_key_pair = IdentityKeyPair.generate()
+    bob_signed_pre_key_pair = KeyPair.generate()
+
+    bob_kyber_pre_key_pair = KyberKeyPair.generate(KYBER_1024_KEY_TYPE)
+
+    alice_parameters = AliceSignalProtocolParameters(
+        alice_identity_key_pair,
+        alice_base_key_pair,
+        bob_identity_key_pair.identity_key(),
+        bob_signed_pre_key_pair.public_key(),
+        None,  # _their_one_time_pre_key
+        bob_ephemeral_key_pair.public_key(),
+        bob_kyber_pre_key_pair.get_public(),  # _their_kyber_pre_key
+    )
+    alice_record = initialize_alice_session(alice_parameters)
+
+    assert (
+        alice_record.session_version() == KYBER_AWARE_MESSAGE_VERSION
+    ), f"Expected KYBER_AWARE communication (version: {KYBER_AWARE_MESSAGE_VERSION})"
+
+    raw_kyber_ctxt = alice_record.get_kyber_ciphertext()
+    assert (
+        raw_kyber_ctxt != None and len(raw_kyber_ctxt) > 0
+    ), "must have kyber ciphertext"
+
+    kyber_ctxt = SerializedCiphertext(raw_kyber_ctxt)
+
+    bob_parameters = BobSignalProtocolParameters(
+        bob_identity_key_pair,
+        bob_signed_pre_key_pair,
+        None,
+        bob_ephemeral_key_pair,
+        bob_kyber_pre_key_pair,
+        alice_identity_key_pair.identity_key(),
+        alice_base_key_pair.public_key(),
+        kyber_ctxt,
+    )
+    bob_record = initialize_bob_session(bob_parameters)
+
+    assert (
+        bob_record.session_version() == KYBER_AWARE_MESSAGE_VERSION
+    ), f"Expected KYBER_AWARE communication (version: {KYBER_AWARE_MESSAGE_VERSION})"
+
+    assert (
+        len(bob_record.get_sender_chain_key_bytes()) > 0
+    ), "alice should have chain key"
+    assert (
+        len(
+            alice_record.get_receiver_chain_key_bytes(
+                bob_ephemeral_key_pair.public_key()
+            )
+        )
+        > 0
+    ), "should have chain key"

@@ -692,6 +692,14 @@ impl SessionRecord {
         let result = self.state.get_sender_chain_key_bytes()?;
         Ok(PyBytes::new(py, &result).into())
     }
+
+    // TODO: check other missing functions on the struct
+    fn get_kyber_ciphertext(&self, py: Python) -> Result<Option<PyObject>> {
+        match self.state.get_kyber_ciphertext()? {
+            Some(result) => Ok(Some(PyBytes::new(py, &result).into())),
+            None => Ok(None),
+        }
+    }
 }
 
 #[pyclass]

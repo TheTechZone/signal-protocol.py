@@ -8,6 +8,7 @@ use crate::error::Result;
 use crate::identity_key::{IdentityKey, IdentityKeyPair};
 use crate::kem::KeyPair as KemKeyPair;
 use crate::kem::PublicKey as KemPublicKey;
+use crate::kem::SerializedCiphertext;
 use crate::state::SessionRecord;
 
 #[pyclass]
@@ -28,7 +29,6 @@ impl AliceSignalProtocolParameters {
         their_ratchet_key: PublicKey,
         _their_kyber_pre_key: Option<crate::kem::PublicKey>, // TODO: wth libsignal ignores this? :/
     ) -> Self {
-        // TODO: pass the upstream values to the constructor when it gets updated
         let _upstream_their_one_time_pre_key = match _their_one_time_pre_key {
             None => None,
             Some(x) => Some(x.key),
@@ -39,15 +39,23 @@ impl AliceSignalProtocolParameters {
             Some(x) => Some(x.key),
         };
 
-        Self {
-            inner: libsignal_protocol::AliceSignalProtocolParameters::new(
-                our_identity_key_pair.key,
-                our_base_key_pair.key,
-                their_identity_key.key,
-                their_signed_pre_key.key,
-                their_ratchet_key.key,
-            ),
+        let mut inner = libsignal_protocol::AliceSignalProtocolParameters::new(
+            our_identity_key_pair.key,
+            our_base_key_pair.key,
+            their_identity_key.key,
+            their_signed_pre_key.key,
+            their_ratchet_key.key,
+        );
+
+        if _upstream_their_one_time_pre_key.is_some() {
+            inner.set_their_one_time_pre_key(_upstream_their_one_time_pre_key.unwrap())
         }
+
+        if _upstream_their_kyber_pre_key.is_some() {
+            inner.set_their_kyber_pre_key(&_upstream_their_kyber_pre_key.unwrap())
+        }
+
+        Self { inner: inner }
     }
 
     pub fn our_identity_key_pair(&self) -> Result<IdentityKeyPair> {
@@ -84,10 +92,11 @@ impl AliceSignalProtocolParameters {
     }
 
     pub fn their_kyber_pre_key(&self) -> Result<Option<KemPublicKey>> {
-        let key = match self.inner.their_kyber_pre_key() {
-            None => return Ok(None),
-            Some(key) => key,
-        };
+        let key: &libsignal_protocol::kem::Key<libsignal_protocol::kem::Public> =
+            match self.inner.their_kyber_pre_key() {
+                None => return Ok(None),
+                Some(key) => key,
+            };
 
         Ok(Some(KemPublicKey { key: key.clone() }))
     }
@@ -117,7 +126,7 @@ pub struct BobSignalProtocolParameters {
 #[pymethods]
 impl BobSignalProtocolParameters {
     #[new]
-    #[pyo3(signature = (our_identity_key_pair,our_signed_pre_key_pair,our_one_time_pre_key_pair,our_ratchet_key_pair,our_kyber_pre_key_pair,their_identity_key,their_base_key,_their_kyber_ciphertext))]
+    #[pyo3(signature = (our_identity_key_pair,our_signed_pre_key_pair,our_one_time_pre_key_pair,our_ratchet_key_pair,our_kyber_pre_key_pair,their_identity_key,their_base_key,their_kyber_ciphertext))]
     pub fn new(
         our_identity_key_pair: IdentityKeyPair,
         our_signed_pre_key_pair: KeyPair,
@@ -126,7 +135,7 @@ impl BobSignalProtocolParameters {
         our_kyber_pre_key_pair: Option<KemKeyPair>,
         their_identity_key: IdentityKey,
         their_base_key: PublicKey,
-        _their_kyber_ciphertext: Option<&[u8]>, // TODO:deal with this
+        their_kyber_ciphertext: Option<SerializedCiphertext>, // todo:deal with this
     ) -> Self {
         let upstream_our_one_time_pre_key_pair = match our_one_time_pre_key_pair {
             None => None,
@@ -138,6 +147,33 @@ impl BobSignalProtocolParameters {
             Some(x) => Some(x.key),
         };
 
+        let kyberctxt: Option<&'static Box<[u8]>> = match their_kyber_ciphertext {
+            None => None,
+            Some(ctxt) => Some(Box::leak(Box::new(
+                ctxt.state.into_vec().clone().into_boxed_slice(),
+            ))),
+        };
+
+        // below lines compiled
+
+        /// let kyberctxt: Box<Box<[u8]>> = Box::new(
+        ///     their_kyber_ciphertext
+        ///         .unwrap()
+        ///         .state
+        ///         .into_vec()
+        ///         .clone()
+        ///         .into_boxed_slice(),
+        /// );
+
+        // unsafe {
+
+        /// let kyberctxt_leak: &'static Box<[u8]> = Box::leak(kyberctxt); // aaa
+        // }
+        // let kyberctxt_box = Box::new(kyberctxt_leak.into());
+        // let kyberctxt = match  their_kyber_ciphertext {
+        //     None => None,
+        //     Some(x) => Some(Box::new(&(*Box::leak(x.state.into_vec().clone().into_boxed_slice()))))// .clone().into_boxed_slice())
+        // };
         Self {
             inner: libsignal_protocol::BobSignalProtocolParameters::new(
                 our_identity_key_pair.key,
@@ -147,7 +183,7 @@ impl BobSignalProtocolParameters {
                 upstream_our_kyber_pre_key_pair,
                 their_identity_key.key,
                 their_base_key.key,
-                None, // TODO: not sure here; this will be a pain
+                kyberctxt,
             ),
         }
     }

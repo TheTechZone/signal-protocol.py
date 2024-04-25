@@ -1,5 +1,4 @@
 from signal_protocol import curve, address, identity_key, state, storage, kem
-from base64 import b64encode, b64decode
 
 alice_identity_key_pair = identity_key.IdentityKeyPair.generate()
 alice_registration_id = 1
@@ -27,6 +26,7 @@ alice_pre_key_bundle = state.PreKeyBundle(
 )
 
 print(alice_pre_key_bundle.has_kyber_pre_key())
+print(alice_pre_key_bundle.to_dict())
 
 # BUNDLE W/O KEM
 kyber_pre_key_id = state.KyberPreKeyId(22)
@@ -41,6 +41,7 @@ alice_pre_key_bundle = alice_pre_key_bundle.with_kyber_pre_key(
     kyber_pre_key_id, kyber_pre_key_pair.get_public(), kyber_pre_key_signature
 )
 print(alice_pre_key_bundle.has_kyber_pre_key())
+print(alice_pre_key_bundle.to_dict())
 
 test = signed_pre_key_id
 

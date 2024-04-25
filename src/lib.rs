@@ -111,6 +111,7 @@ fn signal_protocol(py: Python, module: &PyModule) -> PyResult<()> {
         "fingerprint",
         "group_cipher",
         "identity_key",
+        "kem",
         "protocol",
         "ratchet",
         "sealed_sender",

@@ -8,7 +8,6 @@ use rand::rngs::OsRng;
 use crate::address::ProtocolAddress;
 use crate::error::Result;
 use crate::protocol::{CiphertextMessage, PreKeySignalMessage, SignalMessage};
-// use crate::state::SystemTime;
 use crate::storage::InMemSignalProtocolStore;
 
 #[pyfunction]
