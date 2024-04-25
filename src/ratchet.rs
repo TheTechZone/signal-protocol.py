@@ -24,11 +24,11 @@ impl AliceSignalProtocolParameters {
         our_base_key_pair: KeyPair,
         their_identity_key: IdentityKey,
         their_signed_pre_key: PublicKey,
-        _their_one_time_pre_key: Option<PublicKey>, // todo: wth libsignal ignores this and kyber? :/
+        _their_one_time_pre_key: Option<PublicKey>, // TODO: wth libsignal ignores this and kyber? :/
         their_ratchet_key: PublicKey,
-        _their_kyber_pre_key: Option<crate::kem::PublicKey>, // todo: wth libsignal ignores this? :/
+        _their_kyber_pre_key: Option<crate::kem::PublicKey>, // TODO: wth libsignal ignores this? :/
     ) -> Self {
-        // todo: pass the upstream values to the constructor when it gets updated
+        // TODO: pass the upstream values to the constructor when it gets updated
         let _upstream_their_one_time_pre_key = match _their_one_time_pre_key {
             None => None,
             Some(x) => Some(x.key),
@@ -126,7 +126,7 @@ impl BobSignalProtocolParameters {
         our_kyber_pre_key_pair: Option<KemKeyPair>,
         their_identity_key: IdentityKey,
         their_base_key: PublicKey,
-        _their_kyber_ciphertext: Option<&[u8]>, // todo:deal with this
+        _their_kyber_ciphertext: Option<&[u8]>, // TODO:deal with this
     ) -> Self {
         let upstream_our_one_time_pre_key_pair = match our_one_time_pre_key_pair {
             None => None,
@@ -147,7 +147,7 @@ impl BobSignalProtocolParameters {
                 upstream_our_kyber_pre_key_pair,
                 their_identity_key.key,
                 their_base_key.key,
-                None, // todo: not sure here; this will be a pain
+                None, // TODO: not sure here; this will be a pain
             ),
         }
     }

@@ -16,7 +16,7 @@ use rand::rngs::OsRng;
 pub struct ContentHint {
     pub data: libsignal_protocol::ContentHint,
 }
-// todo: impl
+// TODO: impl
 
 #[pyclass]
 #[derive(Debug, Clone)]
@@ -353,7 +353,7 @@ pub fn sealed_sender_encrypt(
     sender_cert: &SenderCertificate,
     ptext: &[u8],
     protocol_store: &mut InMemSignalProtocolStore,
-    // now: SystemTime, // todo: should SystemTime be exposed?
+    // now: SystemTime, // TODO: should SystemTime be exposed?
     py: Python,
 ) -> Result<PyObject> {
     let mut csprng = OsRng;

@@ -97,7 +97,7 @@ fn signal_protocol(py: Python, module: &PyModule) -> PyResult<()> {
     uuid::init_submodule(uuid_submod)?;
     module.add_submodule(uuid_submod)?;
 
-    let crypto_submod = PyModule::new(py, "crypto")?; // todo: make expose this under a clearer name
+    let crypto_submod = PyModule::new(py, "crypto")?; // TODO: make expose this under a clearer name
     base_crypto::init_submodule(crypto_submod)?;
     module.add_submodule(crypto_submod)?;
 
