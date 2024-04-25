@@ -6,12 +6,7 @@ use pyo3::wrap_pyfunction;
 use serde::ser::SerializeStruct;
 use serde::Serialize;
 use pyo3::types::IntoPyDict;
-use pyo3::types::{PyDict, PyAny};
-use serde_json::{Value, json};
-use std::collections::HashMap;
-use pyo3::conversion::FromPyObject;
-
-// use serde_json::{json, Value};
+use pyo3::types::PyDict;
 
 use crate::address::DeviceId;
 use crate::curve::{KeyPair, PrivateKey, PublicKey};
@@ -64,14 +59,12 @@ impl SignedPreKeyId {
     }
 }
 
-// pub type PreKeyId = u32;
-
 #[pyclass]
 #[derive(Clone, Debug)]
 pub struct PreKeyId {
     pub value: libsignal_protocol::PreKeyId,
 }
-// TODO: handle impl
+
 impl convert::From<PreKeyId> for u32 {
     fn from(value: PreKeyId) -> Self {
         u32::from(value.value)
@@ -230,7 +223,6 @@ impl PreKeyBundle {
 
     fn pre_key_id(&self) -> Result<Option<PreKeyId>> {
         let key = self.state.pre_key_id()?;
-        // Ok(PreKeyId{ value: self.state.pre_key_id()})
         match key {
             Some(key) => Ok(Some(PreKeyId { value: key })),
             None => Ok(None),
@@ -365,6 +357,23 @@ impl PreKeyBundle {
 
         Ok(dict.into())
     }
+
+    // TODO: add str / repr
+    // fn __str__(&self) -> PyResult<String> {
+    //     Ok(String::from(format!(
+    //         "{}",
+    //         self.value        
+    //     )))
+    // }
+
+    // fn __repr__(&self) -> PyResult<String> {
+    //     let memory_address = std::ptr::addr_of!(self) as usize;
+    //     Ok(String::from(format!(
+    //         "PreKeyBundle({}) at 0x{:x}",
+    //         self.value,
+    //         memory_address
+    //     )))
+    // }
 }
 
 impl Serialize for PreKeyBundle {
@@ -407,7 +416,6 @@ impl Serialize for PreKeyBundle {
         _ = state.serialize_field("device_id", &device_id);
         _ = state.serialize_field("pre_key_id", &pk_id);
         _ = state.serialize_field("pre_key_public", &pk);
-        // state.serialize_field(key, value)
         state.end()
     }
 }
@@ -462,6 +470,23 @@ impl PreKeyRecord {
         let result = self.state.serialize()?;
         Ok(PyBytes::new(py, &result).into())
     }
+
+    // TODO: handle str/repr
+    // fn __str__(&self) -> PyResult<String> {
+    //     Ok(String::from(format!(
+    //         "{}",
+    //         self.value        
+    //     )))
+    // }
+
+    // fn __repr__(&self) -> PyResult<String> {
+    //     let memory_address = std::ptr::addr_of!(self) as usize;
+    //     Ok(String::from(format!(
+    //         "PreKeyRecord({}) at 0x{:x}",
+    //         self.value,
+    //         memory_address
+    //     )))
+    // }
 }
 
 /// Helper function for generating N prekeys.

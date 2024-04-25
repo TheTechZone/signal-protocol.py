@@ -47,6 +47,22 @@ impl DeviceId {
     pub fn get_id(&self) -> u32 {
         u32::from(self.value)
     }
+
+    fn __str__(&self) -> PyResult<String> {
+        Ok(String::from(format!(
+            "{}",
+            self.value        
+        )))
+    }
+
+    fn __repr__(&self) -> PyResult<String> {
+        let memory_address = std::ptr::addr_of!(self) as usize;
+        Ok(String::from(format!(
+            "DeviceId({}) at 0x{:x}",
+            self.value,
+            memory_address
+        )))
+    }
 }
 
 #[pyclass]

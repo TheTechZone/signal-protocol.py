@@ -35,6 +35,22 @@ impl KeyType {
             libsignal_protocol::kem::KeyType::Kyber1024 => 0,
         }
     }
+    
+    fn __str__(&self) -> PyResult<String> {
+        Ok(String::from(format!(
+            "{}",
+            self.key_type        
+        )))
+    }
+
+    fn __repr__(&self) -> PyResult<String> {
+        let memory_address = std::ptr::addr_of!(self) as usize;
+        Ok(String::from(format!(
+            "KeyType({}) at 0x{:x}",
+            self.key_type,
+            memory_address
+        )))
+    }
 }
 
 #[pyclass]
