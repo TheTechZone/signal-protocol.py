@@ -1,12 +1,12 @@
 use base64::Engine;
 use libsignal_protocol::GenericSignedPreKey;
 use pyo3::prelude::*;
+use pyo3::types::IntoPyDict;
 use pyo3::types::PyBytes;
+use pyo3::types::PyDict;
 use pyo3::wrap_pyfunction;
 use serde::ser::SerializeStruct;
 use serde::Serialize;
-use pyo3::types::IntoPyDict;
-use pyo3::types::PyDict;
 
 use crate::address::DeviceId;
 use crate::curve::{KeyPair, PrivateKey, PublicKey};
@@ -43,18 +43,14 @@ impl SignedPreKeyId {
     }
 
     fn __str__(&self) -> PyResult<String> {
-        Ok(String::from(format!(
-            "{}",
-            self.value        
-        )))
+        Ok(String::from(format!("{}", self.value)))
     }
 
     fn __repr__(&self) -> PyResult<String> {
         let memory_address = std::ptr::addr_of!(self) as usize;
         Ok(String::from(format!(
             "SignedPreKeyId({}) at 0x{:x}",
-            self.value,
-            memory_address
+            self.value, memory_address
         )))
     }
 }
@@ -102,18 +98,14 @@ impl PreKeyId {
     }
 
     fn __str__(&self) -> PyResult<String> {
-        Ok(String::from(format!(
-            "{}",
-            self.value        
-        )))
+        Ok(String::from(format!("{}", self.value)))
     }
 
     fn __repr__(&self) -> PyResult<String> {
         let memory_address = std::ptr::addr_of!(self) as usize;
         Ok(String::from(format!(
             "PreKeyId({}) at 0x{:x}",
-            self.value,
-            memory_address
+            self.value, memory_address
         )))
     }
 }
@@ -138,18 +130,14 @@ impl KyberPreKeyId {
     }
 
     fn __str__(&self) -> PyResult<String> {
-        Ok(String::from(format!(
-            "{}",
-            self.value        
-        )))
+        Ok(String::from(format!("{}", self.value)))
     }
 
     fn __repr__(&self) -> PyResult<String> {
         let memory_address = std::ptr::addr_of!(self) as usize;
         Ok(String::from(format!(
             "KyberPreKeyId({}) at 0x{:x}",
-            self.value,
-            memory_address
+            self.value, memory_address
         )))
     }
 }
@@ -311,7 +299,7 @@ impl PreKeyBundle {
             ),
         }
     }
-    
+
     // fn to_json(&self) -> PyResult<String> {
     //     match serde_json::to_string(&self) {
     //         Err(err) => Err(SignalProtocolError::err_from_str(err.to_string())),
@@ -323,15 +311,13 @@ impl PreKeyBundle {
         let dict = self.to_dict(py)?;
         let json_module = py.import("json")?;
         let json_str = json_module.call_method1("dumps", (dict,))?.extract()?;
-    
+
         Ok(json_str)
     }
 
     fn to_dict(&self, py: Python) -> PyResult<PyObject> {
-        let dict: &PyDict = [
-            ("registration_id", 0),
-        ].into_py_dict(py);
-        
+        let dict: &PyDict = [("registration_id", 0)].into_py_dict(py);
+
         // Helper function to set an item in the dictionary if the result is Ok and Some
         fn set_if_ok<T, F>(dict: &pyo3::types::PyDict, key: &str, result: Result<Option<T>>, f: F)
         where
@@ -343,17 +329,71 @@ impl PreKeyBundle {
         }
 
         // Use the helper function to set items in the dictionary
-        set_if_ok(&dict, "registration_id", self.registration_id().map(Some), |id| id.to_object(py));
-        set_if_ok(&dict, "device_id", self.device_id().map(Some), |id: &DeviceId| id.get_id().to_object(py));
-        set_if_ok(&dict, "pre_key_id", self.pre_key_id(), |key| key.get_id().to_object(py));
-        set_if_ok(&dict, "pre_key_public", self.pre_key_public(), |key| key.to_base64().unwrap().to_object(py));
-        set_if_ok(&dict, "signed_pre_key_id", self.signed_pre_key_id().map(Some), |val| val.get_id().to_object(py));
-        set_if_ok(&dict, "signed_pre_key_public", self.signed_pre_key_public().map(Some), |val| val.to_base64().unwrap().to_object(py));
-        set_if_ok(&dict, "signed_pre_key_sign", self.signed_pre_key_signature(py).map(Some), |_| base64::engine::general_purpose::STANDARD.encode(self.state.signed_pre_key_signature().unwrap()).to_object(py));
-        set_if_ok(&dict, "identity_key_public", self.identity_key().map(Some), |val| val.to_base64().unwrap().to_object(py));
-        set_if_ok(&dict, "kyber_pre_key_id", self.kyber_pre_key_id(), |id| id.get_id().to_object(py));
-        set_if_ok(&dict, "kyber_pre_key_sign", self.kyber_pre_key_signature(), |sign| base64::engine::general_purpose::STANDARD.encode(sign).to_object(py));
-        set_if_ok(&dict, "kyber_pre_key_public", self.kyber_pre_key_public(), |key| key.to_base64().unwrap().to_object(py));
+        set_if_ok(
+            &dict,
+            "registration_id",
+            self.registration_id().map(Some),
+            |id| id.to_object(py),
+        );
+        set_if_ok(
+            &dict,
+            "device_id",
+            self.device_id().map(Some),
+            |id: &DeviceId| id.get_id().to_object(py),
+        );
+        set_if_ok(&dict, "pre_key_id", self.pre_key_id(), |key| {
+            key.get_id().to_object(py)
+        });
+        set_if_ok(&dict, "pre_key_public", self.pre_key_public(), |key| {
+            key.to_base64().unwrap().to_object(py)
+        });
+        set_if_ok(
+            &dict,
+            "signed_pre_key_id",
+            self.signed_pre_key_id().map(Some),
+            |val| val.get_id().to_object(py),
+        );
+        set_if_ok(
+            &dict,
+            "signed_pre_key_public",
+            self.signed_pre_key_public().map(Some),
+            |val| val.to_base64().unwrap().to_object(py),
+        );
+        set_if_ok(
+            &dict,
+            "signed_pre_key_sign",
+            self.signed_pre_key_signature(py).map(Some),
+            |_| {
+                base64::engine::general_purpose::STANDARD
+                    .encode(self.state.signed_pre_key_signature().unwrap())
+                    .to_object(py)
+            },
+        );
+        set_if_ok(
+            &dict,
+            "identity_key_public",
+            self.identity_key().map(Some),
+            |val| val.to_base64().unwrap().to_object(py),
+        );
+        set_if_ok(&dict, "kyber_pre_key_id", self.kyber_pre_key_id(), |id| {
+            id.get_id().to_object(py)
+        });
+        set_if_ok(
+            &dict,
+            "kyber_pre_key_sign",
+            self.kyber_pre_key_signature(),
+            |sign| {
+                base64::engine::general_purpose::STANDARD
+                    .encode(sign)
+                    .to_object(py)
+            },
+        );
+        set_if_ok(
+            &dict,
+            "kyber_pre_key_public",
+            self.kyber_pre_key_public(),
+            |key| key.to_base64().unwrap().to_object(py),
+        );
 
         Ok(dict.into())
     }
@@ -362,7 +402,7 @@ impl PreKeyBundle {
     // fn __str__(&self) -> PyResult<String> {
     //     Ok(String::from(format!(
     //         "{}",
-    //         self.value        
+    //         self.value
     //     )))
     // }
 
@@ -385,29 +425,17 @@ impl Serialize for PreKeyBundle {
 
         let rid = match self.registration_id() {
             Ok(val) => val,
-            Err(err) => {
-                return Err(serde::ser::Error::custom(
-                    err.to_string(),
-                ))
-            }
+            Err(err) => return Err(serde::ser::Error::custom(err.to_string())),
         };
 
         let pk_id = match self.pre_key_id() {
             Ok(val) => val.unwrap(),
-            Err(err) => {
-                return Err(serde::ser::Error::custom(
-                    err.to_string(),
-                ))
-            }
+            Err(err) => return Err(serde::ser::Error::custom(err.to_string())),
         };
 
         let pk = match self.pre_key_public() {
             Ok(val) => val.unwrap(),
-            Err(err) => {
-                return Err(serde::ser::Error::custom(
-                    err.to_string(),
-                ))
-            }
+            Err(err) => return Err(serde::ser::Error::custom(err.to_string())),
         };
 
         let device_id = self.device_id().unwrap_or(DeviceId::from(0));
@@ -475,7 +503,7 @@ impl PreKeyRecord {
     // fn __str__(&self) -> PyResult<String> {
     //     Ok(String::from(format!(
     //         "{}",
-    //         self.value        
+    //         self.value
     //     )))
     // }
 
