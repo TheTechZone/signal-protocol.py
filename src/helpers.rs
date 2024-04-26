@@ -48,6 +48,12 @@ impl UploadKeyType {
     }
 }
 
+fn merge_dicts(py: Python, dict1: &PyDict, dict2: &PyDict) -> PyResult<()> {
+    for (key, value) in dict2.iter() {
+        dict1.set_item(key, value)?;
+    }
+    Ok(())
+}
 
 #[pyfunction]
 pub fn create_registration_keys(py: Python, key_kind: &str, ik: identity_key::IdentityKeyPair, spk_data: Option<SignedPreKeyRecord>) -> PyResult<PyObject> {
@@ -56,7 +62,8 @@ pub fn create_registration_keys(py: Python, key_kind: &str, ik: identity_key::Id
         _ => return Err(SignalProtocolError::err_from_str("invalid keyType - only aci and pni are supported".to_string())),
     };
     let dict = PyDict::new(py);
-    let id_b64 = match ik.public_key() {
+
+    _ = match ik.public_key() {
         Ok(res) => match res.to_base64() {
             Ok(encoded) => dict.set_item("identity_key", encoded),
             Err(err) => return Err(SignalProtocolError::err_from_str(err.to_string()))
@@ -82,7 +89,7 @@ pub fn create_registration_keys(py: Python, key_kind: &str, ik: identity_key::Id
             new_spk
         }
     };
-    dict.set_item(format!("{}SignedPreKey", key_kind), UploadKeyType::from(spk).to_py_dict(py)?);
+    _ = dict.set_item(format!("{}SignedPreKey", key_kind), UploadKeyType::from(spk).to_py_dict(py)?);
 
     let random_number: u32 = rand::thread_rng().gen_range(100..10000);
     let id = KyberPreKeyId::new(random_number);
@@ -90,12 +97,24 @@ pub fn create_registration_keys(py: Python, key_kind: &str, ik: identity_key::Id
     // TODO: pq must also be outputted
     let pq = KyberPreKeyRecord::generate(key_type, id, ik.private_key()?)?;
 
-    dict.set_item(format!("{}PqLastResortPreKey", key_kind), UploadKeyType::from(pq).to_py_dict(py)?);
+    _ = dict.set_item(format!("{}PqLastResortPreKey", key_kind), UploadKeyType::from(pq).to_py_dict(py)?);
     
     Ok(dict.into())
 }
 
+#[pyfunction]
+fn create_registration(py: Python, ik: identity_key::IdentityKeyPair, aci_spk: Option<SignedPreKeyRecord>, pni_spk:Option<SignedPreKeyRecord>) -> PyResult<PyObject> {
+    let aci_keys = create_registration_keys(py, "aci", ik, aci_spk)?;
+    let pni_keys = create_registration_keys(py, "pni", ik, pni_spk)?;
+
+    let aci_dict = aci_keys.downcast::<PyDict>(py)?;
+    let pni_dict = pni_keys.downcast::<PyDict>(py)?;
+    _ = merge_dicts(py, aci_dict, pni_dict);
+    Ok(aci_keys.into())
+} 
+
 pub fn init_submodule(module: &PyModule) -> PyResult<()> {
     module.add_wrapped(wrap_pyfunction!(create_registration_keys))?;
+    module.add_wrapped(wrap_pyfunction!(create_registration))?;
     Ok(())
 }
