@@ -572,7 +572,11 @@ pub fn generate_n_prekeys(n: u16, id: PreKeyId) -> Vec<PreKeyRecord> {
 // }
 
 #[pyfunction]
-pub fn generate_n_signed_kyberkeys(n: u16, id: KyberPreKeyId, signing_key: PrivateKey) -> Vec<KyberPreKeyRecord> {
+pub fn generate_n_signed_kyberkeys(
+    n: u16,
+    id: KyberPreKeyId,
+    signing_key: PrivateKey,
+) -> Vec<KyberPreKeyRecord> {
     let mut keyvec: Vec<KyberPreKeyRecord> = Vec::new();
     let mut i: u32 = u32::from(id);
     for _n in 0..n {
@@ -754,7 +758,7 @@ pub struct KyberPreKeyRecord {
 
 #[pymethods]
 impl KyberPreKeyRecord {
-    /// TODO: implement KyberPreKeyRecord 
+    /// TODO: implement KyberPreKeyRecord
     /// TODO: add missing features
     #[staticmethod]
     pub fn generate(
