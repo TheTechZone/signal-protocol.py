@@ -1,12 +1,12 @@
 use base64::Engine;
-use libsignal_protocol::GenericSignedPreKey;
+use libsignal_protocol::{kem, GenericSignedPreKey};
 use pyo3::prelude::*;
 use pyo3::types::PyDict;
 use rand::Rng;
 use rand::rngs::OsRng;
-use std::time::{SystemTime, UNIX_EPOCH};
+use std::{num, time::{SystemTime, UNIX_EPOCH}};
 
-use crate::{kem::KeyType, curve::KeyPair, error::SignalProtocolError, identity_key, state::{KyberPreKeyId, KyberPreKeyRecord, SignedPreKeyId, SignedPreKeyRecord}};
+use crate::{curve::KeyPair, error::SignalProtocolError, identity_key, kem::{KeyPair as KemKeyPair, KeyType}, state::{generate_n_prekeys, generate_n_signed_kyberkeys, KyberPreKeyId, KyberPreKeyRecord, PreKeyId, PreKeyRecord, SignedPreKeyId, SignedPreKeyRecord}};
 
 use std::convert;
 
@@ -14,6 +14,16 @@ struct UploadKeyType {
     key_id: u32,
     public_key: Vec<u8>,
     signature: Option<Vec<u8>>
+}
+
+impl convert::From<PreKeyRecord> for UploadKeyType {
+    fn from(value: PreKeyRecord) -> Self {
+        UploadKeyType {
+            key_id: u32::from(value.state.id().unwrap()),
+            public_key: value.state.public_key().unwrap().serialize().to_vec(),
+            signature: None,
+        }
+    }
 }
 
 impl convert::From<SignedPreKeyRecord> for UploadKeyType {
@@ -38,7 +48,7 @@ impl convert::From<KyberPreKeyRecord> for UploadKeyType {
 
 impl UploadKeyType {
     fn to_py_dict(&self, py: Python) -> PyResult<Py<PyDict>> {
-        let dict = PyDict::new(py);
+        let dict: &PyDict = PyDict::new(py);
         dict.set_item("keyId", self.key_id)?;
         dict.set_item("publicKey", base64::engine::general_purpose::STANDARD.encode(&self.public_key))?.to_object(py);
         if let Some(signature) = &self.signature {
@@ -103,7 +113,7 @@ pub fn create_registration_keys(py: Python, key_kind: &str, ik: identity_key::Id
 }
 
 #[pyfunction]
-fn create_registration(py: Python, ik: identity_key::IdentityKeyPair, aci_spk: Option<SignedPreKeyRecord>, pni_spk:Option<SignedPreKeyRecord>) -> PyResult<PyObject> {
+pub fn create_registration(py: Python, ik: identity_key::IdentityKeyPair, aci_spk: Option<SignedPreKeyRecord>, pni_spk:Option<SignedPreKeyRecord>) -> PyResult<PyObject> {
     let aci_keys = create_registration_keys(py, "aci", ik, aci_spk)?;
     let pni_keys = create_registration_keys(py, "pni", ik, pni_spk)?;
 
@@ -113,8 +123,44 @@ fn create_registration(py: Python, ik: identity_key::IdentityKeyPair, aci_spk: O
     Ok(aci_keys.into())
 } 
 
+#[pyfunction]
+pub fn create_keys_data(py: Python, num_keys: u16, ik: identity_key::IdentityKeyPair, spk: Option<KeyPair>, last_resort_pqk: Option<KemKeyPair>) -> PyResult<PyObject> {
+    let dict = PyDict::new(py);
+    match spk {
+        Some(key) => {
+            let _ = dict.set_item("pqLastResortPreKey", key.public_key()?.to_base64()?);
+        },
+        None => { let _ = dict.set_item("signedPreKey", py.None()); }
+    }
+    match last_resort_pqk {
+        Some(key) => {
+            let _ = dict.set_item("pqLastResortPreKey", key.get_public().to_base64()?);
+        },
+        None =>  { let _ = dict.set_item("pqLastResortPreKey", py.None()); }
+    }
+
+    let pre_keys = generate_n_prekeys(num_keys, PreKeyId::from(0));
+    let kyber_keys = generate_n_signed_kyberkeys(num_keys, KyberPreKeyId::from(0), ik.private_key()?);
+
+
+    let mut prekey_vec:  Vec<Py<PyDict>> = Vec::new();
+    let mut kyberkey_vec:  Vec<Py<PyDict>> = Vec::new();
+    for k in pre_keys {
+        prekey_vec.push(UploadKeyType::from(k).to_py_dict(py).unwrap())
+    }
+    for k in kyber_keys {
+        kyberkey_vec.push(UploadKeyType::from(k).to_py_dict(py).unwrap())
+    }
+
+    dict.set_item("preKeys", prekey_vec);
+    dict.set_item("pqPreKeys", kyberkey_vec);
+
+    Ok(dict.into())
+}
+
 pub fn init_submodule(module: &PyModule) -> PyResult<()> {
     module.add_wrapped(wrap_pyfunction!(create_registration_keys))?;
     module.add_wrapped(wrap_pyfunction!(create_registration))?;
+    module.add_wrapped(wrap_pyfunction!(create_keys_data))?;
     Ok(())
 }

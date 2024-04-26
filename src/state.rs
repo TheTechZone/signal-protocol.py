@@ -116,6 +116,20 @@ pub struct KyberPreKeyId {
     pub value: libsignal_protocol::KyberPreKeyId,
 }
 
+impl convert::From<KyberPreKeyId> for u32 {
+    fn from(value: KyberPreKeyId) -> Self {
+        u32::from(value.value)
+    }
+}
+
+impl convert::From<u32> for KyberPreKeyId {
+    fn from(value: u32) -> Self {
+        KyberPreKeyId {
+            value: libsignal_protocol::KyberPreKeyId::from(value),
+        }
+    }
+}
+
 #[pymethods]
 impl KyberPreKeyId {
     #[new]
@@ -543,6 +557,35 @@ pub fn generate_n_prekeys(n: u16, id: PreKeyId) -> Vec<PreKeyRecord> {
     keyvec
 }
 
+// #[pyfunction]
+// pub fn generate_n_kyberkeys(n: u16, id: KyberPreKeyId) -> Vec<KyberPreKeyRecord> {
+//     let mut keyvec: Vec<KyberPreKeyRecord> = Vec::new();
+//     let mut i: u32 = u32::from(id);
+//     for _n in 0..n {
+//         let key_type = kem::KeyType::new(0).unwrap();
+//         let keypair = kem::KeyPair::generate(key_type);
+//         keyvec.push(prekey);
+//         i += 1;
+//     }
+
+//     keyvec
+// }
+
+#[pyfunction]
+pub fn generate_n_signed_kyberkeys(n: u16, id: KyberPreKeyId, signing_key: PrivateKey) -> Vec<KyberPreKeyRecord> {
+    let mut keyvec: Vec<KyberPreKeyRecord> = Vec::new();
+    let mut i: u32 = u32::from(id);
+    for _n in 0..n {
+        let key_type = kem::KeyType::new(0);
+        let id = KyberPreKeyId::from(i);
+        let prekey = KyberPreKeyRecord::generate(key_type.unwrap(), id, signing_key).unwrap();
+        keyvec.push(prekey);
+        i += 1;
+    }
+
+    keyvec
+}
+
 #[pyclass]
 #[derive(Debug, Clone)]
 pub struct SignedPreKeyRecord {
@@ -773,6 +816,9 @@ pub fn init_submodule(module: &PyModule) -> PyResult<()> {
     module.add_class::<PreKeysUsed>()?;
     module
         .add_function(wrap_pyfunction!(generate_n_prekeys, module)?)
+        .unwrap();
+    module
+        .add_function(wrap_pyfunction!(generate_n_signed_kyberkeys, module)?)
         .unwrap();
     Ok(())
 }
