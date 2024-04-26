@@ -58,10 +58,15 @@ test = signed_pre_key_id
 # setattr(state.PreKeyBundle, 'to_json', to_json)
 
 from signal_protocol import helpers
+
 print("example registration_data")
 
-registration_data = helpers.create_registration(alice_identity_key_pair)
+# normally you'd provide diffrent keys for aci and pni but this is just dummy
+registration_data, reg_secrets = helpers.create_registration(
+    alice_identity_key_pair, alice_identity_key_pair
+)
 print(registration_data)
+print(reg_secrets)
 
 print("\n\nEXAMPLE key")
 data, secrets = helpers.create_keys_data(1, alice_identity_key_pair)

@@ -89,7 +89,8 @@ pub fn create_registration_keys(
     key_kind: &str,
     ik: identity_key::IdentityKeyPair,
     spk_data: Option<SignedPreKeyRecord>,
-) -> PyResult<PyObject> {
+    pq_data: Option<KyberPreKeyRecord>,
+) -> PyResult<(PyObject, PyObject)> {
     match key_kind {
         "aci" | "pni" => {}
         _ => {
@@ -98,7 +99,9 @@ pub fn create_registration_keys(
             ))
         }
     };
+
     let dict = PyDict::new(py);
+    let secrets = PyDict::new(py);
 
     _ = match ik.public_key() {
         Ok(res) => match res.to_base64() {
@@ -128,27 +131,45 @@ pub fn create_registration_keys(
                 .calculate_signature(&keypair.key.public_key.serialize(), &mut csprng);
             let new_spk = SignedPreKeyRecord::new(id, ts, &keypair, &sig.unwrap());
             // keep track of the private key
+
+            _ = secrets.set_item(
+                format!("{}SignedPreKeySecret", key_kind),
+                base64::engine::general_purpose::STANDARD
+                    .encode(new_spk.state.private_key().unwrap().serialize()),
+            );
             // TODO: also must be outputted
             new_spk
         }
     };
+
     _ = dict.set_item(
         format!("{}SignedPreKey", key_kind),
         UploadKeyType::from(spk).to_py_dict(py)?,
     );
 
-    let random_number: u32 = rand::thread_rng().gen_range(100..10000);
-    let id = KyberPreKeyId::new(random_number);
-    let key_type = KeyType::new(0)?;
-    // TODO: pq must also be outputted
-    let pq = KyberPreKeyRecord::generate(key_type, id, ik.private_key()?)?;
+    let pq = match pq_data {
+        Some(pq) => pq,
+        None => {
+            let random_number: u32 = rand::thread_rng().gen_range(100..10000);
+            let id = KyberPreKeyId::new(random_number);
+            let key_type = KeyType::new(0)?;
+            // TODO: pq must also be outputted
+            let pq = KyberPreKeyRecord::generate(key_type, id, ik.private_key()?)?;
+            _ = secrets.set_item(
+                format!("{}PqLastResortSecret", key_kind),
+                base64::engine::general_purpose::STANDARD
+                    .encode(pq.state.secret_key().unwrap().serialize()),
+            );
+            pq
+        }
+    };
 
     _ = dict.set_item(
         format!("{}PqLastResortPreKey", key_kind),
-        UploadKeyType::from(pq).to_py_dict(py)?,
+        UploadKeyType::from(pq.clone()).to_py_dict(py)?,
     );
 
-    Ok(dict.into())
+    Ok((dict.into(), secrets.into()))
 }
 
 #[pyfunction]
@@ -158,14 +179,21 @@ pub fn create_registration(
     pni_ik: identity_key::IdentityKeyPair,
     aci_spk: Option<SignedPreKeyRecord>,
     pni_spk: Option<SignedPreKeyRecord>,
-) -> PyResult<PyObject> {
-    let aci_keys = create_registration_keys(py, "aci", aci_ik, aci_spk)?;
-    let pni_keys = create_registration_keys(py, "pni", pni_ik, pni_spk)?;
+    aci_kyber: Option<KyberPreKeyRecord>,
+    pni_kyber: Option<KyberPreKeyRecord>,
+) -> PyResult<(PyObject, PyObject)> {
+    let (aci_keys, aci_secrets) = create_registration_keys(py, "aci", aci_ik, aci_spk, aci_kyber)?;
+    let (pni_keys, pni_secrets) = create_registration_keys(py, "pni", pni_ik, pni_spk, pni_kyber)?;
 
     let aci_dict = aci_keys.downcast::<PyDict>(py)?;
     let pni_dict = pni_keys.downcast::<PyDict>(py)?;
+
+    let aci_sdict = aci_secrets.downcast::<PyDict>(py)?;
+    let pni_sdict = pni_secrets.downcast::<PyDict>(py)?;
+
     _ = merge_dicts(py, aci_dict, pni_dict);
-    Ok(aci_keys.into())
+    _ = merge_dicts(py, aci_sdict, pni_sdict);
+    Ok((aci_keys.into(), aci_sdict.into()))
 }
 
 #[pyfunction]
