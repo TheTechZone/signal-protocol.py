@@ -1,7 +1,7 @@
 use base64::Engine;
 use libsignal_protocol::GenericSignedPreKey;
 use pyo3::prelude::*;
-use pyo3::types::IntoPyDict;
+// use pyo3::types::IntoPyDict;
 use pyo3::types::PyBytes;
 use pyo3::types::PyDict;
 use pyo3::wrap_pyfunction;
@@ -32,7 +32,7 @@ impl convert::From<SignedPreKeyId> for u32 {
 #[pymethods]
 impl SignedPreKeyId {
     #[new]
-    fn new(id: u32) -> SignedPreKeyId {
+    pub fn new(id: u32) -> SignedPreKeyId {
         SignedPreKeyId {
             value: libsignal_protocol::SignedPreKeyId::from(id),
         }
@@ -119,7 +119,7 @@ pub struct KyberPreKeyId {
 #[pymethods]
 impl KyberPreKeyId {
     #[new]
-    fn new(id: u32) -> KyberPreKeyId {
+    pub fn new(id: u32) -> KyberPreKeyId {
         KyberPreKeyId {
             value: libsignal_protocol::KyberPreKeyId::from(id),
         }
@@ -141,6 +141,7 @@ impl KyberPreKeyId {
         )))
     }
 }
+
 #[pyclass]
 #[derive(Clone, Debug)]
 pub struct PreKeysUsed {
@@ -316,8 +317,8 @@ impl PreKeyBundle {
     }
 
     fn to_dict(&self, py: Python) -> PyResult<PyObject> {
-        let dict: &PyDict = [("registration_id", 0)].into_py_dict(py);
-
+        // let dict: &PyDict = [("registration_id", 0)].into_py_dict(py);
+        let dict = PyDict::new(py);
         // Helper function to set an item in the dictionary if the result is Ok and Some
         fn set_if_ok<T, F>(dict: &pyo3::types::PyDict, key: &str, result: Result<Option<T>>, f: F)
         where
@@ -551,7 +552,7 @@ pub struct SignedPreKeyRecord {
 #[pymethods]
 impl SignedPreKeyRecord {
     #[new]
-    fn new(id: SignedPreKeyId, timestamp: u64, keypair: &KeyPair, signature: &[u8]) -> Self {
+    pub fn new(id: SignedPreKeyId, timestamp: u64, keypair: &KeyPair, signature: &[u8]) -> Self {
         let key = libsignal_protocol::KeyPair::new(keypair.key.public_key, keypair.key.private_key);
         SignedPreKeyRecord {
             state: libsignal_protocol::SignedPreKeyRecord::new(
@@ -568,17 +569,17 @@ impl SignedPreKeyRecord {
         }
     }
 
-    fn id(&self) -> Result<SignedPreKeyId> {
+    pub fn id(&self) -> Result<SignedPreKeyId> {
         Ok(SignedPreKeyId {
             value: (self.state.id()?),
         })
     }
 
-    fn timestamp(&self) -> Result<u64> {
+    pub fn timestamp(&self) -> Result<u64> {
         Ok(self.state.timestamp()?)
     }
 
-    fn signature(&self, py: Python) -> Result<PyObject> {
+    pub fn signature(&self, py: Python) -> Result<PyObject> {
         let sig = self.state.signature()?;
         Ok(PyBytes::new(py, &sig).into())
     }
@@ -589,7 +590,7 @@ impl SignedPreKeyRecord {
         })
     }
 
-    fn public_key(&self) -> Result<PublicKey> {
+    pub fn public_key(&self) -> Result<PublicKey> {
         Ok(PublicKey {
             key: self.state.public_key()?,
         })
@@ -710,7 +711,8 @@ pub struct KyberPreKeyRecord {
 
 #[pymethods]
 impl KyberPreKeyRecord {
-    /// TODO: implement KyberPreKeyRecord
+    /// TODO: implement KyberPreKeyRecord 
+    /// TODO: add missing features
     #[staticmethod]
     pub fn generate(
         key_type: kem::KeyType,
