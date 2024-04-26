@@ -487,7 +487,7 @@ impl PreKeyRecord {
         }
     }
 
-    fn id(&self) -> Result<PreKeyId> {
+    pub fn id(&self) -> Result<PreKeyId> {
         Ok(PreKeyId {
             value: self.state.id()?,
         })
@@ -499,13 +499,13 @@ impl PreKeyRecord {
         })
     }
 
-    fn public_key(&self) -> Result<PublicKey> {
+    pub fn public_key(&self) -> Result<PublicKey> {
         Ok(PublicKey {
             key: self.state.public_key()?,
         })
     }
 
-    fn private_key(&self) -> Result<PrivateKey> {
+    pub fn private_key(&self) -> Result<PrivateKey> {
         Ok(PrivateKey::new(self.state.private_key()?))
     }
 

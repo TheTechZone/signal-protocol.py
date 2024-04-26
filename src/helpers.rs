@@ -4,6 +4,7 @@ use pyo3::prelude::*;
 use pyo3::types::PyDict;
 use rand::rngs::OsRng;
 use rand::Rng;
+use serde_json::value;
 use std::time::{SystemTime, UNIX_EPOCH};
 
 use crate::{
@@ -173,7 +174,7 @@ pub fn create_keys_data(
     ik: identity_key::IdentityKeyPair,
     spk: Option<KeyPair>,
     last_resort_pqk: Option<KemKeyPair>,
-) -> PyResult<PyObject> {
+) -> PyResult<(PyObject, PyObject)> {
     let dict = PyDict::new(py);
     match spk {
         Some(key) => {
@@ -185,10 +186,10 @@ pub fn create_keys_data(
     }
     match last_resort_pqk {
         Some(key) => {
-            let _ = dict.set_item("pqLastResortPreKey", key.get_public().to_base64()?);
+            _ = dict.set_item("pqLastResortPreKey", key.get_public().to_base64()?);
         }
         None => {
-            let _ = dict.set_item("pqLastResortPreKey", py.None());
+            _ = dict.set_item("pqLastResortPreKey", py.None());
         }
     }
 
@@ -196,20 +197,38 @@ pub fn create_keys_data(
     let kyber_keys =
         generate_n_signed_kyberkeys(num_keys, KyberPreKeyId::from(0), ik.private_key()?);
 
+    let secrets_dict = PyDict::new(py);
+    let secrets_prekeys  = PyDict::new(py);
+    let secrets_kyber = PyDict::new(py);
+
     let mut prekey_vec: Vec<Py<PyDict>> = Vec::new();
+
     let mut kyberkey_vec: Vec<Py<PyDict>> = Vec::new();
+
     for k in pre_keys {
-        prekey_vec.push(UploadKeyType::from(k).to_py_dict(py).unwrap())
+        prekey_vec.push(UploadKeyType::from(k.clone()).to_py_dict(py).unwrap());
+        
+        // TODO: a bit hacky
+        _ = secrets_prekeys.set_item(format!("{}", u32::from(k.id()?)), 
+            base64::engine::general_purpose::STANDARD.encode(k.state.private_key().unwrap().serialize()));
     }
     for k in kyber_keys {
-        kyberkey_vec.push(UploadKeyType::from(k).to_py_dict(py).unwrap())
+        kyberkey_vec.push(UploadKeyType::from(k.clone()).to_py_dict(py).unwrap());
+
+        // TODO: a bit hacky
+        _ = secrets_kyber.set_item(format!("{}", u32::from(k.state.id().unwrap())), 
+            base64::engine::general_purpose::STANDARD.encode(k.state.secret_key().unwrap().serialize()));
     }
 
-    dict.set_item("preKeys", prekey_vec);
-    dict.set_item("pqPreKeys", kyberkey_vec);
+    _ = dict.set_item("preKeys", prekey_vec);
+    _ = dict.set_item("pqPreKeys", kyberkey_vec);
 
-    Ok(dict.into())
+    _ = secrets_dict.set_item("preKeys", secrets_prekeys);
+    _ = secrets_dict.set_item("pqPreKeys", secrets_kyber);
+
+    Ok((dict.into(), secrets_dict.into()))
 }
+
 
 pub fn init_submodule(module: &PyModule) -> PyResult<()> {
     module.add_wrapped(wrap_pyfunction!(create_registration_keys))?;

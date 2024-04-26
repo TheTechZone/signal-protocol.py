@@ -56,3 +56,14 @@ test = signed_pre_key_id
 #     }
 
 # setattr(state.PreKeyBundle, 'to_json', to_json)
+
+from signal_protocol import helpers
+print("example registration_data")
+
+registration_data = helpers.create_registration(alice_identity_key_pair)
+print(registration_data)
+
+print("\n\nEXAMPLE key")
+data, secrets = helpers.create_keys_data(1, alice_identity_key_pair)
+print(data)
+print("\n\nSecrets are hidden ...")
