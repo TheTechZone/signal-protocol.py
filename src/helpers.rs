@@ -154,12 +154,13 @@ pub fn create_registration_keys(
 #[pyfunction]
 pub fn create_registration(
     py: Python,
-    ik: identity_key::IdentityKeyPair,
+    aci_ik: identity_key::IdentityKeyPair,
+    pni_ik: identity_key::IdentityKeyPair,
     aci_spk: Option<SignedPreKeyRecord>,
     pni_spk: Option<SignedPreKeyRecord>,
 ) -> PyResult<PyObject> {
-    let aci_keys = create_registration_keys(py, "aci", ik, aci_spk)?;
-    let pni_keys = create_registration_keys(py, "pni", ik, pni_spk)?;
+    let aci_keys = create_registration_keys(py, "aci", aci_ik, aci_spk)?;
+    let pni_keys = create_registration_keys(py, "pni", pni_ik, pni_spk)?;
 
     let aci_dict = aci_keys.downcast::<PyDict>(py)?;
     let pni_dict = pni_keys.downcast::<PyDict>(py)?;
@@ -198,7 +199,7 @@ pub fn create_keys_data(
         generate_n_signed_kyberkeys(num_keys, KyberPreKeyId::from(0), ik.private_key()?);
 
     let secrets_dict = PyDict::new(py);
-    let secrets_prekeys  = PyDict::new(py);
+    let secrets_prekeys = PyDict::new(py);
     let secrets_kyber = PyDict::new(py);
 
     let mut prekey_vec: Vec<Py<PyDict>> = Vec::new();
@@ -207,17 +208,23 @@ pub fn create_keys_data(
 
     for k in pre_keys {
         prekey_vec.push(UploadKeyType::from(k.clone()).to_py_dict(py).unwrap());
-        
+
         // TODO: a bit hacky
-        _ = secrets_prekeys.set_item(format!("{}", u32::from(k.id()?)), 
-            base64::engine::general_purpose::STANDARD.encode(k.state.private_key().unwrap().serialize()));
+        _ = secrets_prekeys.set_item(
+            format!("{}", u32::from(k.id()?)),
+            base64::engine::general_purpose::STANDARD
+                .encode(k.state.private_key().unwrap().serialize()),
+        );
     }
     for k in kyber_keys {
         kyberkey_vec.push(UploadKeyType::from(k.clone()).to_py_dict(py).unwrap());
 
         // TODO: a bit hacky
-        _ = secrets_kyber.set_item(format!("{}", u32::from(k.state.id().unwrap())), 
-            base64::engine::general_purpose::STANDARD.encode(k.state.secret_key().unwrap().serialize()));
+        _ = secrets_kyber.set_item(
+            format!("{}", u32::from(k.state.id().unwrap())),
+            base64::engine::general_purpose::STANDARD
+                .encode(k.state.secret_key().unwrap().serialize()),
+        );
     }
 
     _ = dict.set_item("preKeys", prekey_vec);
@@ -228,7 +235,6 @@ pub fn create_keys_data(
 
     Ok((dict.into(), secrets_dict.into()))
 }
-
 
 pub fn init_submodule(module: &PyModule) -> PyResult<()> {
     module.add_wrapped(wrap_pyfunction!(create_registration_keys))?;
