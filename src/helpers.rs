@@ -105,7 +105,7 @@ pub fn create_registration_keys(
 
     _ = match ik.public_key() {
         Ok(res) => match res.to_base64() {
-            Ok(encoded) => dict.set_item("identity_key", encoded),
+            Ok(encoded) => dict.set_item(format!("{}IdentityKey", key_kind), encoded),
             Err(err) => return Err(SignalProtocolError::err_from_str(err.to_string())),
         },
         Err(err) => return Err(SignalProtocolError::err_from_str(err.to_string())),
