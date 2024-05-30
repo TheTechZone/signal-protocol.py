@@ -3,11 +3,13 @@ use pyo3::types::PyBytes;
 
 use crate::error::{Result, SignalProtocolError};
 
+use base64::{engine::general_purpose, Engine as _};
+
 #[pyclass]
 #[derive(Debug, Copy, Clone)]
 pub struct KeyType {
     // Kyber768 and ML-KEM are still WIP
-    // todo: update this if they become stable
+    // TODO: update this if they become stable
     pub key_type: libsignal_protocol::kem::KeyType,
 }
 
@@ -32,6 +34,18 @@ impl KeyType {
         match &self.key_type {
             libsignal_protocol::kem::KeyType::Kyber1024 => 0,
         }
+    }
+
+    fn __str__(&self) -> PyResult<String> {
+        Ok(String::from(format!("{}", self.key_type)))
+    }
+
+    fn __repr__(&self) -> PyResult<String> {
+        let memory_address = std::ptr::addr_of!(self) as usize;
+        Ok(String::from(format!(
+            "KeyType({}) at 0x{:x}",
+            self.key_type, memory_address
+        )))
     }
 }
 
@@ -125,6 +139,10 @@ impl PublicKey {
         Ok(Self {
             key: libsignal_protocol::kem::PublicKey::deserialize(key)?,
         })
+    }
+
+    pub fn to_base64(&self) -> PyResult<String> {
+        Ok(general_purpose::STANDARD.encode(&self.key.serialize()))
     }
 
     fn __eq__(&self, other: &Self) -> bool {

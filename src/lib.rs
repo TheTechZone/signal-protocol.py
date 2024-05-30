@@ -1,10 +1,12 @@
 use pyo3::prelude::*;
 
 mod address;
+mod base_crypto;
 mod curve;
 mod error;
 mod fingerprint;
 mod group_cipher;
+mod helpers;
 mod identity_key;
 mod kem;
 mod protocol;
@@ -95,14 +97,25 @@ fn signal_protocol(py: Python, module: &PyModule) -> PyResult<()> {
     let uuid_submod = PyModule::new(py, "uuid")?;
     uuid::init_submodule(uuid_submod)?;
     module.add_submodule(uuid_submod)?;
+
+    let crypto_submod = PyModule::new(py, "crypto")?; // TODO: make expose this under a clearer name
+    base_crypto::init_submodule(crypto_submod)?;
+    module.add_submodule(crypto_submod)?;
+
+    let helpers_submod = PyModule::new(py, "helpers")?;
+    helpers::init_submodule(helpers_submod)?;
+    module.add_submodule(helpers_submod)?;
+
     // Workaround to enable imports from submodules. Upstream issue: pyo3 issue #759
     // https://github.com/PyO3/pyo3/issues/759#issuecomment-653964601
     let mods = [
         "address",
+        "crypto",
         "curve",
         "error",
         "fingerprint",
         "group_cipher",
+        "helpers",
         "identity_key",
         "kem",
         "protocol",

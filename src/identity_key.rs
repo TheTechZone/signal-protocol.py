@@ -5,6 +5,7 @@ use pyo3::exceptions;
 use pyo3::prelude::*;
 use pyo3::types::PyBytes;
 
+use base64::{engine::general_purpose, Engine as _};
 use rand::rngs::OsRng;
 
 use crate::curve::{PrivateKey, PublicKey};
@@ -34,6 +35,10 @@ impl IdentityKey {
 
     pub fn serialize(&self, py: Python) -> PyObject {
         PyBytes::new(py, &self.key.serialize()).into()
+    }
+
+    pub fn to_base64(&self) -> PyResult<String> {
+        Ok(general_purpose::STANDARD.encode(&self.key.serialize()))
     }
 
     fn __richcmp__(&self, other: IdentityKey, op: CompareOp) -> PyResult<bool> {

@@ -3,8 +3,9 @@ from .identity_key import IdentityKey
 from .state import PreKeyId, SignedPreKeyId
 from .uuid import UUID
 from typing import Optional, Self
+import collections.abc
 
-class CiphertextMessage:
+class CiphertextMessage(collections.abc.ByteString):
     """
     Represents a ciphertext message in the Signal Protocol.
     CiphertextMessage is a Rust enum in the upstream crate. Mapping of enums to Python enums
@@ -49,7 +50,7 @@ class PreKeySignalMessage:
     """
 
     def __new__(
-        self,
+        cls,
         message_version: int,
         registration_id: int,
         pre_key_id: Optional[PreKeyId],
@@ -224,6 +225,7 @@ class SenderKeyMessage:
     """
 
     def __new__(
+        cls,
         message_version: int,
         distribution_id: UUID,
         chain_id: int,

@@ -55,7 +55,7 @@ pub fn process_prekey_bundle(
     remote_address: ProtocolAddress,
     protocol_store: &mut InMemSignalProtocolStore,
     bundle: PreKeyBundle,
-    // now: SystemTime, // todo: should SystemTime be exposed?
+    // now: SystemTime, // TODO: should SystemTime be exposed?
 ) -> Result<()> {
     let mut csprng = OsRng;
     let now2 = std::time::SystemTime::now();

@@ -25,9 +25,9 @@ impl AliceSignalProtocolParameters {
         our_base_key_pair: KeyPair,
         their_identity_key: IdentityKey,
         their_signed_pre_key: PublicKey,
-        _their_one_time_pre_key: Option<PublicKey>, // todo: wth libsignal ignores this and kyber? :/
+        _their_one_time_pre_key: Option<PublicKey>, // TODO: wth libsignal ignores this and kyber? :/
         their_ratchet_key: PublicKey,
-        _their_kyber_pre_key: Option<crate::kem::PublicKey>, // todo: wth libsignal ignores this? :/
+        _their_kyber_pre_key: Option<crate::kem::PublicKey>, // TODO: wth libsignal ignores this? :/
     ) -> Self {
         let _upstream_their_one_time_pre_key = match _their_one_time_pre_key {
             None => None,

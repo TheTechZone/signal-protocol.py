@@ -15,7 +15,7 @@ pub fn message_encrypt(
     protocol_store: &mut InMemSignalProtocolStore,
     remote_address: &ProtocolAddress,
     msg: &[u8],
-    // now: SystemTime, // todo: should SystemTime be exposed?
+    // now: SystemTime, // TODO: should SystemTime be exposed?
 ) -> Result<CiphertextMessage> {
     let now2 = std::time::SystemTime::now();
 

@@ -5,9 +5,11 @@ use pyo3::types::PyBytes;
 use pyo3::wrap_pyfunction;
 
 use rand::rngs::OsRng;
+use serde::Serialize;
 
 use crate::error::Result;
 use crate::error::SignalProtocolError;
+use base64::{engine::general_purpose, Engine as _};
 
 #[pyfunction]
 pub fn generate_keypair(py: Python) -> PyResult<(PyObject, PyObject)> {
@@ -85,6 +87,16 @@ impl PublicKey {
     }
 }
 
+impl Serialize for PublicKey {
+    fn serialize<S>(&self, serializer: S) -> std::prelude::v1::Result<S::Ok, S::Error>
+    where
+        S: serde::Serializer,
+    {
+        let encoded_pk = base64::engine::general_purpose::STANDARD.encode(self.key.serialize());
+        serializer.serialize_str(&encoded_pk)
+    }
+}
+
 /// key_type is not implemented for PublicKey.
 #[pymethods]
 impl PublicKey {
@@ -97,6 +109,10 @@ impl PublicKey {
 
     pub fn serialize(&self, py: Python) -> PyObject {
         PyBytes::new(py, &self.key.serialize()).into()
+    }
+
+    pub fn to_base64(&self) -> PyResult<String> {
+        Ok(general_purpose::STANDARD.encode(&self.key.serialize()))
     }
 
     pub fn verify_signature(&self, message: &[u8], signature: &[u8]) -> Result<bool> {
@@ -113,10 +129,11 @@ impl PublicKey {
 
     #[staticmethod]
     pub fn from_public_key_bytes(bytes: &[u8]) -> Result<Self> {
-        let upstream = match libsignal_protocol::PublicKey::from_djb_public_key_bytes(bytes) {
-            Err(err) => return Err(SignalProtocolError::from(err)),
-            Ok(key) => key,
-        };
+        let upstream: libsignal_protocol::PublicKey =
+            match libsignal_protocol::PublicKey::from_djb_public_key_bytes(bytes) {
+                Err(err) => return Err(SignalProtocolError::from(err)),
+                Ok(key) => key,
+            };
         Ok(Self { key: upstream })
     }
 }

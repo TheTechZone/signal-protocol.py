@@ -42,59 +42,61 @@ def run_interaction(
     )
 
     for i in range(10):
-        alice_ptext = f"A->B message {i}"
+        alice_ptext = f"A->B message {i}".encode("utf8")
         alice_message = session_cipher.message_encrypt(
-            alice_store, bob_address, alice_ptext.encode("utf8")
+            alice_store, bob_address, alice_ptext
         )
         assert alice_message.message_type() == 2  # CiphertextMessageType::Whisper => 2
-        assert session_cipher.message_decrypt(
-            bob_store, alice_address, alice_message
-        ) == alice_ptext.encode("utf8")
+        assert (
+            session_cipher.message_decrypt(bob_store, alice_address, alice_message)
+            == alice_ptext
+        )
 
     for i in range(10):
-        bob_ptext = f"B->A message {i}"
+        bob_ptext = f"B->A message {i}".encode("utf8")
         bob_message = session_cipher.message_encrypt(
-            bob_store, alice_address, bob_ptext.encode("utf8")
+            bob_store, alice_address, bob_ptext
         )
         assert bob_message.message_type() == 2  # CiphertextMessageType::Whisper => 2
-        assert session_cipher.message_decrypt(
-            alice_store, bob_address, bob_message
-        ) == bob_ptext.encode("utf8")
+        assert (
+            session_cipher.message_decrypt(alice_store, bob_address, bob_message)
+            == bob_ptext
+        )
 
-    alice_ooo_messages = []
+    alice_ooo_messages: list[tuple[bytes, bytes]] = []
 
     for i in range(10):
-        alice_ptext = f"A->B OOO message {i}"
+        alice_ptext = f"A->B OOO message {i}".encode("utf8")
         alice_message = session_cipher.message_encrypt(
-            alice_store, bob_address, alice_ptext.encode("utf8")
+            alice_store, bob_address, alice_ptext
         )
         alice_ooo_messages.append((alice_ptext, alice_message))
 
     for i in range(10):
-        alice_ptext = f"A->B post-OOO message {i}"
+        alice_ptext = f"A->B post-OOO message {i}".encode("utf8")
         alice_message = session_cipher.message_encrypt(
-            alice_store, bob_address, alice_ptext.encode("utf8")
+            alice_store, bob_address, alice_ptext
         )
         assert alice_message.message_type() == 2  # CiphertextMessageType::Whisper => 2
-        assert session_cipher.message_decrypt(
-            bob_store, alice_address, alice_message
-        ) == alice_ptext.encode("utf8")
+        assert (
+            session_cipher.message_decrypt(bob_store, alice_address, alice_message)
+            == alice_ptext
+        )
 
     for i in range(10):
-        bob_ptext = f"B->A message post-OOO {i}"
+        bob_ptext = f"B->A message post-OOO {i}".encode("utf8")
         bob_message = session_cipher.message_encrypt(
-            bob_store, alice_address, bob_ptext.encode("utf8")
+            bob_store, alice_address, bob_ptext
         )
         assert bob_message.message_type() == 2  # CiphertextMessageType::Whisper => 2
-        assert session_cipher.message_decrypt(
-            alice_store, bob_address, bob_message
-        ) == bob_ptext.encode("utf8")
+        assert (
+            session_cipher.message_decrypt(alice_store, bob_address, bob_message)
+            == bob_ptext
+        )
 
     ## Now we check that messages can be decrypted when delivered out of order
     for ptext, ctext in alice_ooo_messages:
-        assert session_cipher.message_decrypt(
-            bob_store, alice_address, ctext
-        ) == ptext.encode("utf8")
+        assert session_cipher.message_decrypt(bob_store, alice_address, ctext) == ptext
 
 
 def initialize_sessions_v3():
@@ -129,7 +131,7 @@ def initialize_sessions_v3():
         bob_base_key,
         None,
         bob_ephemeral_key,
-        None,  # todo: kyber
+        None,  # TODO: kyber
         alice_identity.identity_key(),
         alice_base_key.public_key(),
         None,
