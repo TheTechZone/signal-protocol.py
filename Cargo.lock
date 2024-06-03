@@ -557,7 +557,7 @@ checksum = "97b3888a4aecf77e811145cadf6eef5901f4782c53886191b2f693f24761847c"
 [[package]]
 name = "libsignal-core"
 version = "0.1.0"
-source = "git+https://github.com/signalapp/libsignal?tag=v0.45.0#ada822434e578ffada0406b13d180b347d9b5cad"
+source = "git+https://github.com/signalapp/libsignal?tag=v0.49.0#347791c88cdfdb765534b5e2be149f588b75bf49"
 dependencies = [
  "num_enum",
  "uuid",
@@ -566,7 +566,7 @@ dependencies = [
 [[package]]
 name = "libsignal-protocol"
 version = "0.1.0"
-source = "git+https://github.com/signalapp/libsignal?tag=v0.45.0#ada822434e578ffada0406b13d180b347d9b5cad"
+source = "git+https://github.com/signalapp/libsignal?tag=v0.49.0#347791c88cdfdb765534b5e2be149f588b75bf49"
 dependencies = [
  "aes",
  "aes-gcm-siv",
@@ -590,8 +590,9 @@ dependencies = [
  "prost-build",
  "rand",
  "rayon",
+ "serde",
  "sha2",
- "signal-crypto 0.1.0 (git+https://github.com/signalapp/libsignal?tag=v0.45.0)",
+ "signal-crypto 0.1.0 (git+https://github.com/signalapp/libsignal?tag=v0.49.0)",
  "static_assertions",
  "subtle",
  "thiserror",
@@ -1147,7 +1148,7 @@ dependencies = [
 [[package]]
 name = "signal-crypto"
 version = "0.1.0"
-source = "git+https://github.com/signalapp/libsignal?tag=v0.45.0#ada822434e578ffada0406b13d180b347d9b5cad"
+source = "git+https://github.com/signalapp/libsignal?tag=v0.49.0#347791c88cdfdb765534b5e2be149f588b75bf49"
 dependencies = [
  "aes",
  "cbc",
