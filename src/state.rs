@@ -271,7 +271,10 @@ impl SignedPreKeyRecord {
         let key = libsignal_protocol::KeyPair::new(keypair.key.public_key, keypair.key.private_key);
         SignedPreKeyRecord {
             state: libsignal_protocol::SignedPreKeyRecord::new(
-                id.value, timestamp, &key, &signature,
+                id.value,
+                libsignal_protocol::Timestamp::from_epoch_millis(timestamp),
+                &key,
+                &signature,
             ),
         }
     }
@@ -291,7 +294,7 @@ impl SignedPreKeyRecord {
     }
 
     fn timestamp(&self) -> Result<u64> {
-        Ok(self.state.timestamp()?)
+        Ok(self.state.timestamp()?.epoch_millis())
     }
 
     fn signature(&self, py: Python) -> Result<PyObject> {
