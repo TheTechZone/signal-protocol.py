@@ -1,7 +1,9 @@
 class KeyPair:
     """Represents a pair of private and public keys."""
 
-    def __init__(self, public_key: PublicKey, private_key: PrivateKey) -> None: ...
+    def __init__(self, public_key: PublicKey, private_key: PrivateKey) -> None:
+        ...
+
     def generate(self):
         """Generates a new key pair."""
         ...

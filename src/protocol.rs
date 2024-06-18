@@ -47,7 +47,7 @@ pub struct KyberPayload {
     pub data: libsignal_protocol::KyberPayload,
 }
 
-// todo: handle impl
+// TODO: handle impl
 
 /// CiphertextMessageType::PreKey => 3
 #[pyclass(extends=CiphertextMessage)]
@@ -142,7 +142,7 @@ impl PreKeySignalMessage {
 
     pub fn pre_key_id(&self) -> Option<u32> {
         // self.data.pre_key_id()
-        // todo:: check this
+        // TODO:: check this
         let key_id = u32::from(PreKeyId {
             value: self.data.pre_key_id()?,
         });
@@ -372,7 +372,7 @@ impl SenderKeyMessage {
         self.data.chain_id()
     }
 
-    // todo: looks deprecated
+    // TODO: looks deprecated
     // pub fn key_id(&self) -> u32 {
     //     self.data.key_id()
     // }

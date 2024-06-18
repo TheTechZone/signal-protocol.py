@@ -3,8 +3,9 @@ from .identity_key import IdentityKey
 from .state import PreKeyId, SignedPreKeyId
 from .uuid import UUID
 from typing import Optional, Self
+import collections.abc
 
-class CiphertextMessage:
+class CiphertextMessage(collections.abc.ByteString):
     """
     Represents a ciphertext message in the Signal Protocol.
     CiphertextMessage is a Rust enum in the upstream crate. Mapping of enums to Python enums
@@ -34,12 +35,10 @@ class CiphertextMessage:
 
 class KemKeyPair:
     """Represents a KEM key pair in the Signal Protocol."""
-
     ...
 
 class KemSerializedCiphertext:
     """Represents a serialized KEM ciphertext in the Signal Protocol."""
-
     ...
 
 class PreKeySignalMessage:
@@ -48,17 +47,9 @@ class PreKeySignalMessage:
     CiphertextMessageType::PreKey => 3
     """
 
-    def __new__(
-        self,
-        message_version: int,
-        registration_id: int,
-        pre_key_id: Optional[PreKeyId],
-        signed_pre_key_id: SignedPreKeyId,
-        kyber_payload: KyberPayload,
-        base_key: PublicKey,
-        identity_key: IdentityKey,
-        message: SignalMessage,
-    ) -> tuple[PreKeySignalMessage, CiphertextMessage]: ...
+    def __new__(cls, message_version: int, registration_id: int, pre_key_id: Optional[PreKeyId], signed_pre_key_id: SignedPreKeyId, kyber_payload: KyberPayload, base_key: PublicKey, identity_key: IdentityKey, message: SignalMessage) -> tuple[PreKeySignalMessage, CiphertextMessage]:
+        ...
+
     @staticmethod
     def try_from(data: bytes) -> PreKeySignalMessage:
         """
@@ -150,15 +141,9 @@ class SenderKeyDistributionMessage:
     CiphertextMessageType::SenderKeyDistribution => 5
     """
 
-    def __init__(
-        self,
-        message_version: int,
-        distribution_id: UUID,
-        chain_id: int,
-        iteration: int,
-        chain_key_bytes: bytes,
-        signing_key: PublicKey,
-    ) -> None: ...
+    def __init__(self, message_version: int, distribution_id: UUID, chain_id: int, iteration: int, chain_key_bytes: bytes, signing_key: PublicKey) -> None:
+        ...
+
     @staticmethod
     def try_from(data: bytes) -> SenderKeyDistributionMessage:
         """
@@ -223,14 +208,9 @@ class SenderKeyMessage:
     CiphertextMessageType::SenderKey => 4
     """
 
-    def __new__(
-        message_version: int,
-        distribution_id: UUID,
-        chain_id: int,
-        iteration: int,
-        ciphertext: bytes,
-        signature_key: PrivateKey,
-    ) -> tuple[SenderKeyMessage, CiphertextMessage]: ...
+    def __new__(cls, message_version: int, distribution_id: UUID, chain_id: int, iteration: int, ciphertext: bytes, signature_key: PrivateKey) -> tuple[SenderKeyMessage, CiphertextMessage]:
+        ...
+
     @staticmethod
     def try_from(data: bytes) -> SenderKeyMessage:
         """
@@ -317,18 +297,12 @@ class SignalMessage:
     CiphertextMessageType::Whisper
     """
 
-    def __init__(
-        self,
-        messsage_version: int,
-        mac_key: bytes,
-        sender_ratchet_key: PublicKey,
-        counter: int,
-        previous_counter: int,
-        ciphertext: bytes,
-        sender_identity_key: IdentityKey,
-        receiver_identity_key: IdentityKey,
-    ) -> None: ...
-    def __new__(cls) -> tuple[Self, CiphertextMessage]: ...
+    def __init__(self, messsage_version: int, mac_key: bytes, sender_ratchet_key: PublicKey, counter: int, previous_counter: int, ciphertext: bytes, sender_identity_key: IdentityKey, receiver_identity_key: IdentityKey) -> None:
+        ...
+
+    def __new__(cls) -> tuple[Self, CiphertextMessage]:
+        ...
+
     @staticmethod
     def try_from(data: bytes) -> SignalMessage:
         """
@@ -387,12 +361,7 @@ class SignalMessage:
         """
         ...
 
-    def verify_mac(
-        self,
-        sender_identity_key: IdentityKey,
-        receiver_identity_key: IdentityKey,
-        mac_key: bytes,
-    ) -> bool:
+    def verify_mac(self, sender_identity_key: IdentityKey, receiver_identity_key: IdentityKey, mac_key: bytes) -> bool:
         """
         Verifies the MAC of the signal message.
 
@@ -406,4 +375,5 @@ class SignalMessage:
         """
         ...
 
-class KyberPayload: ...
+class KyberPayload:
+    ...

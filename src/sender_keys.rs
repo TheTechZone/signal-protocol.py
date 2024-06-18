@@ -27,7 +27,7 @@ impl SenderKeyRecord {
         }
     }
 
-    // todo:: look into their api -- they broke most stuff here
+    // TODO:: look into their api -- they broke most stuff here
 
     pub fn serialize(&self, py: Python) -> Result<PyObject> {
         let bytes = self.state.serialize()?;

@@ -2,11 +2,7 @@ from .address import ProtocolAddress
 from .protocol import CiphertextMessage, PreKeySignalMessage, SignalMessage
 from .storage import InMemSignalProtocolStore
 
-def message_decrypt(
-    protocol_store: InMemSignalProtocolStore,
-    remote_address: ProtocolAddress,
-    msg: bytes,
-) -> bytes:
+def message_decrypt(protocol_store: InMemSignalProtocolStore, remote_address: ProtocolAddress, msg: bytes) -> bytes:
     """
     Decrypts a message.
 
@@ -20,11 +16,7 @@ def message_decrypt(
     """
     ...
 
-def message_decrypt_prekey(
-    protocol_store: InMemSignalProtocolStore,
-    remote_address: ProtocolAddress,
-    msg: PreKeySignalMessage,
-) -> bytes:
+def message_decrypt_prekey(protocol_store: InMemSignalProtocolStore, remote_address: ProtocolAddress, msg: PreKeySignalMessage) -> bytes:
     """
     Decrypts a pre-key message.
 
@@ -38,11 +30,7 @@ def message_decrypt_prekey(
     """
     ...
 
-def message_decrypt_signal(
-    protocol_store: InMemSignalProtocolStore,
-    remote_address: ProtocolAddress,
-    msg: SignalMessage,
-) -> bytes:
+def message_decrypt_signal(protocol_store: InMemSignalProtocolStore, remote_address: ProtocolAddress, msg: SignalMessage) -> bytes:
     """
     Decrypts a signal message.
 
@@ -56,11 +44,7 @@ def message_decrypt_signal(
     """
     ...
 
-def message_encrypt(
-    protocol_store: InMemSignalProtocolStore,
-    remote_address: ProtocolAddress,
-    msg: bytes,
-) -> CiphertextMessage:
+def message_encrypt(protocol_store: InMemSignalProtocolStore, remote_address: ProtocolAddress, msg: bytes) -> CiphertextMessage:
     """
     Encrypts a message.
 

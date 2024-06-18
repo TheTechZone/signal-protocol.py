@@ -83,7 +83,7 @@ def test_ratcheting_session_as_bob():
         bob_signed_prekey_pair,
         None,
         bob_ephemeral_pair,
-        None,  # todo: no kyber yet
+        None,  # TODO: no kyber yet
         alice_identity_public,
         alice_base_public_key,
         None,  # and no kyber ctxt

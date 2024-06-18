@@ -1,17 +1,9 @@
-from identity_key import IdentityKey
+from .identity_key import IdentityKey
 
 class Fingerprint:
     """Represents a fingerprint of a Signal Protocol conversation."""
 
-    def __init__(
-        self,
-        version: int,
-        iterations: int,
-        local_id: bytes,
-        local_key: IdentityKey,
-        remote_id: bytes,
-        remote_key: IdentityKey,
-    ) -> None:
+    def __init__(self, version: int, iterations: int, local_id: bytes, local_key: IdentityKey, remote_id: bytes, remote_key: IdentityKey) -> None:
         """
         Creates a new Fingerprint.
 

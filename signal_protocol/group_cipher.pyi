@@ -4,11 +4,7 @@ from .storage import InMemSignalProtocolStore
 from .protocol import SenderKeyDistributionMessage
 from .uuid import UUID
 
-def create_sender_key_distribution_message(
-    protocol_store: InMemSignalProtocolStore,
-    sender: ProtocolAddress,
-    distribution_id: UUID,
-) -> Tuple[UUID, bytes]:
+def create_sender_key_distribution_message(protocol_store: InMemSignalProtocolStore, sender: ProtocolAddress, distribution_id: UUID) -> Tuple[UUID, bytes]:
     """
     Creates a sender key distribution message.
 
@@ -22,9 +18,7 @@ def create_sender_key_distribution_message(
     """
     ...
 
-def group_decrypt(
-    skm_bytes: bytes, protocol_store: InMemSignalProtocolStore, sender: ProtocolAddress
-) -> bytes:
+def group_decrypt(skm_bytes: bytes, protocol_store: InMemSignalProtocolStore, sender: ProtocolAddress) -> bytes:
     """
     Decrypts a group message.
 
@@ -38,12 +32,7 @@ def group_decrypt(
     """
     ...
 
-def group_encrypt(
-    protocol_store: InMemSignalProtocolStore,
-    sender: ProtocolAddress,
-    distribution_id: UUID,
-    plaintext: bytes,
-) -> bytes:
+def group_encrypt(protocol_store: InMemSignalProtocolStore, sender: ProtocolAddress, distribution_id: UUID, plaintext: bytes) -> bytes:
     """
     Encrypts a group message.
 
@@ -58,11 +47,7 @@ def group_encrypt(
     """
     ...
 
-def process_sender_key_distribution_message(
-    sender: ProtocolAddress,
-    skdm: SenderKeyDistributionMessage,
-    protocol_store: InMemSignalProtocolStore,
-) -> None:
+def process_sender_key_distribution_message(sender: ProtocolAddress, skdm: SenderKeyDistributionMessage, protocol_store: InMemSignalProtocolStore) -> None:
     """
     Processes a sender key distribution message. It updated the protocol store inplace.
 

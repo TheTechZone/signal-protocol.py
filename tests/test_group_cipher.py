@@ -28,7 +28,7 @@ def test_group_no_send_session():
     )
 
     with pytest.raises(SignalProtocolException, match="missing sender key state"):
-        # todo: check against rust
+        # TODO: check against rust
         group_encrypt(
             alice_store, sender_address, distribution_id, "hello".encode("utf8")
         )
@@ -92,7 +92,7 @@ def test_group_no_recv_session():
     )
 
     with pytest.raises(SignalProtocolException, match="missing sender key state"):
-        # todo: check with rust
+        # TODO: check with rust
         bob_plaintext = group_decrypt(alice_ciphertext, bob_store, sender_address)
 
 
