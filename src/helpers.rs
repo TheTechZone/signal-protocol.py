@@ -1,3 +1,25 @@
+/// This module contains helper functions for key generation and registration in the Signal Protocol.
+/// It provides functions to create registration keys, bundle them into dictionaries, and generate
+/// one-time keys for client-server communication.
+///
+/// The main functions in this module are:
+/// - `create_registration_keys`: Creates the necessary keys for the registration endpoint, including
+///   the signed prekey and PqLastResortPreKey, and returns them as a tuple of dictionaries along with
+///   the identity key.
+/// - `create_registration`: Bundles the registration keys and secrets for aci and pni into a single
+///   dictionary for each.
+/// - `create_keys_data`: Generates a specified number of one-time keys (PreKeys) for the client to
+///   upload to the server, and returns them as a tuple of dictionaries along with the secrets.
+///
+/// These functions are intended to be used in the context of the Signal Protocol implementation in Python.
+/// They provide a Rust implementation for key generation and registration, which can be called from Python
+/// using the PyO3 library.
+///
+/// The code in this module also includes helper structs and implementations for converting key records
+/// into dictionaries, merging dictionaries, and encoding keys using base64.
+///
+/// Note: This code is part of a larger project and may depend on other modules and types that are not
+/// included in this selection.
 use base64::Engine;
 use libsignal_protocol::GenericSignedPreKey;
 use pyo3::prelude::*;
@@ -81,6 +103,14 @@ fn merge_dicts(py: Python, dict1: &PyDict, dict2: &PyDict) -> PyResult<()> {
     }
     Ok(())
 }
+
+// create_registration_keys creates the necessary keys for 
+// the registration endpoint (specifically signedPreKey and PqLastResortPreKey)
+// and returns them as a tuple of dictionaries along with the identity key (keys, secrets).
+// The keys are returned as a dictionary with the following keys:
+// - IdentityKey
+// - SignedPreKey
+// - PqLastResortPreKey
 
 #[pyfunction]
 pub fn create_registration_keys(
@@ -171,6 +201,16 @@ pub fn create_registration_keys(
     Ok((dict.into(), secrets.into()))
 }
 
+// create_registration bundles the registration keys and secrets for aci and pni
+// produced by create_registration_keys into a single dictionary for each.
+// The keys are returned as a dictionary with the following keys:
+// - aciIdentityKey
+// - aciSignedPreKey
+// - aciPqLastResortPreKey
+// - pniIdentityKey
+// - pniSignedPreKey
+// - pniPqLastResortPreKey
+
 #[pyfunction]
 pub fn create_registration(
     py: Python,
@@ -194,6 +234,10 @@ pub fn create_registration(
     _ = merge_dicts(py, aci_sdict, pni_sdict);
     Ok((aci_keys.into(), aci_sdict.into()))
 }
+
+/// create_keys_data generates the specified number of one-time keys (PreKeys) for the client to
+/// upload to the server, and returns them as a tuple of dictionaries along with the secrets.
+/// This function is associated with the endpoint /v2/keys/.
 
 #[pyfunction]
 pub fn create_keys_data(
