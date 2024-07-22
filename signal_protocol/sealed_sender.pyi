@@ -49,9 +49,16 @@ class SenderCertificate:
     This class represents a sender's certificate.
     """
 
-    def __init__(self, sender_uuid: str, sender_e164: Optional[str], key: PublicKey, sender_device_id: int, expiration: int, signer: ServerCertificate, signer_key: PrivateKey) -> None:
-        ...
-
+    def __init__(
+        self,
+        sender_uuid: str,
+        sender_e164: Optional[str],
+        key: PublicKey,
+        sender_device_id: int,
+        expiration: int,
+        signer: ServerCertificate,
+        signer_key: PrivateKey,
+    ) -> None: ...
     def deserialize(self, data: bytes) -> SenderCertificate:
         """
         Deserializes a sender's certificate from bytes.
@@ -162,9 +169,7 @@ class ServerCertificate:
     This class represents a server's certificate.
     """
 
-    def __init__(self, key_id: int, key: PublicKey, trust_root: PrivateKey) -> None:
-        ...
-
+    def __init__(self, key_id: int, key: PublicKey, trust_root: PrivateKey) -> None: ...
     def deserialize(self, data: bytes) -> ServerCertificate:
         """
         Deserializes a server's certificate from bytes.
@@ -239,7 +244,14 @@ class UnidentifiedSenderMessageContent:
     This class represents the content of a message from an unidentified sender.
     """
 
-    def __init__(self, msg_type_value: int, sender: SenderCertificate, contents: bytes, content_hint: Any, group_id: Optional[bytes]) -> None:
+    def __init__(
+        self,
+        msg_type_value: int,
+        sender: SenderCertificate,
+        contents: bytes,
+        content_hint: Any,
+        group_id: Optional[bytes],
+    ) -> None:
         """TODO: contentHint impl"""
         ...
 
@@ -291,7 +303,15 @@ class UnidentifiedSenderMessageContent:
         """
         ...
 
-def sealed_sender_decrypt(ciphertext: bytes, trust_root: PublicKey, timestamp: int, local_e164: Optional[str], local_uuid: str, local_device_id: int, protocol_store: InMemSignalProtocolStore) -> SealedSenderDecryptionResult:
+def sealed_sender_decrypt(
+    ciphertext: bytes,
+    trust_root: PublicKey,
+    timestamp: int,
+    local_e164: Optional[str],
+    local_uuid: str,
+    local_device_id: int,
+    protocol_store: InMemSignalProtocolStore,
+) -> SealedSenderDecryptionResult:
     """
     Decrypts a sealed sender message.
 
@@ -309,7 +329,9 @@ def sealed_sender_decrypt(ciphertext: bytes, trust_root: PublicKey, timestamp: i
     """
     ...
 
-def sealed_sender_decrypt_to_usmc(ciphertext: bytes, trust_root: PublicKey) -> UnidentifiedSenderMessageContent:
+def sealed_sender_decrypt_to_usmc(
+    ciphertext: bytes, trust_root: PublicKey
+) -> UnidentifiedSenderMessageContent:
     """
     Decrypts a sealed sender message to an UnidentifiedSenderMessageContent.
 
@@ -322,7 +344,12 @@ def sealed_sender_decrypt_to_usmc(ciphertext: bytes, trust_root: PublicKey) -> U
     """
     ...
 
-def sealed_sender_encrypt(destination: ProtocolAddress, sender_cert: SenderCertificate, ptext: bytes, protocol_store: InMemSignalProtocolStore) -> bytes:
+def sealed_sender_encrypt(
+    destination: ProtocolAddress,
+    sender_cert: SenderCertificate,
+    ptext: bytes,
+    protocol_store: InMemSignalProtocolStore,
+) -> bytes:
     """
     Encrypts a message as a sealed sender message.
 

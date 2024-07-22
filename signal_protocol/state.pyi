@@ -6,9 +6,16 @@ from typing import Optional
 class PreKeyBundle:
     """Represents a pre-key bundle used in the X3DH key agreement protocol."""
 
-    def __init__(self, registration_id: int, device_id: DeviceId, pre_key_public: Optional[tuple[PreKeyId, PublicKey]], signed_pre_key_id: SignedPreKeyId, signed_pre_key_public: PublicKey, signed_pre_key_signature: bytes, identity_key: IdentityKey) -> None:
-        ...
-
+    def __init__(
+        self,
+        registration_id: int,
+        device_id: DeviceId,
+        pre_key_public: Optional[tuple[PreKeyId, PublicKey]],
+        signed_pre_key_id: SignedPreKeyId,
+        signed_pre_key_public: PublicKey,
+        signed_pre_key_signature: bytes,
+        identity_key: IdentityKey,
+    ) -> None: ...
     def registration_id(self) -> int:
         """Returns the registration ID."""
         ...
@@ -44,16 +51,13 @@ class PreKeyBundle:
 class PreKeyId:
     """Represents a pre-key ID."""
 
-    def __init__(self, id: int) -> None:
-        ...
+    def __init__(self, id: int) -> None: ...
     ...
 
 class PreKeyRecord:
     """Represents a pre-key record."""
 
-    def __init__(self, id: PreKeyId, keypair: KeyPair) -> None:
-        ...
-
+    def __init__(self, id: PreKeyId, keypair: KeyPair) -> None: ...
     @staticmethod
     def deserialize(data: bytes) -> PreKeyRecord:
         """Deserializes a pre-key record from bytes."""
@@ -138,23 +142,19 @@ class SessionRecord:
 
 class SignedPreKeyId:
     """Represents a signed pre-key ID."""
+
     ...
 
-class KyberPreKeyRecord:
-    ...
-
-class KyberPreKeyId:
-    ...
-
-class PreKeysUsed:
-    ...
+class KyberPreKeyRecord: ...
+class KyberPreKeyId: ...
+class PreKeysUsed: ...
 
 class SignedPreKeyRecord:
     """Represents a signed pre-key record."""
 
-    def __init__(self, id: SignedPreKeyId, timestamp: int, keypair: KeyPair, signature: bytes) -> None:
-        ...
-
+    def __init__(
+        self, id: SignedPreKeyId, timestamp: int, keypair: KeyPair, signature: bytes
+    ) -> None: ...
     @staticmethod
     def deserialize(data: bytes) -> SignedPreKeyRecord:
         """Deserializes a signed pre-key record from bytes."""

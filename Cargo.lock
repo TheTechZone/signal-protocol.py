@@ -557,7 +557,7 @@ checksum = "97b3888a4aecf77e811145cadf6eef5901f4782c53886191b2f693f24761847c"
 [[package]]
 name = "libsignal-core"
 version = "0.1.0"
-source = "git+https://github.com/signalapp/libsignal?tag=v0.49.0#347791c88cdfdb765534b5e2be149f588b75bf49"
+source = "git+https://github.com/signalapp/libsignal?tag=v0.52.5#8ba0f2731c120f8ca48625df893545f63ac98866"
 dependencies = [
  "num_enum",
  "uuid",
@@ -566,7 +566,7 @@ dependencies = [
 [[package]]
 name = "libsignal-protocol"
 version = "0.1.0"
-source = "git+https://github.com/signalapp/libsignal?tag=v0.49.0#347791c88cdfdb765534b5e2be149f588b75bf49"
+source = "git+https://github.com/signalapp/libsignal?tag=v0.52.5#8ba0f2731c120f8ca48625df893545f63ac98866"
 dependencies = [
  "aes",
  "aes-gcm-siv",
@@ -592,8 +592,7 @@ dependencies = [
  "rayon",
  "serde",
  "sha2",
- "signal-crypto 0.1.0 (git+https://github.com/signalapp/libsignal?tag=v0.49.0)",
- "static_assertions",
+ "signal-crypto 0.1.0 (git+https://github.com/signalapp/libsignal?tag=v0.52.5)",
  "subtle",
  "thiserror",
  "uuid",
@@ -1148,7 +1147,7 @@ dependencies = [
 [[package]]
 name = "signal-crypto"
 version = "0.1.0"
-source = "git+https://github.com/signalapp/libsignal?tag=v0.49.0#347791c88cdfdb765534b5e2be149f588b75bf49"
+source = "git+https://github.com/signalapp/libsignal?tag=v0.52.5#8ba0f2731c120f8ca48625df893545f63ac98866"
 dependencies = [
  "aes",
  "cbc",
@@ -1210,12 +1209,6 @@ name = "smallvec"
 version = "1.13.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "3c5e1a9a646d36c3599cd173a41282daf47c44583ad367b8e6837255952e5c67"
-
-[[package]]
-name = "static_assertions"
-version = "1.1.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "a2eb9349b6444b326872e140eb1cf5e7c522154d69e7a0ffb0fb81c06b37543f"
 
 [[package]]
 name = "subtle"

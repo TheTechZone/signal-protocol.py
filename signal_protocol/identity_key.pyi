@@ -3,9 +3,7 @@ from .curve import PublicKey, PrivateKey
 class IdentityKey:
     """Represents an identity key in the Signal Protocol."""
 
-    def __init__(self, public_key_bytes: bytes) -> None:
-        ...
-
+    def __init__(self, public_key_bytes: bytes) -> None: ...
     def public_key(self) -> PublicKey:
         """
         Returns the public key of the identity key.

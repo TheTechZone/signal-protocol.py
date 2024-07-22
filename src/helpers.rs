@@ -104,7 +104,7 @@ fn merge_dicts(py: Python, dict1: &PyDict, dict2: &PyDict) -> PyResult<()> {
     Ok(())
 }
 
-// create_registration_keys creates the necessary keys for 
+// create_registration_keys creates the necessary keys for
 // the registration endpoint (specifically signedPreKey and PqLastResortPreKey)
 // and returns them as a tuple of dictionaries along with the identity key (keys, secrets).
 // The keys are returned as a dictionary with the following keys:
@@ -119,6 +119,8 @@ pub fn create_registration_keys(
     ik: identity_key::IdentityKeyPair,
     spk_data: Option<SignedPreKeyRecord>,
     pq_data: Option<KyberPreKeyRecord>,
+    spk_id: Option<u32>,
+    pq_id: Option<u32>,
 ) -> PyResult<(PyObject, PyObject)> {
     match key_kind {
         "aci" | "pni" => {}
@@ -144,10 +146,10 @@ pub fn create_registration_keys(
         Some(spk) => spk,
         None => {
             let keypair = KeyPair::generate();
-            let random_number: u32 = rand::thread_rng().gen_range(100..10000);
 
             // generate spk record
-            let id = SignedPreKeyId::new(random_number);
+            let id =
+                SignedPreKeyId::new(spk_id.unwrap_or(rand::thread_rng().gen_range(100..10000)));
             let ts = SystemTime::now()
                 .duration_since(UNIX_EPOCH)
                 .unwrap()
@@ -179,8 +181,8 @@ pub fn create_registration_keys(
     let pq = match pq_data {
         Some(pq) => pq,
         None => {
-            let random_number: u32 = rand::thread_rng().gen_range(100..10000);
-            let id = KyberPreKeyId::new(random_number);
+            let id: KyberPreKeyId =
+                KyberPreKeyId::new(pq_id.unwrap_or(rand::thread_rng().gen_range(100..10000)));
             let key_type = KeyType::new(0)?;
             // TODO: pq must also be outputted
             let pq = KyberPreKeyRecord::generate(key_type, id, ik.private_key()?)?;
@@ -220,9 +222,29 @@ pub fn create_registration(
     pni_spk: Option<SignedPreKeyRecord>,
     aci_kyber: Option<KyberPreKeyRecord>,
     pni_kyber: Option<KyberPreKeyRecord>,
+    aci_spk_id: Option<u32>,
+    pni_spk_id: Option<u32>,
+    aci_kyber_id: Option<u32>,
+    pni_kyber_id: Option<u32>,
 ) -> PyResult<(PyObject, PyObject)> {
-    let (aci_keys, aci_secrets) = create_registration_keys(py, "aci", aci_ik, aci_spk, aci_kyber)?;
-    let (pni_keys, pni_secrets) = create_registration_keys(py, "pni", pni_ik, pni_spk, pni_kyber)?;
+    let (aci_keys, aci_secrets) = create_registration_keys(
+        py,
+        "aci",
+        aci_ik,
+        aci_spk,
+        aci_kyber,
+        aci_spk_id,
+        aci_kyber_id,
+    )?;
+    let (pni_keys, pni_secrets) = create_registration_keys(
+        py,
+        "pni",
+        pni_ik,
+        pni_spk,
+        pni_kyber,
+        pni_spk_id,
+        pni_kyber_id,
+    )?;
 
     let aci_dict = aci_keys.downcast::<PyDict>(py)?;
     let pni_dict = pni_keys.downcast::<PyDict>(py)?;
@@ -246,6 +268,8 @@ pub fn create_keys_data(
     ik: identity_key::IdentityKeyPair,
     spk: Option<KeyPair>,
     last_resort_pqk: Option<KemKeyPair>,
+    prekey_start_at: Option<u32>,
+    kyber_prekey_start_at: Option<u32>,
 ) -> PyResult<(PyObject, PyObject)> {
     let dict = PyDict::new(py);
     match spk {
@@ -265,9 +289,12 @@ pub fn create_keys_data(
         }
     }
 
-    let pre_keys = generate_n_prekeys(num_keys, PreKeyId::from(0));
-    let kyber_keys =
-        generate_n_signed_kyberkeys(num_keys, KyberPreKeyId::from(0), ik.private_key()?);
+    let pre_keys = generate_n_prekeys(num_keys, PreKeyId::from(prekey_start_at.unwrap_or(0)));
+    let kyber_keys = generate_n_signed_kyberkeys(
+        num_keys,
+        KyberPreKeyId::from(kyber_prekey_start_at.unwrap_or(0)),
+        ik.private_key()?,
+    );
 
     let secrets_dict = PyDict::new(py);
     let secrets_prekeys = PyDict::new(py);
