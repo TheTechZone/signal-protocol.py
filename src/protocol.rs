@@ -25,17 +25,18 @@ impl CiphertextMessage {
     }
 }
 
-/// We're using the following mapping of libsignal_protocol::CiphertextMessageType to u8:
-/// CiphertextMessageType::Whisper => 2
-/// CiphertextMessageType::PreKey => 3
-/// CiphertextMessageType::SenderKey => 4
-/// CiphertextMessageType::SenderKeyDistribution => 5
 #[pymethods]
 impl CiphertextMessage {
     pub fn serialize(&self, py: Python) -> PyResult<PyObject> {
         Ok(PyBytes::new(py, self.data.serialize()).into())
     }
+    
 
+    /// We're using the following mapping of libsignal_protocol::CiphertextMessageType to u8:
+    /// - CiphertextMessageType::Whisper => 2
+    /// - CiphertextMessageType::PreKey => 3
+    /// - CiphertextMessageType::SenderKey => 7
+    /// - CiphertextMessageType::Plaintext => 8
     pub fn message_type(&self) -> u8 {
         self.data.message_type() as u8
     }
