@@ -13,6 +13,7 @@ use crate::curve::{KeyPair, PrivateKey, PublicKey};
 use crate::error::{Result, SignalProtocolError};
 use crate::identity_key::IdentityKey;
 use crate::kem::PublicKey as KemPublicKey;
+use crate::kem::KeyPair as KemKeyPair;
 use crate::kem::{self, SecretKey};
 
 use std::convert;
@@ -780,6 +781,18 @@ impl KyberPreKeyRecord {
         }
     }
 
+    fn key_pair(&self) -> PyResult<KemKeyPair> {
+        let upstream = self.state.get_storage();
+        let key_pair = libsignal_protocol::kem::KeyPair::from_public_and_private(
+            &upstream.public_key,
+            &upstream.private_key,
+        );
+        Ok(KemKeyPair {
+            key: key_pair.unwrap() // todo: fixme and look at the api
+        })
+        // &self.state.get_storage().
+    }
+    
     fn get_storage(&self) -> PyResult<KyberPreKeyRecord> {
         let upstream = self.state.get_storage();
         let ik = libsignal_protocol::kem::KeyPair::from_public_and_private(
