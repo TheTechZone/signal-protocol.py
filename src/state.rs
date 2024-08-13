@@ -12,10 +12,10 @@ use crate::address::DeviceId;
 use crate::curve::{KeyPair, PrivateKey, PublicKey};
 use crate::error::{Result, SignalProtocolError};
 use crate::identity_key::IdentityKey;
+use crate::kem::KeyPair as KemKeyPair;
 use crate::kem::PublicKey as KemPublicKey;
 use crate::kem::SecretKey as KemSecretKey;
-use crate::kem::KeyPair as KemKeyPair;
-use crate::kem::{self, };
+use crate::kem::{self};
 
 use std::convert;
 
@@ -579,9 +579,9 @@ pub fn generate_n_signed_kyberkeys(
 ) -> Vec<KyberPreKeyRecord> {
     let mut keyvec: Vec<KyberPreKeyRecord> = Vec::new();
     let mut i: u32 = u32::from(id);
-    let key_type = kem::KeyType::new(0);
     for _n in 0..n {
         let id = KyberPreKeyId::from(i);
+        let key_type = kem::KeyType::new(0);
         let prekey = KyberPreKeyRecord::generate(key_type.unwrap(), id, signing_key).unwrap();
         keyvec.push(prekey);
         i += 1;
@@ -787,7 +787,7 @@ impl KyberPreKeyRecord {
     }
 
     pub fn id(&self) -> Result<KyberPreKeyId> {
-        Ok(PreKeyId {
+        Ok(KyberPreKeyId {
             value: self.state.id()?,
         })
     }
@@ -799,11 +799,16 @@ impl KyberPreKeyRecord {
             &upstream.private_key,
         );
         Ok(KemKeyPair {
-            key: key_pair.unwrap() // todo: fixme and look at the api
+            key: key_pair.unwrap(), // todo: fixme and look at the api
         })
         // &self.state.get_storage().
     }
-    
+
+    fn signature(&self, py: Python) -> Result<PyObject> {
+        let result = self.state.signature()?;
+        Ok(PyBytes::new(py, &result).into())
+    }
+
     fn get_storage(&self) -> PyResult<KyberPreKeyRecord> {
         let upstream = self.state.get_storage();
         let ik = libsignal_protocol::kem::KeyPair::from_public_and_private(
@@ -824,15 +829,15 @@ impl KyberPreKeyRecord {
     }
 
     pub fn public_key(&self) -> Result<KemPublicKey> {
-        Ok(PublicKey {
+        Ok(KemPublicKey {
             key: self.state.public_key()?,
         })
     }
 
-    pub fn secret_key(&self) -> PyResult<SecretKey> {
+    pub fn secret_key(&self) -> PyResult<KemSecretKey> {
         let sk = self.state.secret_key();
         match sk {
-            Ok(key) => Ok(SecretKey { key: key }),
+            Ok(key) => Ok(KemSecretKey { key: key }),
             Err(_) => Err(SignalProtocolError::err_from_str(
                 "no secret key. have you generated one?".to_string(),
             )),

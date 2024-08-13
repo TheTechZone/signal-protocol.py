@@ -87,7 +87,7 @@ impl UploadKeyType {
     }
 }
 
-fn merge_dicts(py: Python, dict1: &PyDict, dict2: &PyDict) -> PyResult<()> {
+fn merge_dicts(dict1: &PyDict, dict2: &PyDict) -> PyResult<()> {
     for (key, value) in dict2.iter() {
         dict1.set_item(key, value)?;
     }
@@ -240,8 +240,8 @@ pub fn create_registration(
     let aci_sdict = aci_secrets.downcast::<PyDict>(py)?;
     let pni_sdict = pni_secrets.downcast::<PyDict>(py)?;
 
-    _ = merge_dicts(py, aci_dict, pni_dict);
-    _ = merge_dicts(py, aci_sdict, pni_sdict);
+    _ = merge_dicts(aci_dict, pni_dict);
+    _ = merge_dicts(aci_sdict, pni_sdict);
     Ok((aci_keys.into(), aci_sdict.into()))
 }
 

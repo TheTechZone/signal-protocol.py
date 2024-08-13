@@ -26,15 +26,12 @@ class CiphertextMessage(collections.abc.ByteString):
 
     def message_type(self) -> int:
         """
-        <<<<<<<
         Returns the type of the ciphertext message.
-
-
 
         Returns:
 
             int: The type of the ciphertext message.
-        =======
+        
         We're using the following mapping of libsignal_protocol::CiphertextMessageType to u8:
 
         - CiphertextMessageType::Whisper => 2
@@ -44,7 +41,6 @@ class CiphertextMessage(collections.abc.ByteString):
         - CiphertextMessageType::SenderKey => 7
 
         - CiphertextMessageType::Plaintext => 8
-        >>>>>>>
         """
         ...
 

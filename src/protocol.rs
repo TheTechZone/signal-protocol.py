@@ -30,7 +30,6 @@ impl CiphertextMessage {
     pub fn serialize(&self, py: Python) -> PyResult<PyObject> {
         Ok(PyBytes::new(py, self.data.serialize()).into())
     }
-    
 
     /// We're using the following mapping of libsignal_protocol::CiphertextMessageType to u8:
     /// - CiphertextMessageType::Whisper => 2

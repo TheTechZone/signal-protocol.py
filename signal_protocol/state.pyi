@@ -49,6 +49,21 @@ class PreKeyBundle:
         """Returns the identity key."""
         ...
 
+    def has_kyber_pre_key(self) -> bool:
+        """Determines if a Kyber pre-key is present"""
+        ...
+
+    def kyber_pre_key_id(self) -> KyberPreKeyId: ...
+    def kyber_pre_key_public(self) -> KemPublicKey: ...
+    def kyber_pre_key_signature(self) -> bytes: ...
+    def with_kyber_pre_key(
+        self, prekye_id: KyberPreKeyId, public_key: KemPublicKey, signature: bytes
+    ) -> PreKeyBundle:
+        """Converts an existing PreKeyBundle to one supporting Kyber.
+
+        Returns a new bundle instead of modifying in-place."""
+        ...
+
 class PreKeyId:
     """Represents a pre-key ID."""
 
@@ -168,6 +183,11 @@ class KyberPreKeyRecord:
 
     def public_key(self) -> KemPublicKey: ...
     def secret_key(self) -> KemSecretKey: ...
+    def signature(self) -> bytes:
+        """Returns the signature  for the Kyber key as bytes.
+
+        It can be verified using the IdentityKey of the user."""
+
     def serialize(self) -> bytes: ...
 
 class KyberPreKeyId:
