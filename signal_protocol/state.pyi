@@ -1,7 +1,7 @@
 from .curve import PublicKey, PrivateKey, KeyPair
 from .address import DeviceId
 from .identity_key import IdentityKey
-from .kem import KeyType, KeyPair
+from .kem import KeyType, KeyPair, PublicKey as KemPublicKey, SecretKey as KemSecretKey
 from typing import Optional
 
 class PreKeyBundle:
@@ -53,7 +53,8 @@ class PreKeyId:
     """Represents a pre-key ID."""
 
     def __init__(self, id: int) -> None: ...
-    ...
+    def get_id(self) -> int:
+        """Returns the integer represation of the id"""
 
 class PreKeyRecord:
     """Represents a pre-key record."""
@@ -144,7 +145,9 @@ class SessionRecord:
 class SignedPreKeyId:
     """Represents a signed pre-key ID."""
 
-    ...
+    def __init__(self, id: int) -> None: ...
+    def get_id(self) -> int:
+        """Returns the integer represation of the id"""
 
 class KyberPreKeyRecord:
     """Represents a signed pre-key record."""
@@ -156,11 +159,22 @@ class KyberPreKeyRecord:
         """Create a new signed Kyber record of given type"""
         ...
 
+    @staticmethod
+    def deserialize(data: bytes) -> KyberPreKeyRecord: ...
+    def id(self) -> KyberPreKeyId: ...
     def key_pair(self) -> KeyPair:
         """Get the Kyber KeyPair"""
         ...
 
-class KyberPreKeyId: ...
+    def public_key(self) -> KemPublicKey: ...
+    def secret_key(self) -> KemSecretKey: ...
+    def serialize(self) -> bytes: ...
+
+class KyberPreKeyId:
+    def __init__(self, id: int) -> None: ...
+    def get_id(self) -> int:
+        """Returns the integer represation of the id"""
+
 class PreKeysUsed: ...
 
 class SignedPreKeyRecord:
@@ -202,28 +216,15 @@ class SignedPreKeyRecord:
         """Serializes the signed pre-key record into bytes."""
         ...
 
-def generate_n_prekeys(n: int) -> list[PreKeyRecord]:
+def generate_n_prekeys(n: int, start_id: PreKeyId) -> list[PreKeyRecord]:
     """
     Helper function for generating N prekeys.
-
     Returns a list of PreKeyRecords.
 
-
-
-    # Example
-
-
-
     ```
-
     from signal_protocol import curve, state
-
-
-
     prekeyid = 1
-
     manykeys = state.generate_n_prekeys(100, prekeyid)  # generates 100 keys
-
     ```
     """
     ...

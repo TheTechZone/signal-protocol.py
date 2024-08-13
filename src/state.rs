@@ -13,8 +13,9 @@ use crate::curve::{KeyPair, PrivateKey, PublicKey};
 use crate::error::{Result, SignalProtocolError};
 use crate::identity_key::IdentityKey;
 use crate::kem::PublicKey as KemPublicKey;
+use crate::kem::SecretKey as KemSecretKey;
 use crate::kem::KeyPair as KemKeyPair;
-use crate::kem::{self, SecretKey};
+use crate::kem::{self, };
 
 use std::convert;
 
@@ -535,9 +536,7 @@ impl PreKeyRecord {
 
 /// Helper function for generating N prekeys.
 /// Returns a list of PreKeyRecords.
-///
 /// # Example
-///
 /// ```
 /// from signal_protocol import curve, state
 ///
@@ -580,8 +579,8 @@ pub fn generate_n_signed_kyberkeys(
 ) -> Vec<KyberPreKeyRecord> {
     let mut keyvec: Vec<KyberPreKeyRecord> = Vec::new();
     let mut i: u32 = u32::from(id);
+    let key_type = kem::KeyType::new(0);
     for _n in 0..n {
-        let key_type = kem::KeyType::new(0);
         let id = KyberPreKeyId::from(i);
         let prekey = KyberPreKeyRecord::generate(key_type.unwrap(), id, signing_key).unwrap();
         keyvec.push(prekey);
@@ -762,8 +761,6 @@ pub struct KyberPreKeyRecord {
 
 #[pymethods]
 impl KyberPreKeyRecord {
-    /// TODO: implement KyberPreKeyRecord
-    /// TODO: add missing features
     #[staticmethod]
     pub fn generate(
         key_type: kem::KeyType,
@@ -779,6 +776,20 @@ impl KyberPreKeyRecord {
             Ok(r) => Ok(KyberPreKeyRecord { state: r }),
             Err(err) => Err(SignalProtocolError::new_err(err)),
         }
+    }
+
+    #[staticmethod]
+    fn deserialize(data: &[u8]) -> PyResult<Self> {
+        match libsignal_protocol::KyberPreKeyRecord::deserialize(data) {
+            Ok(state) => Ok(KyberPreKeyRecord { state }),
+            Err(err) => Err(SignalProtocolError::new_err(err)),
+        }
+    }
+
+    pub fn id(&self) -> Result<KyberPreKeyId> {
+        Ok(PreKeyId {
+            value: self.state.id()?,
+        })
     }
 
     pub fn key_pair(&self) -> PyResult<KemKeyPair> {
@@ -812,6 +823,12 @@ impl KyberPreKeyRecord {
         })
     }
 
+    pub fn public_key(&self) -> Result<KemPublicKey> {
+        Ok(PublicKey {
+            key: self.state.public_key()?,
+        })
+    }
+
     pub fn secret_key(&self) -> PyResult<SecretKey> {
         let sk = self.state.secret_key();
         match sk {
@@ -820,6 +837,11 @@ impl KyberPreKeyRecord {
                 "no secret key. have you generated one?".to_string(),
             )),
         }
+    }
+
+    fn serialize(&self, py: Python) -> Result<PyObject> {
+        let result = self.state.serialize()?;
+        Ok(PyBytes::new(py, &result).into())
     }
 }
 
