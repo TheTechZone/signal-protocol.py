@@ -1,6 +1,7 @@
 from .curve import PublicKey, PrivateKey, KeyPair
 from .address import DeviceId
 from .identity_key import IdentityKey
+from .kem import KeyType, KeyPair
 from typing import Optional
 
 class PreKeyBundle:
@@ -145,7 +146,20 @@ class SignedPreKeyId:
 
     ...
 
-class KyberPreKeyRecord: ...
+class KyberPreKeyRecord:
+    """Represents a signed pre-key record."""
+
+    @staticmethod
+    def generate(
+        key_type: KeyType, id: KyberPreKeyId, signing_key: PrivateKey
+    ) -> KyberPreKeyRecord:
+        """Create a new signed Kyber record of given type"""
+        ...
+
+    def key_pair(self) -> KeyPair:
+        """Get the Kyber KeyPair"""
+        ...
+
 class KyberPreKeyId: ...
 class PreKeysUsed: ...
 

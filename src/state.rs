@@ -781,7 +781,7 @@ impl KyberPreKeyRecord {
         }
     }
 
-    fn key_pair(&self) -> PyResult<KemKeyPair> {
+    pub fn key_pair(&self) -> PyResult<KemKeyPair> {
         let upstream = self.state.get_storage();
         let key_pair = libsignal_protocol::kem::KeyPair::from_public_and_private(
             &upstream.public_key,
