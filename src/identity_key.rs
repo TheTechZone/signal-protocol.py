@@ -41,6 +41,14 @@ impl IdentityKey {
         Ok(general_purpose::STANDARD.encode(&self.key.serialize()))
     }
 
+    #[staticmethod]
+    pub fn from_base64(input: &[u8]) -> PyResult<Self> {
+        match general_purpose::STANDARD.decode(input) {
+            Ok(byte_data) => Ok(Self::new(&byte_data)?),
+            Err(err) => Err(SignalProtocolError::err_from_str(err.to_string())),
+        }
+    }
+
     fn __richcmp__(&self, other: IdentityKey, op: CompareOp) -> PyResult<bool> {
         match op {
             CompareOp::Eq => Ok(self.key.serialize() == other.key.serialize()),
@@ -84,6 +92,18 @@ impl IdentityKeyPair {
         }
     }
 
+    pub fn to_base64(&self) -> PyResult<String> {
+        Ok(general_purpose::STANDARD.encode(&self.key.serialize()))
+    }
+
+    #[staticmethod]
+    pub fn from_base64(input: &[u8]) -> PyResult<Self> {
+        match general_purpose::STANDARD.decode(input) {
+            Ok(byte_data) => Ok(Self::from_bytes(&byte_data)?),
+            Err(err) => Err(SignalProtocolError::err_from_str(err.to_string())),
+        }
+    }
+
     #[staticmethod]
     pub fn generate() -> Self {
         let mut csprng = OsRng;
@@ -112,14 +132,14 @@ impl IdentityKeyPair {
         PyBytes::new(py, &self.key.serialize()).into()
     }
 
-    // pub fn sign_alternate_identity(&self, py:Python, other: &IdentityKey) ->Result<PyBytes> {
-    //     let mut csprng = OsRng;
-    //     let alt = self.key.sign_alternate_identity(&other.key, &mut csprng);
-    //     match alt {
-    //         Err(err) => return Err(SignalProtocolError::from(err)),
-    //         Ok(data) => Ok(PyBytes::new(py, &data.))
-    //     }
-    // }
+    pub fn sign_alternate_identity(&self, py: Python, other: &IdentityKey) -> PyResult<PyObject> {
+        let mut csprng = OsRng;
+        let alt = self.key.sign_alternate_identity(&other.key, &mut csprng);
+        match alt {
+            Err(err) => Err(SignalProtocolError::err_from_str(err.to_string())),
+            Ok(data) => Ok(PyBytes::new(py, &data).into()),
+        }
+    }
 }
 
 pub fn init_submodule(module: &PyModule) -> PyResult<()> {

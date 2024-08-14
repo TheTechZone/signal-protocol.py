@@ -15,7 +15,7 @@ class KeyPair:
         ...
 
     def serialize(self) -> bytes:
-        """Serializes the key pair into bytes."""
+        """Serializes the key pair into bytes. Currently it only serializes the public key."""
         ...
 
     def calculate_signature(self, message: bytes) -> bytes:
@@ -43,6 +43,15 @@ class PrivateKey:
         """Serializes the private key into bytes."""
         ...
 
+    def to_base64(self) -> str:
+        """Serializes the private key into base64 encoded bytes."""
+        ...
+
+    @staticmethod
+    def from_base64(input: str) -> PrivateKey:
+        """Deserializes the private key from base64 encoded bytes."""
+        ...
+
     def calculate_signature(self, message: bytes) -> bytes:
         """Calculates the signature for a given message."""
         ...
@@ -67,12 +76,21 @@ class PublicKey:
         """Serializes the public key into bytes."""
         ...
 
+    def to_base64(self) -> str:
+        """Serializes the public key into base64 encoded bytes."""
+        ...
+
+    @staticmethod
+    def from_base64(input: str) -> PublicKey:
+        """Deserializes the public key from base64 encoded bytes."""
+        ...
+
     def verify_signature(self, message: bytes, signature: bytes) -> bool:
         """Verifies the signature for a given message."""
         ...
 
 def generate_keypair() -> KeyPair:
-    """Generates a new key pair."""
+    """Generates a new key pair. Randomness is handled by the Rust library."""
     ...
 
 def verify_signature(public_key: PublicKey, message: bytes, signature: bytes) -> bool:

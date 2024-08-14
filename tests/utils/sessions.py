@@ -120,8 +120,6 @@ def initialize_sessions_v3():
 
     alice_session = ratchet.initialize_alice_session(alice_params)
 
-    # _kyber_ctxt = protocol.KemSerializedCiphertext(b"")
-    # _kyber_ctxt = kem.SerializedCiphertext(b"\x08")
     _keypair = kem.KeyPair.generate(kem.KeyType(0))
     _, _kyber_ctxt = _keypair.encapsulate()
     _kyber_ctxt = kem.SerializedCiphertext(_kyber_ctxt)

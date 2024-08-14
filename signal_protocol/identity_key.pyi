@@ -22,6 +22,22 @@ class IdentityKey:
         """
         ...
 
+    def to_base64(self) -> str:
+        """Serializes the public key into base64 encoded bytes."""
+        ...
+
+    @staticmethod
+    def from_base64(input: str) -> IdentityKey:
+        """Deserializes the public key from base64 encoded bytes."""
+        ...
+
+    def verify_alternate_identity(self, other: IdentityKey, signature: bytes) -> bool:
+        """Given a trusted identity `self`, verify that `other` represents an alternate identity for
+        this user.
+
+        `signature` must be calculated from `IdentityKeyPair::sign_alternate_identity`.
+        """
+
 class IdentityKeyPair:
     """Represents an identity key pair in the Signal Protocol."""
 
@@ -61,6 +77,15 @@ class IdentityKeyPair:
         """
         ...
 
+    def to_base64(self) -> str:
+        """Serializes the public key into base64 encoded bytes."""
+        ...
+
+    @staticmethod
+    def from_base64(input: str) -> IdentityKeyPair:
+        """Deserializes the public key from base64 encoded bytes."""
+        ...
+
     def identity_key(self) -> IdentityKey:
         """
         Returns the identity key of the identity key pair.
@@ -95,4 +120,8 @@ class IdentityKeyPair:
         Returns:
             bytes: The serialized identity key pair.
         """
+        ...
+
+    def sign_alternate_identity(self, other: IdentityKey) -> bytes:
+        """Generate a signature claiming that `other` represents the same user as `self`."""
         ...

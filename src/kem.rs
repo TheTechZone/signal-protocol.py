@@ -78,6 +78,29 @@ impl KeyPair {
         })
     }
 
+    #[staticmethod]
+    pub fn from_base64(pub_in: &[u8], sec_in: &[u8]) -> PyResult<Self> {
+        let public_key = match general_purpose::STANDARD.decode(pub_in) {
+            Ok(key) => key,
+            Err(err) => return Err(SignalProtocolError::err_from_str(err.to_string())),
+        };
+
+        let secret_key = match general_purpose::STANDARD.decode(sec_in) {
+            Ok(key) => key,
+            Err(err) => return Err(SignalProtocolError::err_from_str(err.to_string())),
+        };
+
+        Ok(Self::from_public_and_private(&public_key, &secret_key)?)
+    }
+
+    pub fn to_base64(&self) -> PyResult<(String, String)> {
+        let public_base64 = general_purpose::STANDARD.encode(&self.key.public_key.serialize());
+
+        let secret_base64 = general_purpose::STANDARD.encode(&self.key.secret_key.serialize());
+
+        Ok((public_base64, secret_base64))
+    }
+
     pub fn public_key_length(&self) -> usize {
         self.key.public_key.serialize().len()
     }
@@ -145,6 +168,14 @@ impl PublicKey {
         Ok(general_purpose::STANDARD.encode(&self.key.serialize()))
     }
 
+    #[staticmethod]
+    pub fn from_base64(input: &[u8]) -> PyResult<Self> {
+        match general_purpose::STANDARD.decode(input) {
+            Ok(pubkey) => Ok(Self::deserialize(&pubkey)?),
+            Err(err) => Err(SignalProtocolError::err_from_str(err.to_string())),
+        }
+    }
+
     fn __eq__(&self, other: &Self) -> bool {
         self.key.eq(&other.key)
     }
@@ -177,6 +208,18 @@ impl SecretKey {
         Ok(Self {
             key: libsignal_protocol::kem::SecretKey::deserialize(key)?,
         })
+    }
+
+    #[staticmethod]
+    pub fn from_base64(input: &[u8]) -> PyResult<Self> {
+        match general_purpose::STANDARD.decode(input) {
+            Ok(key) => Ok(Self::deserialize(&key)?),
+            Err(err) => Err(SignalProtocolError::err_from_str(err.to_string())),
+        }
+    }
+
+    pub fn to_base64(&self) -> PyResult<String> {
+        Ok(general_purpose::STANDARD.encode(&self.key.serialize()))
     }
 
     /// Decapsulates a `SharedSecret` that was encapsulated into a `Ciphertext` by a holder of

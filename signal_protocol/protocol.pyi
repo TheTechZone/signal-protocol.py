@@ -31,7 +31,7 @@ class CiphertextMessage(collections.abc.ByteString):
         Returns:
 
             int: The type of the ciphertext message.
-        
+
         We're using the following mapping of libsignal_protocol::CiphertextMessageType to u8:
 
         - CiphertextMessageType::Whisper => 2
@@ -43,16 +43,6 @@ class CiphertextMessage(collections.abc.ByteString):
         - CiphertextMessageType::Plaintext => 8
         """
         ...
-
-class KemKeyPair:
-    """Represents a KEM key pair in the Signal Protocol."""
-
-    ...
-
-class KemSerializedCiphertext:
-    """Represents a serialized KEM ciphertext in the Signal Protocol."""
-
-    ...
 
 class PreKeySignalMessage:
     """
