@@ -2,7 +2,8 @@ class KeyPair:
     """Represents a pair of private and public keys."""
 
     def __init__(self, public_key: PublicKey, private_key: PrivateKey) -> None: ...
-    def generate(self):
+    @staticmethod
+    def generate():
         """Generates a new key pair."""
         ...
 
