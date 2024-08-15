@@ -34,7 +34,8 @@ class KeyPair:
     def get_private(self) -> SecretKey: ...
 
 class KeyType:
-    ...
+    def __init__(self, key_type: int) -> None:
+        """Creates a KeyType supported by the KEM protocol. Currently only supports key_type=0 (Kyber1024)"""
 
     def value(self) -> int: ...
 
@@ -46,10 +47,7 @@ class PublicKey:
     def deserialize(key: bytes) -> PublicKey: ...
     def encapsulate(self) -> tuple[bytes, bytes]:
         """
-        Create a `SharedSecret` and a `Ciphertext`. The `Ciphertext` can be safely sent to the
-
-        holder of the corresponding `SecretKey` who can then use it to `decapsulate` the same
-
+        Create a `SharedSecret` and a `Ciphertext`. The `Ciphertext` can be safely sent to theholder of the corresponding `SecretKey` who can then use it to `decapsulate` the same
         `SharedSecret`.
         """
         ...
@@ -66,9 +64,7 @@ class SecretKey:
     def deserialize(key: bytes) -> PublicKey: ...
     def decapsulate(self, ct_bytes: bytes) -> bytes:
         """
-        Decapsulates a `SharedSecret` that was encapsulated into a `Ciphertext` by a holder of
-
-        the corresponding `PublicKey`.
+        Decapsulates a `SharedSecret` that was encapsulated into a `Ciphertext` by a holder of the corresponding `PublicKey`.
         """
         ...
 
