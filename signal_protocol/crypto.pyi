@@ -23,15 +23,29 @@ class Aes256GcmEncryption:
 class CryptographicHash:
     """Generic Interface for a Cryptographic Hash. For supported algorithms see the constructor."""
 
-    def __init__(self, algo: Literal["SHA-1", "SHA1", "Sha1", "SHA-256", "SHA256", "Sha256", "SHA-512", "SHA512", "Sha512" ]) -> None: ...
+    def __init__(
+        self,
+        algo: Literal[
+            "SHA-1",
+            "SHA1",
+            "Sha1",
+            "SHA-256",
+            "SHA256",
+            "Sha256",
+            "SHA-512",
+            "SHA512",
+            "Sha512",
+        ],
+    ) -> None: ...
     def update(self, data: bytes): ...
     def finalize(self) -> bytes: ...
 
 class CryptographicMac:
     """Generic Interface for a Cryptographic Hash. For supported algorithms see the constructor."""
 
-
-    def __init__(self, algo: Literal["HMACSha1", "HmacSha1", "HMACSha256", "HmacSha256"]) -> None: ...
+    def __init__(
+        self, algo: Literal["HMACSha1", "HmacSha1", "HMACSha256", "HmacSha256"]
+    ) -> None: ...
     def update(self, data: bytes) -> None: ...
     def update_and_get(self, data: bytes) -> CryptographicMac: ...
     def finalize(self) -> bytes: ...
