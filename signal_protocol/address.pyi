@@ -11,7 +11,7 @@ class ProtocolAddress:
     """The type used to represent the identiy of one Signal client"""
 
     def __init__(self, name: str, device_id: int) -> None: ...
-    @property
+    
     def name(self) -> str: ...
-    @property
+    
     def device_id(self) -> int: ...
