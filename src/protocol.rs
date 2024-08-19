@@ -8,7 +8,7 @@ use rand::rngs::OsRng;
 use crate::curve::{PrivateKey, PublicKey};
 use crate::error::{Result, SignalProtocolError};
 use crate::identity_key::IdentityKey;
-use crate::state::{PreKeyId, SignedPreKeyId};
+use crate::state::{KyberPreKeyId, PreKeyId, SignedPreKeyId};
 use crate::uuid::UUID;
 
 /// CiphertextMessage is a Rust enum in the upstream crate. Mapping of enums to Python enums
@@ -47,7 +47,15 @@ pub struct KyberPayload {
     pub data: libsignal_protocol::KyberPayload,
 }
 
-// TODO: handle impl
+#[pymethods]
+impl KyberPayload {
+    #[new]
+    pub fn new(pre_key_id: KyberPreKeyId, ciphertext: &[u8]) -> Self {
+        Self {
+            data: libsignal_protocol::KyberPayload::new(pre_key_id.value, ciphertext.into()),
+        }
+    }
+}
 
 /// CiphertextMessageType::PreKey => 3
 #[pyclass(extends=CiphertextMessage)]
@@ -485,5 +493,6 @@ pub fn init_submodule(module: &PyModule) -> PyResult<()> {
     module.add_class::<SignalMessage>()?;
     module.add_class::<SenderKeyMessage>()?;
     module.add_class::<SenderKeyDistributionMessage>()?;
+    module.add_class::<KyberPayload>()?;
     Ok(())
 }

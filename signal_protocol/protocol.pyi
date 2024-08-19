@@ -1,6 +1,6 @@
 from .curve import PublicKey, PrivateKey
 from .identity_key import IdentityKey
-from .state import PreKeyId, SignedPreKeyId
+from .state import PreKeyId, SignedPreKeyId, KyberPreKeyId
 from .uuid import UUID
 from typing import Optional, Self
 import collections.abc
@@ -44,7 +44,7 @@ class CiphertextMessage(collections.abc.ByteString):
         """
         ...
 
-class PreKeySignalMessage:
+class PreKeySignalMessage(CiphertextMessage):
     """
     Represents a pre-key signal message in the Signal Protocol.
     CiphertextMessageType::PreKey => 3
@@ -146,7 +146,7 @@ class PreKeySignalMessage:
         """
         ...
 
-class SenderKeyDistributionMessage:
+class SenderKeyDistributionMessage(CiphertextMessage):
     """
     Represents a sender key distribution message in the Signal Protocol.
     CiphertextMessageType::SenderKeyDistribution => 5
@@ -219,7 +219,7 @@ class SenderKeyDistributionMessage:
         """
         ...
 
-class SenderKeyMessage:
+class SenderKeyMessage(CiphertextMessage):
     """
     Represents a sender key message in the Signal Protocol.
     CiphertextMessageType::SenderKey => 4
@@ -314,7 +314,7 @@ class SenderKeyMessage:
         """
         ...
 
-class SignalMessage:
+class SignalMessage(CiphertextMessage):
     """
     Represents a signal message in the Signal Protocol.
     CiphertextMessageType::Whisper
@@ -409,4 +409,5 @@ class SignalMessage:
         """
         ...
 
-class KyberPayload: ...
+class KyberPayload:
+    def __init__(self, kyber_pre_key_id: KyberPreKeyId, ciphertext: bytes) -> None: ...
