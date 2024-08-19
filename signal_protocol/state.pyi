@@ -64,6 +64,12 @@ class PreKeyBundle:
         Returns a new bundle instead of modifying in-place."""
         ...
 
+    def to_json(self) -> str:
+        ...
+    
+    def to_dict(self) -> dict:
+        ...
+
 class PreKeyId:
     """Represents a pre-key ID."""
 
