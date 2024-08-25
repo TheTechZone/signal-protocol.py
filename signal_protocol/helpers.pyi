@@ -9,8 +9,8 @@ def create_keys_data(
     identity_key: IdentityKeyPair,
     signed_prekey: Optional[KeyPair] = None,
     last_resort_kyber: Optional[KyberKeyPair] = None,
-    prekey_start: Optional[int] = None,
-    kyber_prekey_start: Optional[int] = None,
+    prekey_start_at: Optional[int] = None,
+    kyber_prekey_start_at: Optional[int] = None,
 ) -> tuple[dict, dict]:
     """create_keys_data generates the specified number of one-time keys (PreKeys) for the client to
 
