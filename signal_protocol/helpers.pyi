@@ -11,7 +11,7 @@ def create_keys_data(
     last_resort_kyber: Optional[KyberKeyPair] = None,
     prekey_start: Optional[int] = None,
     kyber_prekey_start: Optional[int] = None,
-):
+) -> tuple[dict, dict]:
     """create_keys_data generates the specified number of one-time keys (PreKeys) for the client to
 
     upload to the server, and returns them as a tuple of dictionaries along with the secrets.
@@ -31,7 +31,7 @@ def create_registration(
     pni_spk_id: Optional[int] = None,
     aci_kyber_id: Optional[int] = None,
     pni_kyber_id: Optional[int] = None,
-):
+) -> tuple[dict, dict]:
     """
     create_registration bundles the registration keys and secrets for aci and pni
 
@@ -60,7 +60,7 @@ def create_registration_keys(
     kyber_record: Optional[KyberPreKeyRecord] = None,
     spk_id: Optional[int] = None,
     kyber_id: Optional[int] = None,
-):
+) -> tuple[dict, dict]:
     """create_registration_keys creates the necessary keys for
     the registration endpoint (specifically signedPreKey and PqLastResortPreKey)
     and returns them as a tuple of dictionaries along with the identity key (keys, secrets).
