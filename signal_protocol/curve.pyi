@@ -49,8 +49,11 @@ class PrivateKey:
         ...
 
     @staticmethod
-    def from_base64(input: str) -> PrivateKey:
-        """Deserializes the private key from base64 encoded bytes."""
+    def from_base64(input: bytes) -> PrivateKey:
+        """Deserializes the private key from base64 encoded bytes.
+
+        input: base64 encoded **byte**string
+        """
         ...
 
     def calculate_signature(self, message: bytes) -> bytes:
@@ -82,8 +85,10 @@ class PublicKey:
         ...
 
     @staticmethod
-    def from_base64(input: str) -> PublicKey:
-        """Deserializes the public key from base64 encoded bytes."""
+    def from_base64(input: bytes) -> PublicKey:
+        """Deserializes the public key from base64 encoded bytes.
+
+        input: base64 encoded **byte**string"""
         ...
 
     def verify_signature(self, message: bytes, signature: bytes) -> bool:
