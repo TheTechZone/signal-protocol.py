@@ -261,7 +261,7 @@ pub fn create_keys_data(
     let dict = PyDict::new(py);
     match spk {
         Some(key) => {
-            let _ = dict.set_item("pqLastResortPreKey", key.public_key()?.to_base64()?);
+            let _ = dict.set_item("signedPreKey", key.public_key()?.to_base64()?);
         }
         None => {
             let _ = dict.set_item("signedPreKey", py.None());
