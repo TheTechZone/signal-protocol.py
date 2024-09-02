@@ -27,7 +27,7 @@ class IdentityKey:
         ...
 
     @staticmethod
-    def from_base64(input: str) -> IdentityKey:
+    def from_base64(input: bytes) -> IdentityKey:
         """Deserializes the public key from base64 encoded bytes."""
         ...
 
@@ -82,7 +82,7 @@ class IdentityKeyPair:
         ...
 
     @staticmethod
-    def from_base64(input: str) -> IdentityKeyPair:
+    def from_base64(input: bytes) -> IdentityKeyPair:
         """Deserializes the public key from base64 encoded bytes."""
         ...
 
