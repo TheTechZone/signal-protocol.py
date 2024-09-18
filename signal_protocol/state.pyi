@@ -64,11 +64,8 @@ class PreKeyBundle:
         Returns a new bundle instead of modifying in-place."""
         ...
 
-    def to_json(self) -> str:
-        ...
-    
-    def to_dict(self) -> dict:
-        ...
+    def to_json(self) -> str: ...
+    def to_dict(self) -> dict: ...
 
 class PreKeyId:
     """Represents a pre-key ID."""
@@ -163,6 +160,8 @@ class SessionRecord:
         """Returns the sender chain key in bytes."""
         ...
 
+    def get_kyber_ciphertext(self) -> Optional[bytes]: ...
+
 class SignedPreKeyId:
     """Represents a signed pre-key ID."""
 
@@ -194,6 +193,7 @@ class KyberPreKeyRecord:
 
         It can be verified using the IdentityKey of the user."""
 
+    def get_storage(self) -> bytes: ...
     def serialize(self) -> bytes: ...
 
 class KyberPreKeyId:
@@ -214,7 +214,7 @@ class SignedPreKeyRecord:
         """Deserializes a signed pre-key record from bytes."""
         ...
 
-    def id(self) -> int:
+    def id(self) -> SignedPreKeyId:
         """Returns the signed pre-key ID."""
         ...
 
@@ -243,9 +243,13 @@ class SignedPreKeyRecord:
         ...
 
 def generate_n_prekeys(n: int, start_id: PreKeyId) -> list[PreKeyRecord]:
-    """
-    Helper function for generating N prekeys.
+    """Helper function for generating N prekeys.
+
     Returns a list of PreKeyRecords.
+
+    =======
+
+    Example
 
     ```
     from signal_protocol import curve, state
@@ -254,3 +258,7 @@ def generate_n_prekeys(n: int, start_id: PreKeyId) -> list[PreKeyRecord]:
     ```
     """
     ...
+
+def generate_n_signed_kyberkeys(
+    n: int, id: KyberPreKeyId, signing_key: PrivateKey
+) -> list[KyberPreKeyRecord]: ...

@@ -47,8 +47,9 @@ class PublicKey:
     def deserialize(key: bytes) -> PublicKey: ...
     def encapsulate(self) -> tuple[bytes, bytes]:
         """
-        Create a `SharedSecret` and a `Ciphertext`. The `Ciphertext` can be safely sent to theholder of the corresponding `SecretKey` who can then use it to `decapsulate` the same
-        `SharedSecret`.
+        Create a `SharedSecret` and a `Ciphertext`. The `Ciphertext` can be safely sent to the
+        holder of the corresponding `SecretKey` who can then use it to `decapsulate` the
+        same `SharedSecret`.
         """
         ...
 

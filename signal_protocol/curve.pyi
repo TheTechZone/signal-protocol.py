@@ -95,6 +95,9 @@ class PublicKey:
         """Verifies the signature for a given message."""
         ...
 
+    @staticmethod
+    def from_public_key_bytes(input: bytes) -> PublicKey: ...
+
 def generate_keypair() -> KeyPair:
     """Generates a new key pair. Randomness is handled by the Rust library."""
     ...
