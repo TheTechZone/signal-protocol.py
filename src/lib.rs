@@ -100,7 +100,7 @@ fn signal_protocol(py: Python, module: &PyModule) -> PyResult<()> {
 
     let helpers_submod = PyModule::new(py, "helpers")?;
     helpers::init_submodule(helpers_submod)?;
-    module.add_submodule(helpers_submod);
+    module.add_submodule(helpers_submod)?;
 
     let crypto_submod = PyModule::new(py, "crypto")?; // todo: make expose this under a clearer name
     base_crypto::init_submodule(crypto_submod)?;

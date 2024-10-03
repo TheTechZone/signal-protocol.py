@@ -8,6 +8,8 @@ use pyo3::wrap_pyfunction;
 use serde::ser::SerializeStruct;
 use serde::Serialize;
 
+use base64::engine::general_purpose;
+
 use crate::address::DeviceId;
 use crate::curve::{KeyPair, PrivateKey, PublicKey};
 use crate::error::{Result, SignalProtocolError};
@@ -690,6 +692,22 @@ impl SessionRecord {
     fn serialize(&self, py: Python) -> Result<PyObject> {
         let result = self.state.serialize()?;
         Ok(PyBytes::new(py, &result).into())
+    }
+
+    pub fn to_base64(&self) -> PyResult<String> {
+        match &self.state.serialize() {
+            Ok(byte_data) => Ok(general_purpose::STANDARD.encode(byte_data)),
+            Err(err) => Err(SignalProtocolError::err_from_str(err.to_string())),
+        }
+        // Ok(general_purpose::STANDARD.encode(&self.state.serialize()))
+    }
+
+    #[staticmethod]
+    pub fn from_base64(input: &[u8]) -> PyResult<Self> {
+        match general_purpose::STANDARD.decode(input) {
+            Ok(byte_data) => Ok(Self::deserialize(&byte_data)?),
+            Err(err) => Err(SignalProtocolError::err_from_str(err.to_string())),
+        }
     }
 
     fn session_version(&self) -> Result<u32> {
