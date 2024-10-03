@@ -1,3 +1,4 @@
+use std::borrow::Borrow;
 use std::convert::TryFrom;
 
 use pyo3::prelude::*;
@@ -8,6 +9,7 @@ use rand::rngs::OsRng;
 use crate::curve::{PrivateKey, PublicKey};
 use crate::error::{Result, SignalProtocolError};
 use crate::identity_key::IdentityKey;
+use crate::kem::SerializedCiphertext;
 use crate::state::{KyberPreKeyId, PreKeyId, SignedPreKeyId};
 use crate::uuid::UUID;
 
@@ -170,6 +172,38 @@ impl PreKeySignalMessage {
     pub fn identity_key(&self) -> IdentityKey {
         IdentityKey {
             key: *self.data.identity_key(),
+        }
+    }
+
+    pub fn kyber_payload(&self) -> Option<KyberPayload> {
+        let pre_key_id = self.data.kyber_pre_key_id();
+        let kyber_ctxt = self.data.kyber_ciphertext();
+
+        match (pre_key_id, kyber_ctxt) {
+            (Some(pki), Some(ctxt)) => {
+                // let kyber_id = KyberPreKeyId::from(u32::from(pki));
+                let kyber_id = KyberPreKeyId { value: pki };
+                // Some(libsignal_protocol::KyberPayload::new(kyber_id, ctxt))
+                let sc = SerializedCiphertext::new(&ctxt).ok()?;
+                Some(KyberPayload {
+                    data: libsignal_protocol::KyberPayload::new(kyber_id.value, sc.state),
+                })
+            }
+            _ => None,
+        }
+    }
+
+    pub fn kyber_id(&self) -> Option<KyberPreKeyId> {
+        match self.data.kyber_pre_key_id() {
+            Some(key_id) => Some(KyberPreKeyId { value: key_id }),
+            None => None,
+        }
+    }
+
+    pub fn kyber_ciphertext(&self, py: Python) -> Option<PyObject> {
+        match self.data.kyber_ciphertext() {
+            Some(ctxt) => Some(PyBytes::new(py, &ctxt).into()),
+            None => None,
         }
     }
 
