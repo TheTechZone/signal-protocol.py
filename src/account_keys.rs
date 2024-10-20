@@ -20,7 +20,7 @@ use crate::error::SignalProtocolError;
 #[pyclass]
 #[derive(Clone, Debug)]
 pub struct PinHash {
-    inner: signal_pin::PinHash,
+    inner: libsignal_account_keys::PinHash,
 }
 
 #[pymethods]
@@ -41,7 +41,7 @@ impl PinHash {
         }
         let salt2: &[u8; 32] = salt.try_into()?;
         // let array: &[u8; 32] = salt.try_into().map_err(|_| "Slice length must be 32 bytes");
-        match signal_pin::PinHash::create(pin, salt2) {
+        match libsignal_account_keys::PinHash::create(pin, salt2) {
             Err(err) => Err(SignalProtocolError::err_from_str(err.to_string())),
             Ok(res) => Ok(PinHash { inner: res }),
         }
@@ -55,7 +55,7 @@ impl PinHash {
     /// * `group_id` - The attested group id returned by the SVR service
     #[staticmethod]
     pub fn make_salt(py: Python, username: &str, group_id: u64) -> PyObject {
-        PyBytes::new(py, &signal_pin::PinHash::make_salt(username, group_id)).into()
+        PyBytes::new(py, &libsignal_account_keys::PinHash::make_salt(username, group_id)).into()
     }
 
     /// Returns a key that can be used to encrypt or decrypt values before uploading
@@ -79,7 +79,7 @@ impl PinHash {
 /// * `pin` - UTF-8 encoding of the pin. The pin *must* be normalized first.
 #[pyfunction]
 pub fn local_pin_hash(pin: &[u8]) -> PyResult<String> {
-    match signal_pin::local_pin_hash(pin) {
+    match libsignal_account_keys::local_pin_hash(pin) {
         Err(err) => Err(SignalProtocolError::err_from_str(err.to_string())),
         Ok(res) => Ok(res),
     }
@@ -92,7 +92,7 @@ pub fn local_pin_hash(pin: &[u8]) -> PyResult<String> {
 /// * `encoded_hash` - A PHC-string formatted representation of the hash, as returned by `local_pin_hash`
 #[pyfunction]
 pub fn verify_local_pin_hash(encoded_hash: &str, pin: &[u8]) -> PyResult<bool> {
-    match signal_pin::verify_local_pin_hash(encoded_hash, pin) {
+    match libsignal_account_keys::verify_local_pin_hash(encoded_hash, pin) {
         Err(err) => Err(SignalProtocolError::err_from_str(err.to_string())),
         Ok(res) => Ok(res),
     }

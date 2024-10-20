@@ -5,7 +5,7 @@ from .storage import InMemSignalProtocolStore
 def message_decrypt(
     protocol_store: InMemSignalProtocolStore,
     remote_address: ProtocolAddress,
-    msg: bytes,
+    msg: CiphertextMessage,
 ) -> bytes:
     """
     Decrypts a message.

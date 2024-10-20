@@ -7,8 +7,10 @@ mod device_transfer;
 mod error;
 mod fingerprint;
 mod group_cipher;
+mod helpers;
 mod identity_key;
-mod pin;
+mod kem;
+mod account_keys;
 mod protocol;
 mod ratchet;
 mod sealed_sender;
@@ -26,7 +28,7 @@ mod uuid;
 ///
 /// Basic usage:
 ///
-/// >>> pub, priv = signal_protocol.curve.generate_skeypair()
+/// >>> pub, priv = signal_protocol.curve.generate_keypair()
 ///
 /// We do not expose a Python submodule for HKDF (a module in the upstream crate).
 #[pymodule]
@@ -57,6 +59,10 @@ fn signal_protocol(py: Python, module: &PyModule) -> PyResult<()> {
     let identity_key_submod = PyModule::new(py, "identity_key")?;
     identity_key::init_submodule(identity_key_submod)?;
     module.add_submodule(identity_key_submod)?;
+
+    let kem_submod = PyModule::new(py, "kem")?;
+    kem::init_kem_submodule(kem_submod)?;
+    module.add_submodule(kem_submod)?;
 
     let protocol_submod = PyModule::new(py, "protocol")?;
     protocol::init_submodule(protocol_submod)?;
@@ -94,7 +100,11 @@ fn signal_protocol(py: Python, module: &PyModule) -> PyResult<()> {
     uuid::init_submodule(uuid_submod)?;
     module.add_submodule(uuid_submod)?;
 
-    let crypto_submod = PyModule::new(py, "crypto")?; // todo: make expose this under a clearer name
+    let helpers_submod = PyModule::new(py, "helpers")?;
+    helpers::init_submodule(helpers_submod)?;
+    module.add_submodule(helpers_submod)?;
+
+    let crypto_submod = PyModule::new(py, "base_crypto")?;
     base_crypto::init_submodule(crypto_submod)?;
     module.add_submodule(crypto_submod)?;
 
@@ -102,21 +112,23 @@ fn signal_protocol(py: Python, module: &PyModule) -> PyResult<()> {
     device_transfer::init_submodule(device_transfer)?;
     module.add_submodule(device_transfer)?;
 
-    let pin = PyModule::new(py, "pin")?;
-    pin::init_submodule(pin)?;
-    module.add_submodule(pin)?;
+    let account_keys = PyModule::new(py, "account_keys")?;
+    account_keys::init_submodule(account_keys)?;
+    module.add_submodule(account_keys)?;
     // Workaround to enable imports from submodules. Upstream issue: pyo3 issue #759
     // https://github.com/PyO3/pyo3/issues/759#issuecomment-653964601
     let mods = [
         "address",
-        "crypto",
+        "account_keys",
+        "base_crypto",
         "curve",
         "device_transfer",
         "error",
         "fingerprint",
         "group_cipher",
+        "helpers",
         "identity_key",
-        "pin",
+        "kem",
         "protocol",
         "ratchet",
         "sealed_sender",

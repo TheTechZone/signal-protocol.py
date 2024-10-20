@@ -19,7 +19,7 @@ See [here](https://cryptography.io/en/latest/limitations.html) for a fundamental
 
 If you do insist on using this project (as part of your own) you can install from the git repo:
 
-```sh
+```shell
 pip install git+https://github.com/TheTechZone/signal-protocol.py.git
 ```
 
@@ -36,14 +36,14 @@ Detailed [specifications](https://signal.org/docs/) are available from Signal.
 
 First, import these modules:
 
-```py
+```python3
 from signal_protocol import curve, identity_key, state, storage
 ```
 
 Each client must generate a long-term identity key pair.
 This should be stored somewhere safe and persistent.
 
-```py
+```python3
 identity_key_pair = identity_key.IdentityKeyPair.generate()
 ```
 
@@ -51,13 +51,13 @@ Clients must generate prekeys.
 The example generates a single prekey.
 In practice, clients will generate many prekeys, as they are one-time use and consumed when a message from a new chat participant is sent.
 
-```py
+```python3
 pre_key_pair = curve.KeyPair.generate()
 ```
 
 Clients must generate a registration_id and store it somewhere safe and persistent.
 
-```py
+```python3
 registration_id = 12  # TODO generate (not yet supported in upstream crate)
 ```
 
@@ -67,13 +67,13 @@ PreKeyStore (for one's own prekey state),
 SignedPreKeyStore (for one's own signed prekeys),
 and SessionStore (for established sessions with chat participants).
 
-```py
+```python3
 store = storage.InMemSignalProtocolStore(identity_key_pair, registration_id)
 ```
 
 Clients should also generate a signed prekey.
 
-```py
+```python3
 signed_pre_key_pair = curve.KeyPair.generate()
 serialized_signed_pre_pub_key = signed_pre_key_pair.public_key().serialize()
 signed_pre_key_signature = (
@@ -86,7 +86,7 @@ signed_pre_key_signature = (
 Clients should store their prekeys (both one-time and signed) in the protocol store
 along with IDs that can be used to retrieve them later.
 
-```py
+```python3
 pre_key_id = 10
 pre_key_record = state.PreKeyRecord(pre_key_id, pre_key_pair)
 store.save_pre_key(pre_key_id, pre_key_record)
@@ -108,7 +108,7 @@ With a client initialized, you can create a session and send messages.
 To create a session, you must fetch a prekey bundle for the recipient from the server.
 Here the prekey bundle is `recipient_bundle` for participant `recipient_address`.
 
-```py
+```python3
 from signal_protocol import session, session_cipher
 
 session.process_prekey_bundle(
@@ -121,15 +121,15 @@ session.process_prekey_bundle(
 Once the prekey bundle is processed (storing data from the recipient in your local
 protocol store), you can encrypt messages:
 
-```py
+```python3
 ciphertext = session_cipher.message_encrypt(store, recipient_address, b"hello")
 ```
 
 ### Adding logging support
 The rust library is configured to send its logs to Python's [logging](https://docs.python.org/3/library/logging.html) system.
 
-To access these message, your Python codebase must be configure accordingly to recieve logs and output them somewhere:
-```py3
+To access these message, your Python codebase must be configured accordingly to receive logs and output them somewhere:
+```python3
 import logging
 
 FORMAT = '%(levelname)s %(name)s %(asctime)-15s %(filename)s:%(lineno)d %(message)s'
@@ -147,7 +147,7 @@ As per PyO3's docs:
 You will need both [Rust](https://rustup.rs/) and Python 3.10+ installed on your system. Since libsignal uses protocol buffers for message serialization, you will also need to have [protoc](https://grpc.io/docs/protoc-installation/) available on your system.
 To install the project in your virtualenv:
 
-```sh
+```shell
 pip install -r requirements.txt
 python -m pip install --editable .
 ```
@@ -158,14 +158,16 @@ You can use the tests as a reference for how to use the library.
 When developing, simply run `python -m pip install --editable .` as you make changes to rebuild the library.
 This script will handle compilation on the Rust side.
 
-To setup the hooks for the repository:
+To set up the hooks for the repository:
+
 ```bash
 git config core.hooksPath hooks
 ```
 
-# Building wheels
+# ~~Building wheels~~
+🚧 needs to be tested 🚧
 
-See instructions [here](https://github.com/PyO3/setuptools-rust#binary-wheels-on-linux). In brief:
+~~See instructions [here](https://github.com/PyO3/setuptools-rust#binary-wheels-on-linux). In brief:~~
 
 ```
 docker pull quay.io/pypa/manylinux2014_x86_64

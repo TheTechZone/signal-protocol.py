@@ -1,7 +1,7 @@
 import hmac
 import hashlib
 import base64
-from signal_protocol.pin import PinHash, local_pin_hash, verify_local_pin_hash
+from signal_protocol.account_keys import PinHash, local_pin_hash, verify_local_pin_hash
 
 
 def hmac_sha256(key: bytes, msg: bytes) -> bytes:

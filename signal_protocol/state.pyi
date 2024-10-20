@@ -1,6 +1,12 @@
 from .curve import PublicKey, PrivateKey, KeyPair
 from .address import DeviceId
 from .identity_key import IdentityKey
+from .kem import (
+    KeyType,
+    KeyPair as KemKeyPair,
+    PublicKey as KemPublicKey,
+    SecretKey as KemSecretKey,
+)
 from typing import Optional
 
 class PreKeyBundle:
@@ -48,11 +54,30 @@ class PreKeyBundle:
         """Returns the identity key."""
         ...
 
+    def has_kyber_pre_key(self) -> bool:
+        """Determines if a Kyber pre-key is present"""
+        ...
+
+    def kyber_pre_key_id(self) -> KyberPreKeyId: ...
+    def kyber_pre_key_public(self) -> KemPublicKey: ...
+    def kyber_pre_key_signature(self) -> bytes: ...
+    def with_kyber_pre_key(
+        self, prekye_id: KyberPreKeyId, public_key: KemPublicKey, signature: bytes
+    ) -> PreKeyBundle:
+        """Converts an existing PreKeyBundle to one supporting Kyber.
+
+        Returns a new bundle instead of modifying in-place."""
+        ...
+
+    def to_json(self) -> str: ...
+    def to_dict(self) -> dict: ...
+
 class PreKeyId:
     """Represents a pre-key ID."""
 
     def __init__(self, id: int) -> None: ...
-    ...
+    def get_id(self) -> int:
+        """Returns the integer represation of the id"""
 
 class PreKeyRecord:
     """Represents a pre-key record."""
@@ -104,6 +129,9 @@ class SessionRecord:
         """Serializes the session record into bytes."""
         ...
 
+    def to_base64(self) -> str: ...
+    @staticmethod
+    def from_base64(data: bytes) -> SessionRecord: ...
     def session_version(self) -> int:
         """Returns the session version."""
         ...
@@ -140,13 +168,50 @@ class SessionRecord:
         """Returns the sender chain key in bytes."""
         ...
 
+    def get_kyber_ciphertext(self) -> Optional[bytes]: ...
+
 class SignedPreKeyId:
     """Represents a signed pre-key ID."""
 
-    ...
+    def __init__(self, id: int) -> None: ...
+    def get_id(self) -> int:
+        """Returns the integer represation of the id"""
 
-class KyberPreKeyRecord: ...
-class KyberPreKeyId: ...
+class KyberPreKeyRecord:
+    """Represents a signed pre-key record."""
+
+    def __init__(
+        self, id: KyberPreKeyId, timestamp: int, key_pair: KemKeyPair, signature: bytes
+    ) -> None: ...
+    @staticmethod
+    def generate(
+        key_type: KeyType, id: KyberPreKeyId, signing_key: PrivateKey
+    ) -> KyberPreKeyRecord:
+        """Create a new signed Kyber record of given type"""
+        ...
+
+    @staticmethod
+    def deserialize(data: bytes) -> KyberPreKeyRecord: ...
+    def id(self) -> KyberPreKeyId: ...
+    def key_pair(self) -> KemKeyPair:
+        """Get the Kyber KeyPair"""
+        ...
+
+    def public_key(self) -> KemPublicKey: ...
+    def secret_key(self) -> KemSecretKey: ...
+    def signature(self) -> bytes:
+        """Returns the signature  for the Kyber key as bytes.
+
+        It can be verified using the IdentityKey of the user."""
+
+    def get_storage(self) -> bytes: ...
+    def serialize(self) -> bytes: ...
+
+class KyberPreKeyId:
+    def __init__(self, id: int) -> None: ...
+    def get_id(self) -> int:
+        """Returns the integer represation of the id"""
+
 class PreKeysUsed: ...
 
 class SignedPreKeyRecord:
@@ -160,7 +225,7 @@ class SignedPreKeyRecord:
         """Deserializes a signed pre-key record from bytes."""
         ...
 
-    def id(self) -> int:
+    def id(self) -> SignedPreKeyId:
         """Returns the signed pre-key ID."""
         ...
 
@@ -188,28 +253,23 @@ class SignedPreKeyRecord:
         """Serializes the signed pre-key record into bytes."""
         ...
 
-def generate_n_prekeys(n: int) -> list[PreKeyRecord]:
-    """
-    Helper function for generating N prekeys.
+def generate_n_prekeys(n: int, start_id: PreKeyId) -> list[PreKeyRecord]:
+    """Helper function for generating N prekeys.
 
     Returns a list of PreKeyRecords.
 
+    =======
 
-
-    # Example
-
-
+    Example
 
     ```
-
     from signal_protocol import curve, state
-
-
-
     prekeyid = 1
-
     manykeys = state.generate_n_prekeys(100, prekeyid)  # generates 100 keys
-
     ```
     """
     ...
+
+def generate_n_signed_kyberkeys(
+    n: int, id: KyberPreKeyId, signing_key: PrivateKey
+) -> list[KyberPreKeyRecord]: ...
