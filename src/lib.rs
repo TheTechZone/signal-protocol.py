@@ -1,8 +1,10 @@
 use pyo3::prelude::*;
 
+mod account_keys;
 mod address;
 mod base_crypto;
 mod curve;
+mod device_transfer;
 mod error;
 mod fingerprint;
 mod group_cipher;
@@ -106,12 +108,21 @@ fn signal_protocol(py: Python, module: &PyModule) -> PyResult<()> {
     base_crypto::init_submodule(crypto_submod)?;
     module.add_submodule(crypto_submod)?;
 
+    let device_transfer = PyModule::new(py, "device_transfer")?;
+    device_transfer::init_submodule(device_transfer)?;
+    module.add_submodule(device_transfer)?;
+
+    let account_keys = PyModule::new(py, "account_keys")?;
+    account_keys::init_submodule(account_keys)?;
+    module.add_submodule(account_keys)?;
     // Workaround to enable imports from submodules. Upstream issue: pyo3 issue #759
     // https://github.com/PyO3/pyo3/issues/759#issuecomment-653964601
     let mods = [
         "address",
+        "account_keys",
         "base_crypto",
         "curve",
+        "device_transfer",
         "error",
         "fingerprint",
         "group_cipher",
