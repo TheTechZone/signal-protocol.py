@@ -9,6 +9,7 @@ license = "AGPL-3.0-only"
 rand = "0.8"
 libsignal-protocol = { git = "https://github.com/signalapp/libsignal", tag="v0.59.0" }
 libsignal-core = { git = "https://github.com/signalapp/libsignal", version = "0.1.0" }
+#libsignal-net = { git = "https://github.com/signalapp/libsignal", version = "0.1.0" }
 signal-crypto = { git = "https://github.com/signalapp/libsignal", version = "0.1.0" }
 libsignal-account-keys = { git = "https://github.com/signalapp/libsignal", version = "0.1.0", features = ["serde"]}
 device-transfer = { git = "https://github.com/signalapp/libsignal", version = "0.1.0"}
@@ -19,7 +20,7 @@ uuid = { version = "1.7.0", features = ["v1", "v3", "v4", "v5"] }
 pyo3-log = "0.9.0"
 serde = {version = "1.0", features = ["derive"]}
 serde_json = {version = "1.0"}
-base64 = "0.21.7"
+base64 = "0.22.1"
 
 [lib]
 name = "signal_protocol"
