@@ -1,7 +1,6 @@
 use base64::Engine;
 use libsignal_protocol::GenericSignedPreKey;
 use pyo3::prelude::*;
-// use pyo3::types::IntoPyDict;
 use pyo3::types::PyBytes;
 use pyo3::types::PyDict;
 use pyo3::wrap_pyfunction;
@@ -779,6 +778,35 @@ pub struct KyberPreKeyRecord {
 
 #[pymethods]
 impl KyberPreKeyRecord {
+    #[new]
+    pub fn new(
+        id: KyberPreKeyId,
+        timestamp: u64,
+        key_pair: kem::KeyPair,
+        signature: &[u8],
+    ) -> Self {
+        let upstream = libsignal_protocol::KyberPreKeyRecord::new(
+            id.value,
+            libsignal_protocol::Timestamp::from_epoch_millis(timestamp),
+            &key_pair.key,
+            &signature,
+        );
+
+        KyberPreKeyRecord { state: upstream }
+
+        // let key = KeyPair::from_public_and_private(key_pair.key.public_key.serialize().as_ref(), key_pair.key.secret_key.serialize().as_ref());
+        // let spk_record = SignedPreKeyRecord::new(
+        //     SignedPreKeyId::new(id.get_id()),
+        //     timestamp,
+        //     &key.unwrap(),
+        //     &signature,
+        // ).state;
+        // let data = spk_record.serialize().unwrap();
+        // KyberPreKeyRecord{
+        //     state: libsignal_protocol::KyberPreKeyRecord::deserialize(data.as_ref()).unwrap(),
+        // }
+    }
+
     #[staticmethod]
     pub fn generate(
         key_type: kem::KeyType,

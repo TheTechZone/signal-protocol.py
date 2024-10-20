@@ -1,4 +1,3 @@
-use std::borrow::Borrow;
 use std::convert::TryFrom;
 
 use pyo3::prelude::*;
