@@ -698,7 +698,6 @@ impl SessionRecord {
             Ok(byte_data) => Ok(general_purpose::STANDARD.encode(byte_data)),
             Err(err) => Err(SignalProtocolError::err_from_str(err.to_string())),
         }
-        // Ok(general_purpose::STANDARD.encode(&self.state.serialize()))
     }
 
     #[staticmethod]

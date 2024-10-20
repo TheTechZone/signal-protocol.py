@@ -1,7 +1,12 @@
 from .curve import PublicKey, PrivateKey, KeyPair
 from .address import DeviceId
 from .identity_key import IdentityKey
-from .kem import KeyType, KeyPair, PublicKey as KemPublicKey, SecretKey as KemSecretKey
+from .kem import (
+    KeyType,
+    KeyPair as KemKeyPair,
+    PublicKey as KemPublicKey,
+    SecretKey as KemSecretKey,
+)
 from typing import Optional
 
 class PreKeyBundle:
@@ -175,6 +180,9 @@ class SignedPreKeyId:
 class KyberPreKeyRecord:
     """Represents a signed pre-key record."""
 
+    def __init__(
+        self, id: KyberPreKeyId, timestamp: int, key_pair: KemKeyPair, signature: bytes
+    ) -> None: ...
     @staticmethod
     def generate(
         key_type: KeyType, id: KyberPreKeyId, signing_key: PrivateKey
@@ -185,7 +193,7 @@ class KyberPreKeyRecord:
     @staticmethod
     def deserialize(data: bytes) -> KyberPreKeyRecord: ...
     def id(self) -> KyberPreKeyId: ...
-    def key_pair(self) -> KeyPair:
+    def key_pair(self) -> KemKeyPair:
         """Get the Kyber KeyPair"""
         ...
 
