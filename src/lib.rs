@@ -1,5 +1,6 @@
 use pyo3::prelude::*;
 
+mod account_keys;
 mod address;
 mod base_crypto;
 mod curve;
@@ -10,7 +11,6 @@ mod group_cipher;
 mod helpers;
 mod identity_key;
 mod kem;
-mod account_keys;
 mod protocol;
 mod ratchet;
 mod sealed_sender;
