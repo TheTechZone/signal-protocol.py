@@ -118,7 +118,6 @@ fn signal_protocol(py: Python, module: &PyModule) -> PyResult<()> {
         "helpers",
         "identity_key",
         "kem",
-        "helpers",
         "protocol",
         "ratchet",
         "sealed_sender",
