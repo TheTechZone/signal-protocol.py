@@ -26,7 +26,7 @@ mod uuid;
 ///
 /// Basic usage:
 ///
-/// >>> pub, priv = signal_protocol.curve.generate_skeypair()
+/// >>> pub, priv = signal_protocol.curve.generate_keypair()
 ///
 /// We do not expose a Python submodule for HKDF (a module in the upstream crate).
 #[pymodule]
@@ -102,7 +102,7 @@ fn signal_protocol(py: Python, module: &PyModule) -> PyResult<()> {
     helpers::init_submodule(helpers_submod)?;
     module.add_submodule(helpers_submod)?;
 
-    let crypto_submod = PyModule::new(py, "crypto")?; // todo: make expose this under a clearer name
+    let crypto_submod = PyModule::new(py, "base_crypto")?;
     base_crypto::init_submodule(crypto_submod)?;
     module.add_submodule(crypto_submod)?;
 
@@ -110,7 +110,7 @@ fn signal_protocol(py: Python, module: &PyModule) -> PyResult<()> {
     // https://github.com/PyO3/pyo3/issues/759#issuecomment-653964601
     let mods = [
         "address",
-        "crypto",
+        "base_crypto",
         "curve",
         "error",
         "fingerprint",
