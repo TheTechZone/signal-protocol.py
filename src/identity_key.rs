@@ -5,6 +5,7 @@ use pyo3::exceptions;
 use pyo3::prelude::*;
 use pyo3::types::PyBytes;
 
+use base64::{engine::general_purpose, Engine as _};
 use rand::rngs::OsRng;
 
 use crate::curve::{PrivateKey, PublicKey};
@@ -36,11 +37,34 @@ impl IdentityKey {
         PyBytes::new(py, &self.key.serialize()).into()
     }
 
+    pub fn to_base64(&self) -> PyResult<String> {
+        Ok(general_purpose::STANDARD.encode(&self.key.serialize()))
+    }
+
+    #[staticmethod]
+    pub fn from_base64(input: &[u8]) -> PyResult<Self> {
+        match general_purpose::STANDARD.decode(input) {
+            Ok(byte_data) => Ok(Self::new(&byte_data)?),
+            Err(err) => Err(SignalProtocolError::err_from_str(err.to_string())),
+        }
+    }
+
     fn __richcmp__(&self, other: IdentityKey, op: CompareOp) -> PyResult<bool> {
         match op {
             CompareOp::Eq => Ok(self.key.serialize() == other.key.serialize()),
             CompareOp::Ne => Ok(self.key.serialize() != other.key.serialize()),
             _ => Err(exceptions::PyNotImplementedError::new_err(())),
+        }
+    }
+
+    pub fn verify_alternate_identity(
+        &self,
+        other: &IdentityKey,
+        signature: &[u8],
+    ) -> PyResult<bool> {
+        match self.key.verify_alternate_identity(&other.key, signature) {
+            Err(err) => Err(SignalProtocolError::err_from_str(err.to_string())),
+            Ok(result) => Ok(result),
         }
     }
 }
@@ -65,6 +89,18 @@ impl IdentityKeyPair {
         match libsignal_protocol::IdentityKeyPair::try_from(identity_key_pair_bytes) {
             Ok(key) => Ok(Self { key }),
             Err(err) => Err(SignalProtocolError::new_err(err)),
+        }
+    }
+
+    pub fn to_base64(&self) -> PyResult<String> {
+        Ok(general_purpose::STANDARD.encode(&self.key.serialize()))
+    }
+
+    #[staticmethod]
+    pub fn from_base64(input: &[u8]) -> PyResult<Self> {
+        match general_purpose::STANDARD.decode(input) {
+            Ok(byte_data) => Ok(Self::from_bytes(&byte_data)?),
+            Err(err) => Err(SignalProtocolError::err_from_str(err.to_string())),
         }
     }
 
@@ -94,6 +130,15 @@ impl IdentityKeyPair {
 
     pub fn serialize(&self, py: Python) -> PyObject {
         PyBytes::new(py, &self.key.serialize()).into()
+    }
+
+    pub fn sign_alternate_identity(&self, py: Python, other: &IdentityKey) -> PyResult<PyObject> {
+        let mut csprng = OsRng;
+        let alt = self.key.sign_alternate_identity(&other.key, &mut csprng);
+        match alt {
+            Err(err) => Err(SignalProtocolError::err_from_str(err.to_string())),
+            Ok(data) => Ok(PyBytes::new(py, &data).into()),
+        }
     }
 }
 

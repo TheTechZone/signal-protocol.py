@@ -16,7 +16,7 @@ use rand::rngs::OsRng;
 pub struct ContentHint {
     pub data: libsignal_protocol::ContentHint,
 }
-// todo: impl
+// TODO: impl
 
 #[pyclass]
 #[derive(Debug, Clone)]
@@ -107,7 +107,7 @@ impl SenderCertificate {
             sender_e164,
             key.key,
             sender_device_id.value,
-            expiration,
+            libsignal_protocol::Timestamp::from_epoch_millis(expiration),
             signer.data,
             &signer_key.key,
             &mut csprng,
@@ -118,7 +118,8 @@ impl SenderCertificate {
     }
 
     fn validate(&self, trust_root: &PublicKey, validation_time: u64) -> Result<bool> {
-        Ok(self.data.validate(&trust_root.key, validation_time)?)
+        let validation = libsignal_protocol::Timestamp::from_epoch_millis(validation_time);
+        Ok(self.data.validate(&trust_root.key, validation)?)
     }
 
     fn signer(&self) -> Result<ServerCertificate> {
@@ -144,7 +145,7 @@ impl SenderCertificate {
     }
 
     fn expiration(&self) -> Result<u64> {
-        Ok(self.data.expiration()?)
+        Ok(self.data.expiration()?.epoch_millis())
     }
 
     fn certificate(&self, py: Python) -> Result<PyObject> {
@@ -332,7 +333,7 @@ pub fn sealed_sender_decrypt(
     match block_on(libsignal_protocol::sealed_sender_decrypt(
         ciphertext,
         &trust_root.key,
-        timestamp,
+        libsignal_protocol::Timestamp::from_epoch_millis(timestamp),
         local_e164,
         local_uuid,
         local_device_id.value,
@@ -353,7 +354,7 @@ pub fn sealed_sender_encrypt(
     sender_cert: &SenderCertificate,
     ptext: &[u8],
     protocol_store: &mut InMemSignalProtocolStore,
-    // now: SystemTime, // todo: should SystemTime be exposed?
+    // now: SystemTime, // TODO: should SystemTime be exposed?
     py: Python,
 ) -> Result<PyObject> {
     let mut csprng = OsRng;

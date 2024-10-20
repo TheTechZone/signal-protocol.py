@@ -1,4 +1,5 @@
 use pyo3::prelude::*;
+use serde::Serialize;
 use std::convert;
 
 /// The type used in memory to represent a device, i.e. a particular Signal client instance which represents some user.
@@ -25,6 +26,15 @@ impl convert::From<u32> for DeviceId {
     }
 }
 
+impl Serialize for DeviceId {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: serde::Serializer,
+    {
+        serializer.serialize_u32(self.get_id())
+    }
+}
+
 #[pymethods]
 impl DeviceId {
     #[new]
@@ -32,6 +42,23 @@ impl DeviceId {
         DeviceId {
             value: libsignal_protocol::DeviceId::from(device_id),
         }
+    }
+
+    // TODO: Maybe turn into a getter
+    pub fn get_id(&self) -> u32 {
+        u32::from(self.value)
+    }
+
+    fn __str__(&self) -> PyResult<String> {
+        Ok(String::from(format!("{}", self.value)))
+    }
+
+    fn __repr__(&self) -> PyResult<String> {
+        let memory_address = std::ptr::addr_of!(self) as usize;
+        Ok(String::from(format!(
+            "DeviceId({}) at 0x{:x}",
+            self.value, memory_address
+        )))
     }
 }
 
@@ -53,10 +80,12 @@ impl ProtocolAddress {
         }
     }
 
+    // TODO: Maybe turn into a getter
     pub fn name(&self) -> &str {
         self.state.name()
     }
 
+    // TODO: Maybe turn into a getter
     pub fn device_id(&self) -> u32 {
         u32::from(self.state.device_id())
     }

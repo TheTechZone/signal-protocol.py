@@ -6,8 +6,9 @@ use rand::rngs::OsRng;
 use crate::curve::{KeyPair, PublicKey};
 use crate::error::Result;
 use crate::identity_key::{IdentityKey, IdentityKeyPair};
-use crate::protocol::KemKeyPair;
-use crate::protocol::KemSerializedCiphertext;
+use crate::kem::KeyPair as KemKeyPair;
+use crate::kem::PublicKey as KemPublicKey;
+use crate::kem::SerializedCiphertext;
 use crate::state::SessionRecord;
 
 #[pyclass]
@@ -18,29 +19,43 @@ pub struct AliceSignalProtocolParameters {
 #[pymethods]
 impl AliceSignalProtocolParameters {
     #[new]
-    #[pyo3(signature = (our_identity_key_pair,our_base_key_pair,their_identity_key,their_signed_pre_key,_their_one_time_pre_key,their_ratchet_key))]
+    #[pyo3(signature = (our_identity_key_pair,our_base_key_pair,their_identity_key,their_signed_pre_key,_their_one_time_pre_key,their_ratchet_key,_their_kyber_pre_key))]
     pub fn new(
         our_identity_key_pair: IdentityKeyPair,
         our_base_key_pair: KeyPair,
         their_identity_key: IdentityKey,
         their_signed_pre_key: PublicKey,
-        _their_one_time_pre_key: Option<PublicKey>, // todo: wth libsignal ignores this and kyber? :/
+        _their_one_time_pre_key: Option<PublicKey>, // TODO: wth libsignal ignores this and kyber? :/
         their_ratchet_key: PublicKey,
+        _their_kyber_pre_key: Option<crate::kem::PublicKey>, // TODO: wth libsignal ignores this? :/
     ) -> Self {
-        // let upstream_their_one_time_pre_key = match their_one_time_pre_key {
-        //     None => None,
-        //     Some(x) => Some(x.key),
-        // };
+        let _upstream_their_one_time_pre_key = match _their_one_time_pre_key {
+            None => None,
+            Some(x) => Some(x.key),
+        };
 
-        Self {
-            inner: libsignal_protocol::AliceSignalProtocolParameters::new(
-                our_identity_key_pair.key,
-                our_base_key_pair.key,
-                their_identity_key.key,
-                their_signed_pre_key.key,
-                their_ratchet_key.key,
-            ),
+        let _upstream_their_kyber_pre_key = match _their_kyber_pre_key {
+            None => None,
+            Some(x) => Some(x.key),
+        };
+
+        let mut inner = libsignal_protocol::AliceSignalProtocolParameters::new(
+            our_identity_key_pair.key,
+            our_base_key_pair.key,
+            their_identity_key.key,
+            their_signed_pre_key.key,
+            their_ratchet_key.key,
+        );
+
+        if _upstream_their_one_time_pre_key.is_some() {
+            inner.set_their_one_time_pre_key(_upstream_their_one_time_pre_key.unwrap())
         }
+
+        if _upstream_their_kyber_pre_key.is_some() {
+            inner.set_their_kyber_pre_key(&_upstream_their_kyber_pre_key.unwrap())
+        }
+
+        Self { inner: inner }
     }
 
     pub fn our_identity_key_pair(&self) -> Result<IdentityKeyPair> {
@@ -76,6 +91,16 @@ impl AliceSignalProtocolParameters {
         Ok(Some(PublicKey { key: *key }))
     }
 
+    pub fn their_kyber_pre_key(&self) -> Result<Option<KemPublicKey>> {
+        let key: &libsignal_protocol::kem::Key<libsignal_protocol::kem::Public> =
+            match self.inner.their_kyber_pre_key() {
+                None => return Ok(None),
+                Some(key) => key,
+            };
+
+        Ok(Some(KemPublicKey { key: key.clone() }))
+    }
+
     pub fn their_ratchet_key(&self) -> Result<PublicKey> {
         Ok(PublicKey {
             key: *self.inner.their_ratchet_key(),
@@ -101,7 +126,7 @@ pub struct BobSignalProtocolParameters {
 #[pymethods]
 impl BobSignalProtocolParameters {
     #[new]
-    #[pyo3(signature = (our_identity_key_pair,our_signed_pre_key_pair,our_one_time_pre_key_pair,our_ratchet_key_pair,our_kyber_pre_key_pair,their_identity_key,their_base_key,_their_kyber_ciphertext))]
+    #[pyo3(signature = (our_identity_key_pair,our_signed_pre_key_pair,our_one_time_pre_key_pair,our_ratchet_key_pair,our_kyber_pre_key_pair,their_identity_key,their_base_key,their_kyber_ciphertext))]
     pub fn new(
         our_identity_key_pair: IdentityKeyPair,
         our_signed_pre_key_pair: KeyPair,
@@ -110,7 +135,7 @@ impl BobSignalProtocolParameters {
         our_kyber_pre_key_pair: Option<KemKeyPair>,
         their_identity_key: IdentityKey,
         their_base_key: PublicKey,
-        _their_kyber_ciphertext: Option<KemSerializedCiphertext>, // todo:deal with this
+        their_kyber_ciphertext: Option<SerializedCiphertext>, // todo:deal with this
     ) -> Self {
         let upstream_our_one_time_pre_key_pair = match our_one_time_pre_key_pair {
             None => None,
@@ -119,7 +144,14 @@ impl BobSignalProtocolParameters {
 
         let upstream_our_kyber_pre_key_pair = match our_kyber_pre_key_pair {
             None => None,
-            Some(x) => Some(x.state),
+            Some(x) => Some(x.key),
+        };
+
+        let kyberctxt: Option<&'static Box<[u8]>> = match their_kyber_ciphertext {
+            None => None,
+            Some(ctxt) => Some(Box::leak(Box::new(
+                ctxt.state.into_vec().clone().into_boxed_slice(),
+            ))),
         };
 
         Self {
@@ -131,7 +163,7 @@ impl BobSignalProtocolParameters {
                 upstream_our_kyber_pre_key_pair,
                 their_identity_key.key,
                 their_base_key.key,
-                None, // todo: not sure here
+                kyberctxt,
             ),
         }
     }
@@ -163,6 +195,17 @@ impl BobSignalProtocolParameters {
         })
     }
 
+    pub fn our_kyber_pre_key_pair(&self) -> Result<Option<KemKeyPair>> {
+        let keypair = match self.inner.our_kyber_pre_key_pair() {
+            None => return Ok(None),
+            Some(keypair) => keypair,
+        };
+
+        Ok(Some(KemKeyPair {
+            key: keypair.clone(),
+        }))
+    }
+
     pub fn their_identity_key(&self) -> Result<IdentityKey> {
         Ok(IdentityKey {
             key: *self.inner.their_identity_key(),
@@ -173,6 +216,14 @@ impl BobSignalProtocolParameters {
         Ok(PublicKey {
             key: *self.inner.their_base_key(),
         })
+    }
+
+    pub fn their_kyber_ciphertext(&self) -> Result<Option<&[u8]>> {
+        let ctxt = match self.inner.their_kyber_ciphertext() {
+            None => return Ok(None),
+            Some(c) => c,
+        };
+        Ok(Some(&ctxt))
     }
 }
 

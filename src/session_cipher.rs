@@ -8,7 +8,6 @@ use rand::rngs::OsRng;
 use crate::address::ProtocolAddress;
 use crate::error::Result;
 use crate::protocol::{CiphertextMessage, PreKeySignalMessage, SignalMessage};
-// use crate::state::SystemTime;
 use crate::storage::InMemSignalProtocolStore;
 
 #[pyfunction]
@@ -16,7 +15,7 @@ pub fn message_encrypt(
     protocol_store: &mut InMemSignalProtocolStore,
     remote_address: &ProtocolAddress,
     msg: &[u8],
-    // now: SystemTime, // todo: should SystemTime be exposed?
+    // now: SystemTime, // TODO: should SystemTime be exposed?
 ) -> Result<CiphertextMessage> {
     let now2 = std::time::SystemTime::now();
 

@@ -21,9 +21,10 @@ from signal_protocol import (
 )
 from signal_protocol.error import SignalProtocolException
 
-from signal_protocol.uuid import uuid_from_u128
 
 DEVICE_ID = 1
+PRE_KYBER_MESSAGE_VERSION = 3
+KYBER_AWARE_MESSAGE_VERSION = 4
 
 
 def test_basic_prekey_v3():

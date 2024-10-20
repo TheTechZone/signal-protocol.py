@@ -5,7 +5,7 @@ from signal_protocol import (
     address,
     error,
     identity_key,
-    protocol,
+    kem,
     ratchet,
     session,
     session_cipher,
@@ -115,21 +115,24 @@ def initialize_sessions_v3():
         bob_base_key.public_key(),
         None,
         bob_ephemeral_key.public_key(),
+        None,
     )
 
     alice_session = ratchet.initialize_alice_session(alice_params)
 
-    _kyber_ctxt = protocol.KemSerializedCiphertext(b"")
+    _keypair = kem.KeyPair.generate(kem.KeyType(0))
+    _, _kyber_ctxt = _keypair.encapsulate()
+    _kyber_ctxt = kem.SerializedCiphertext(_kyber_ctxt)
 
     bob_params = ratchet.BobSignalProtocolParameters(
         bob_identity,
         bob_base_key,
         None,
         bob_ephemeral_key,
-        None,  # todo: kyber
+        None,  # TODO: kyber
         alice_identity.identity_key(),
         alice_base_key.public_key(),
-        _kyber_ctxt,
+        None,
     )
 
     bob_session = ratchet.initialize_bob_session(bob_params)

@@ -102,7 +102,7 @@ pub fn init_submodule(module: &PyModule) -> PyResult<()> {
     module.add_wrapped(wrap_pyfunction!(group_encrypt))?;
     module.add_wrapped(wrap_pyfunction!(group_decrypt))?;
     module.add_wrapped(wrap_pyfunction!(process_sender_key_distribution_message))?;
-    // todo: triple-check this -- they changed the api
+    // TODO: triple-check this -- they changed the api
     module.add_wrapped(wrap_pyfunction!(create_sender_key_distribution_message))?;
     Ok(())
 }
