@@ -1,5 +1,5 @@
 import random
-from signal_protocol.crypto import Aes256Ctr32, aes_256_gcm_encrypt, aes_256_gcm_decrypt
+from signal_protocol.base_crypto import Aes256Ctr32, aes_256_gcm_encrypt, aes_256_gcm_decrypt
 
 
 def test_aes_ctr_smoke():
