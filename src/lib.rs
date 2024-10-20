@@ -26,7 +26,7 @@ mod uuid;
 ///
 /// Basic usage:
 ///
-/// >>> pub, priv = signal_protocol.curve.generate_skeypair()
+/// >>> pub, priv = signal_protocol.curve.generate_keypair()
 ///
 /// We do not expose a Python submodule for HKDF (a module in the upstream crate).
 #[pymodule]
@@ -98,19 +98,19 @@ fn signal_protocol(py: Python, module: &PyModule) -> PyResult<()> {
     uuid::init_submodule(uuid_submod)?;
     module.add_submodule(uuid_submod)?;
 
-    let crypto_submod = PyModule::new(py, "crypto")?; // TODO: make expose this under a clearer name
-    base_crypto::init_submodule(crypto_submod)?;
-    module.add_submodule(crypto_submod)?;
-
     let helpers_submod = PyModule::new(py, "helpers")?;
     helpers::init_submodule(helpers_submod)?;
     module.add_submodule(helpers_submod)?;
+
+    let crypto_submod = PyModule::new(py, "base_crypto")?;
+    base_crypto::init_submodule(crypto_submod)?;
+    module.add_submodule(crypto_submod)?;
 
     // Workaround to enable imports from submodules. Upstream issue: pyo3 issue #759
     // https://github.com/PyO3/pyo3/issues/759#issuecomment-653964601
     let mods = [
         "address",
-        "crypto",
+        "base_crypto",
         "curve",
         "error",
         "fingerprint",

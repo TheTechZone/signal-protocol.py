@@ -1,19 +1,22 @@
 use base64::Engine;
 use libsignal_protocol::GenericSignedPreKey;
 use pyo3::prelude::*;
-// use pyo3::types::IntoPyDict;
 use pyo3::types::PyBytes;
 use pyo3::types::PyDict;
 use pyo3::wrap_pyfunction;
 use serde::ser::SerializeStruct;
 use serde::Serialize;
 
+use base64::engine::general_purpose;
+
 use crate::address::DeviceId;
 use crate::curve::{KeyPair, PrivateKey, PublicKey};
 use crate::error::{Result, SignalProtocolError};
 use crate::identity_key::IdentityKey;
+use crate::kem::KeyPair as KemKeyPair;
 use crate::kem::PublicKey as KemPublicKey;
-use crate::kem::{self, SecretKey};
+use crate::kem::SecretKey as KemSecretKey;
+use crate::kem::{self};
 
 use std::convert;
 
@@ -534,9 +537,7 @@ impl PreKeyRecord {
 
 /// Helper function for generating N prekeys.
 /// Returns a list of PreKeyRecords.
-///
 /// # Example
-///
 /// ```
 /// from signal_protocol import curve, state
 ///
@@ -580,8 +581,8 @@ pub fn generate_n_signed_kyberkeys(
     let mut keyvec: Vec<KyberPreKeyRecord> = Vec::new();
     let mut i: u32 = u32::from(id);
     for _n in 0..n {
-        let key_type = kem::KeyType::new(0);
         let id = KyberPreKeyId::from(i);
+        let key_type = kem::KeyType::new(0);
         let prekey = KyberPreKeyRecord::generate(key_type.unwrap(), id, signing_key).unwrap();
         keyvec.push(prekey);
         i += 1;
@@ -603,7 +604,10 @@ impl SignedPreKeyRecord {
         let key = libsignal_protocol::KeyPair::new(keypair.key.public_key, keypair.key.private_key);
         SignedPreKeyRecord {
             state: libsignal_protocol::SignedPreKeyRecord::new(
-                id.value, timestamp, &key, &signature,
+                id.value,
+                libsignal_protocol::Timestamp::from_epoch_millis(timestamp),
+                &key,
+                &signature,
             ),
         }
     }
@@ -622,8 +626,8 @@ impl SignedPreKeyRecord {
         })
     }
 
-    pub fn timestamp(&self) -> Result<u64> {
-        Ok(self.state.timestamp()?)
+    fn timestamp(&self) -> Result<u64> {
+        Ok(self.state.timestamp()?.epoch_millis())
     }
 
     pub fn signature(&self, py: Python) -> Result<PyObject> {
@@ -687,6 +691,21 @@ impl SessionRecord {
     fn serialize(&self, py: Python) -> Result<PyObject> {
         let result = self.state.serialize()?;
         Ok(PyBytes::new(py, &result).into())
+    }
+
+    pub fn to_base64(&self) -> PyResult<String> {
+        match &self.state.serialize() {
+            Ok(byte_data) => Ok(general_purpose::STANDARD.encode(byte_data)),
+            Err(err) => Err(SignalProtocolError::err_from_str(err.to_string())),
+        }
+    }
+
+    #[staticmethod]
+    pub fn from_base64(input: &[u8]) -> PyResult<Self> {
+        match general_purpose::STANDARD.decode(input) {
+            Ok(byte_data) => Ok(Self::deserialize(&byte_data)?),
+            Err(err) => Err(SignalProtocolError::err_from_str(err.to_string())),
+        }
     }
 
     fn session_version(&self) -> Result<u32> {
@@ -758,8 +777,35 @@ pub struct KyberPreKeyRecord {
 
 #[pymethods]
 impl KyberPreKeyRecord {
-    /// TODO: implement KyberPreKeyRecord
-    /// TODO: add missing features
+    #[new]
+    pub fn new(
+        id: KyberPreKeyId,
+        timestamp: u64,
+        key_pair: kem::KeyPair,
+        signature: &[u8],
+    ) -> Self {
+        let upstream = libsignal_protocol::KyberPreKeyRecord::new(
+            id.value,
+            libsignal_protocol::Timestamp::from_epoch_millis(timestamp),
+            &key_pair.key,
+            &signature,
+        );
+
+        KyberPreKeyRecord { state: upstream }
+
+        // let key = KeyPair::from_public_and_private(key_pair.key.public_key.serialize().as_ref(), key_pair.key.secret_key.serialize().as_ref());
+        // let spk_record = SignedPreKeyRecord::new(
+        //     SignedPreKeyId::new(id.get_id()),
+        //     timestamp,
+        //     &key.unwrap(),
+        //     &signature,
+        // ).state;
+        // let data = spk_record.serialize().unwrap();
+        // KyberPreKeyRecord{
+        //     state: libsignal_protocol::KyberPreKeyRecord::deserialize(data.as_ref()).unwrap(),
+        // }
+    }
+
     #[staticmethod]
     pub fn generate(
         key_type: kem::KeyType,
@@ -777,6 +823,37 @@ impl KyberPreKeyRecord {
         }
     }
 
+    #[staticmethod]
+    fn deserialize(data: &[u8]) -> PyResult<Self> {
+        match libsignal_protocol::KyberPreKeyRecord::deserialize(data) {
+            Ok(state) => Ok(KyberPreKeyRecord { state }),
+            Err(err) => Err(SignalProtocolError::new_err(err)),
+        }
+    }
+
+    pub fn id(&self) -> Result<KyberPreKeyId> {
+        Ok(KyberPreKeyId {
+            value: self.state.id()?,
+        })
+    }
+
+    pub fn key_pair(&self) -> PyResult<KemKeyPair> {
+        let upstream = self.state.get_storage();
+        let key_pair = libsignal_protocol::kem::KeyPair::from_public_and_private(
+            &upstream.public_key,
+            &upstream.private_key,
+        );
+        Ok(KemKeyPair {
+            key: key_pair.unwrap(), // todo: fixme and look at the api
+        })
+        // &self.state.get_storage().
+    }
+
+    fn signature(&self, py: Python) -> Result<PyObject> {
+        let result = self.state.signature()?;
+        Ok(PyBytes::new(py, &result).into())
+    }
+
     fn get_storage(&self) -> PyResult<KyberPreKeyRecord> {
         let upstream = self.state.get_storage();
         let ik = libsignal_protocol::kem::KeyPair::from_public_and_private(
@@ -786,7 +863,7 @@ impl KyberPreKeyRecord {
 
         let upstream_state = libsignal_protocol::KyberPreKeyRecord::new(
             upstream.id.into(),
-            upstream.timestamp,
+            libsignal_protocol::Timestamp::from_epoch_millis(upstream.timestamp),
             &ik.unwrap(),
             &upstream.signature,
         );
@@ -796,14 +873,25 @@ impl KyberPreKeyRecord {
         })
     }
 
-    pub fn secret_key(&self) -> PyResult<SecretKey> {
+    pub fn public_key(&self) -> Result<KemPublicKey> {
+        Ok(KemPublicKey {
+            key: self.state.public_key()?,
+        })
+    }
+
+    pub fn secret_key(&self) -> PyResult<KemSecretKey> {
         let sk = self.state.secret_key();
         match sk {
-            Ok(key) => Ok(SecretKey { key: key }),
+            Ok(key) => Ok(KemSecretKey { key: key }),
             Err(_) => Err(SignalProtocolError::err_from_str(
                 "no secret key. have you generated one?".to_string(),
             )),
         }
+    }
+
+    fn serialize(&self, py: Python) -> Result<PyObject> {
+        let result = self.state.serialize()?;
+        Ok(PyBytes::new(py, &result).into())
     }
 }
 

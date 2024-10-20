@@ -44,6 +44,7 @@ impl DeviceId {
         }
     }
 
+    // TODO: Maybe turn into a getter
     pub fn get_id(&self) -> u32 {
         u32::from(self.value)
     }
@@ -79,10 +80,12 @@ impl ProtocolAddress {
         }
     }
 
+    // TODO: Maybe turn into a getter
     pub fn name(&self) -> &str {
         self.state.name()
     }
 
+    // TODO: Maybe turn into a getter
     pub fn device_id(&self) -> u32 {
         u32::from(self.state.device_id())
     }

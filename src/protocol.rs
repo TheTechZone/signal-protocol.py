@@ -8,7 +8,8 @@ use rand::rngs::OsRng;
 use crate::curve::{PrivateKey, PublicKey};
 use crate::error::{Result, SignalProtocolError};
 use crate::identity_key::IdentityKey;
-use crate::state::{PreKeyId, SignedPreKeyId};
+use crate::kem::SerializedCiphertext;
+use crate::state::{KyberPreKeyId, PreKeyId, SignedPreKeyId};
 use crate::uuid::UUID;
 
 /// CiphertextMessage is a Rust enum in the upstream crate. Mapping of enums to Python enums
@@ -25,17 +26,17 @@ impl CiphertextMessage {
     }
 }
 
-/// We're using the following mapping of libsignal_protocol::CiphertextMessageType to u8:
-/// CiphertextMessageType::Whisper => 2
-/// CiphertextMessageType::PreKey => 3
-/// CiphertextMessageType::SenderKey => 4
-/// CiphertextMessageType::SenderKeyDistribution => 5
 #[pymethods]
 impl CiphertextMessage {
     pub fn serialize(&self, py: Python) -> PyResult<PyObject> {
         Ok(PyBytes::new(py, self.data.serialize()).into())
     }
 
+    /// We're using the following mapping of libsignal_protocol::CiphertextMessageType to u8:
+    /// - CiphertextMessageType::Whisper => 2
+    /// - CiphertextMessageType::PreKey => 3
+    /// - CiphertextMessageType::SenderKey => 7
+    /// - CiphertextMessageType::Plaintext => 8
     pub fn message_type(&self) -> u8 {
         self.data.message_type() as u8
     }
@@ -47,7 +48,15 @@ pub struct KyberPayload {
     pub data: libsignal_protocol::KyberPayload,
 }
 
-// TODO: handle impl
+#[pymethods]
+impl KyberPayload {
+    #[new]
+    pub fn new(pre_key_id: KyberPreKeyId, ciphertext: &[u8]) -> Self {
+        Self {
+            data: libsignal_protocol::KyberPayload::new(pre_key_id.value, ciphertext.into()),
+        }
+    }
+}
 
 /// CiphertextMessageType::PreKey => 3
 #[pyclass(extends=CiphertextMessage)]
@@ -162,6 +171,38 @@ impl PreKeySignalMessage {
     pub fn identity_key(&self) -> IdentityKey {
         IdentityKey {
             key: *self.data.identity_key(),
+        }
+    }
+
+    pub fn kyber_payload(&self) -> Option<KyberPayload> {
+        let pre_key_id = self.data.kyber_pre_key_id();
+        let kyber_ctxt = self.data.kyber_ciphertext();
+
+        match (pre_key_id, kyber_ctxt) {
+            (Some(pki), Some(ctxt)) => {
+                // let kyber_id = KyberPreKeyId::from(u32::from(pki));
+                let kyber_id = KyberPreKeyId { value: pki };
+                // Some(libsignal_protocol::KyberPayload::new(kyber_id, ctxt))
+                let sc = SerializedCiphertext::new(&ctxt).ok()?;
+                Some(KyberPayload {
+                    data: libsignal_protocol::KyberPayload::new(kyber_id.value, sc.state),
+                })
+            }
+            _ => None,
+        }
+    }
+
+    pub fn kyber_id(&self) -> Option<KyberPreKeyId> {
+        match self.data.kyber_pre_key_id() {
+            Some(key_id) => Some(KyberPreKeyId { value: key_id }),
+            None => None,
+        }
+    }
+
+    pub fn kyber_ciphertext(&self, py: Python) -> Option<PyObject> {
+        match self.data.kyber_ciphertext() {
+            Some(ctxt) => Some(PyBytes::new(py, &ctxt).into()),
+            None => None,
         }
     }
 
@@ -485,5 +526,6 @@ pub fn init_submodule(module: &PyModule) -> PyResult<()> {
     module.add_class::<SignalMessage>()?;
     module.add_class::<SenderKeyMessage>()?;
     module.add_class::<SenderKeyDistributionMessage>()?;
+    module.add_class::<KyberPayload>()?;
     Ok(())
 }

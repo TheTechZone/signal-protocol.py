@@ -115,6 +115,14 @@ impl PublicKey {
         Ok(general_purpose::STANDARD.encode(&self.key.serialize()))
     }
 
+    #[staticmethod]
+    pub fn from_base64(input: &[u8]) -> PyResult<Self> {
+        match general_purpose::STANDARD.decode(input) {
+            Ok(byte_data) => Ok(Self::deserialize(&byte_data)?),
+            Err(err) => Err(SignalProtocolError::err_from_str(err.to_string())),
+        }
+    }
+
     pub fn verify_signature(&self, message: &[u8], signature: &[u8]) -> Result<bool> {
         Ok(self.key.verify_signature(&message, &signature)?)
     }
@@ -162,6 +170,18 @@ impl PrivateKey {
 
     pub fn serialize(&self, py: Python) -> PyObject {
         PyBytes::new(py, &self.key.serialize()).into()
+    }
+
+    pub fn to_base64(&self) -> PyResult<String> {
+        Ok(general_purpose::STANDARD.encode(&self.key.serialize()))
+    }
+
+    #[staticmethod]
+    pub fn from_base64(input: &[u8]) -> PyResult<Self> {
+        match general_purpose::STANDARD.decode(input) {
+            Ok(byte_data) => Ok(Self::deserialize(&byte_data)?),
+            Err(err) => Err(SignalProtocolError::err_from_str(err.to_string())),
+        }
     }
 
     pub fn calculate_signature(&self, message: &[u8], py: Python) -> Result<PyObject> {

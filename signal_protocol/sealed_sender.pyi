@@ -1,4 +1,4 @@
-from .address import ProtocolAddress
+from .address import ProtocolAddress, DeviceId
 from .curve import PublicKey, PrivateKey
 from .storage import InMemSignalProtocolStore
 from typing import Optional, Any
@@ -309,7 +309,7 @@ def sealed_sender_decrypt(
     timestamp: int,
     local_e164: Optional[str],
     local_uuid: str,
-    local_device_id: int,
+    local_device_id: DeviceId,
     protocol_store: InMemSignalProtocolStore,
 ) -> SealedSenderDecryptionResult:
     """

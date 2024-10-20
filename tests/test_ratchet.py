@@ -3,7 +3,6 @@ import pytest
 from signal_protocol.state import SessionRecord
 from signal_protocol.kem import SerializedCiphertext, KeyPair as KyberKeyPair, KeyType
 
-# from signal_protocol.protocol import KemSerializedCiphertext
 from signal_protocol.curve import KeyPair, PrivateKey, PublicKey
 from signal_protocol.identity_key import IdentityKey, IdentityKeyPair
 from signal_protocol.ratchet import (

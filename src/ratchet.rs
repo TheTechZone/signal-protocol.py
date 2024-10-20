@@ -154,26 +154,6 @@ impl BobSignalProtocolParameters {
             ))),
         };
 
-        // below lines compiled
-
-        /// let kyberctxt: Box<Box<[u8]>> = Box::new(
-        ///     their_kyber_ciphertext
-        ///         .unwrap()
-        ///         .state
-        ///         .into_vec()
-        ///         .clone()
-        ///         .into_boxed_slice(),
-        /// );
-
-        // unsafe {
-
-        /// let kyberctxt_leak: &'static Box<[u8]> = Box::leak(kyberctxt); // aaa
-        // }
-        // let kyberctxt_box = Box::new(kyberctxt_leak.into());
-        // let kyberctxt = match  their_kyber_ciphertext {
-        //     None => None,
-        //     Some(x) => Some(Box::new(&(*Box::leak(x.state.into_vec().clone().into_boxed_slice()))))// .clone().into_boxed_slice())
-        // };
         Self {
             inner: libsignal_protocol::BobSignalProtocolParameters::new(
                 our_identity_key_pair.key,

@@ -63,15 +63,18 @@ from signal_protocol import helpers
 print("example registration_data")
 alice_identity_key_pair2 = identity_key.IdentityKeyPair.generate()
 
-print(base64.b64encode(alice_identity_key_pair.public_key().serialize()), alice_identity_key_pair2.public_key().serialize().hex())
+print(
+    base64.b64encode(alice_identity_key_pair.public_key().serialize()),
+    alice_identity_key_pair2.public_key().serialize().hex(),
+)
 # normally you'd provide different keys for aci and pni but this is just dummy
 registration_data, reg_secrets = helpers.create_registration(
     alice_identity_key_pair, alice_identity_key_pair2
 )
 
-print("#"*256)
+print("#" * 256)
 print(json.dumps(registration_data, indent=4))
-#print(reg_secrets)
+# print(reg_secrets)
 
 print("\n\nEXAMPLE key")
 data, secrets = helpers.create_keys_data(100, alice_identity_key_pair)
