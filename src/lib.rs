@@ -11,6 +11,7 @@ mod group_cipher;
 mod helpers;
 mod identity_key;
 mod kem;
+mod key_transparency;
 mod protocol;
 mod ratchet;
 mod sealed_sender;
@@ -115,6 +116,10 @@ fn signal_protocol(py: Python, module: &PyModule) -> PyResult<()> {
     let account_keys = PyModule::new(py, "account_keys")?;
     account_keys::init_submodule(account_keys)?;
     module.add_submodule(account_keys)?;
+
+    let key_transparency = PyModule::new(py, "key_transparency")?;
+    key_transparency::init_submodule(key_transparency)?;
+    module.add_submodule(key_transparency)?;
     // Workaround to enable imports from submodules. Upstream issue: pyo3 issue #759
     // https://github.com/PyO3/pyo3/issues/759#issuecomment-653964601
     let mods = [
@@ -129,6 +134,7 @@ fn signal_protocol(py: Python, module: &PyModule) -> PyResult<()> {
         "helpers",
         "identity_key",
         "kem",
+        "key_transparency",
         "protocol",
         "ratchet",
         "sealed_sender",
