@@ -129,21 +129,23 @@ impl AccountEntropyPool {
 #[derive(Debug)]
 #[pyclass]
 pub struct BackupKey {
-    inner: libsignal_account_keys::BackupKey,
+    // todo: this will become annoying to deal with later on...
+    // BackupKey became V0 and will be deprecated for V1 soon
+    inner: libsignal_account_keys::BackupKey<0>,
 }
 
 #[pymethods]
 impl BackupKey {
     #[new]
     fn new(data: &[u8]) -> PyResult<Self> {
-        if data.len() != libsignal_account_keys::BackupKey::LEN {
+        if data.len() != libsignal_account_keys::BACKUP_KEY_LEN {
             return Err(SignalProtocolError::err_from_str(String::from(
                 "master_key length must be 32 bytes",
             )));
         }
         Ok(BackupKey {
             inner: libsignal_account_keys::BackupKey(
-                <[u8; libsignal_account_keys::BackupKey::LEN]>::try_from(data)?,
+                <[u8; libsignal_account_keys::BACKUP_KEY_LEN]>::try_from(data)?,
             ),
         })
     }
@@ -159,7 +161,7 @@ impl BackupKey {
             [0; libsignal_account_keys::BackupKey::MASTER_KEY_LEN];
         master_key_array.copy_from_slice(master_key);
         Ok(BackupKey {
-            inner: libsignal_account_keys::BackupKey::derive_from_master_key(&master_key_array),
+            inner: libsignal_account_keys::BackupKeyV0::derive_from_master_key(&master_key_array),
         })
     }
 
