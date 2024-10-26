@@ -10,10 +10,10 @@ rand = "0.8"
 libsignal-protocol = { git = "https://github.com/signalapp/libsignal", tag="v0.60.0" }
 libsignal-core = { git = "https://github.com/signalapp/libsignal", version = "0.1.0" }
 libsignal-keytrans = { git = "https://github.com/signalapp/libsignal", version = "0.0.1" }
-#libsignal-net = { git = "https://github.com/signalapp/libsignal", version = "0.1.0" }
 signal-crypto = { git = "https://github.com/signalapp/libsignal", version = "0.1.0" }
 libsignal-account-keys = { git = "https://github.com/signalapp/libsignal", version = "0.1.0", features = ["serde"]}
 device-transfer = { git = "https://github.com/signalapp/libsignal", version = "0.1.0"}
+libsignal-net = { git = "https://github.com/signalapp/libsignal", version = "0.1.0" }
 
 pyo3 = { version = "0.20.2", features = ["extension-module", "multiple-pymethods"] }
 futures = "0.3.7"
@@ -23,6 +23,10 @@ pyo3-log = "0.9.0"
 serde = {version = "1.0", features = ["derive"]}
 serde_json = {version = "1.0"}
 base64 = "0.22.1"
+
+[patch.crates-io]
+boring = { git = "https://github.com/signalapp/boring", tag = "signal-v4.9.0b" }
+boring-sys = { git = "https://github.com/signalapp/boring", tag = "signal-v4.9.0b" }
 
 [lib]
 name = "signal_protocol"
