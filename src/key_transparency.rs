@@ -1,7 +1,6 @@
 use crate::error::SignalProtocolError;
-use pyo3::prelude::PyModule;
+use pyo3::prelude::*;
 use pyo3::types::PyBytes;
-use pyo3::{pyclass, pymethods, PyObject, PyResult, Python};
 
 #[derive(Copy, Clone, Debug)]
 #[pyclass]
@@ -86,12 +85,12 @@ impl VrfPublicKey {
     fn as_bytes(&self, py: Python) -> PyObject {
         // self.inner.as_bytes().to_vec()
         let data = self.inner.as_bytes().to_vec();
-        PyBytes::new(py, &data).into()
+        PyBytes::new_bound(py, &data).into()
     }
 
     fn proof_to_hash(&self, m: &[u8], proof: &[u8], py: Python) -> PyResult<PyObject> {
         match self.inner.proof_to_hash(m, <&[u8; 80]>::try_from(proof)?) {
-            Ok(hash) => Ok(PyBytes::new(py, &hash).into()),
+            Ok(hash) => Ok(PyBytes::new_bound(py, &hash).into()),
             Err(err) => Err(SignalProtocolError::err_from_str(format!(
                 "proof to hash failed: {:?}",
                 err
@@ -111,6 +110,7 @@ struct DeploymentMode {
 #[pymethods]
 impl DeploymentMode {
     #[new]
+    #[pyo3(signature = (value, key=None))]
     fn new(value: u8, key: Option<VerifyingKey>) -> PyResult<Self> {
         if value != 1 && key.is_none() {
             return Err(SignalProtocolError::err_from_str(format!(
@@ -185,7 +185,7 @@ impl PublicConfig {
     }
 }
 
-pub fn init_submodule(module: &PyModule) -> PyResult<()> {
+pub fn init_submodule(module: &Bound<'_, PyModule>) -> PyResult<()> {
     module.add_class::<VerifyingKey>()?;
     module.add_class::<VrfPublicKey>()?;
     module.add_class::<DeploymentMode>()?;

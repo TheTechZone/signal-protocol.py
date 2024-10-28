@@ -107,7 +107,7 @@ impl ProtocolAddress {
     }
 }
 
-pub fn init_submodule(module: &PyModule) -> PyResult<()> {
+pub fn init_submodule(module: &Bound<'_, PyModule>) -> PyResult<()> {
     module.add_class::<ProtocolAddress>()?;
     module.add_class::<DeviceId>()?;
     Ok(())

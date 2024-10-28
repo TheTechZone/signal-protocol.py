@@ -58,7 +58,7 @@ impl PinHash {
     /// * `group_id` - The attested group id returned by the SVR service
     #[staticmethod]
     pub fn make_salt(py: Python, username: &str, group_id: u64) -> PyObject {
-        PyBytes::new(
+        PyBytes::new_bound(
             py,
             &libsignal_account_keys::PinHash::make_salt(username, group_id),
         )
@@ -69,13 +69,13 @@ impl PinHash {
     /// them to a secure store.
     /// The 32 byte prefix of the 64 byte hashed pin.
     pub fn encryption_key(&self, py: Python) -> PyObject {
-        PyBytes::new(py, &self.inner.encryption_key).into()
+        PyBytes::new_bound(py, &self.inner.encryption_key).into()
     }
 
     /// Returns a secret that can be used to access a value in a secure store. The 32 byte suffix of
     /// the 64 byte hashed pin.
     pub fn access_key(&self, py: Python) -> PyObject {
-        PyBytes::new(py, &self.inner.access_key).into()
+        PyBytes::new_bound(py, &self.inner.access_key).into()
     }
 }
 
@@ -238,7 +238,7 @@ impl BackupId {
     }
 }
 
-pub fn init_submodule(module: &PyModule) -> PyResult<()> {
+pub fn init_submodule(module: &Bound<'_, PyModule>) -> PyResult<()> {
     // pin properties
     module.add_class::<PinHash>()?;
     module.add_wrapped(wrap_pyfunction!(local_pin_hash))?;

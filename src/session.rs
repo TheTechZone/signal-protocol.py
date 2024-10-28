@@ -70,7 +70,7 @@ pub fn process_prekey_bundle(
     Ok(())
 }
 
-pub fn init_submodule(module: &PyModule) -> PyResult<()> {
+pub fn init_submodule(module: &Bound<'_, PyModule>) -> PyResult<()> {
     module.add_wrapped(wrap_pyfunction!(process_prekey_bundle))?;
     module.add_wrapped(wrap_pyfunction!(process_prekey))?;
     Ok(())

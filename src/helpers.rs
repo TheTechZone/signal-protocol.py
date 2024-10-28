@@ -13,7 +13,7 @@
 use base64::Engine;
 use libsignal_protocol::GenericSignedPreKey;
 use pyo3::prelude::*;
-use pyo3::types::PyDict;
+use pyo3::types::{IntoPyDict, PyDict};
 use rand::rngs::OsRng;
 use rand::Rng;
 use std::time::{SystemTime, UNIX_EPOCH};
@@ -69,7 +69,7 @@ impl convert::From<KyberPreKeyRecord> for UploadKeyType {
 
 impl UploadKeyType {
     fn to_py_dict(&self, py: Python) -> PyResult<Py<PyDict>> {
-        let dict: &PyDict = PyDict::new(py);
+        let dict: Bound<PyDict> = PyDict::new_bound(py);
         dict.set_item("keyId", self.key_id)?;
         dict.set_item(
             "publicKey",
@@ -87,7 +87,7 @@ impl UploadKeyType {
     }
 }
 
-fn merge_dicts(dict1: &PyDict, dict2: &PyDict) -> PyResult<()> {
+fn merge_dicts(dict1: &Bound<PyDict>, dict2: &Bound<PyDict>) -> PyResult<()> {
     for (key, value) in dict2.iter() {
         dict1.set_item(key, value)?;
     }
@@ -102,6 +102,7 @@ fn merge_dicts(dict1: &PyDict, dict2: &PyDict) -> PyResult<()> {
 /// - SignedPreKey
 /// - PqLastResortPreKey
 #[pyfunction]
+#[pyo3(signature = (key_kind, ik, spk_data=None, pq_data=None, spk_id=None, pq_id=None))]
 pub fn create_registration_keys(
     py: Python,
     key_kind: &str,
@@ -120,8 +121,8 @@ pub fn create_registration_keys(
         }
     };
 
-    let dict = PyDict::new(py);
-    let secrets = PyDict::new(py);
+    let dict = PyDict::new_bound(py);
+    let secrets = PyDict::new_bound(py);
 
     _ = match ik.public_key() {
         Ok(res) => match res.to_base64() {
@@ -202,6 +203,7 @@ pub fn create_registration_keys(
 /// - pniSignedPreKey
 /// - pniPqLastResortPreKey
 #[pyfunction]
+#[pyo3(signature = (aci_ik, pni_ik, aci_spk=None, pni_spk=None, aci_kyber=None, pni_kyber=None, aci_spk_id=None, pni_spk_id=None, aci_kyber_id=None, pni_kyber_id=None))]
 pub fn create_registration(
     py: Python,
     aci_ik: identity_key::IdentityKeyPair,
@@ -234,21 +236,22 @@ pub fn create_registration(
         pni_kyber_id,
     )?;
 
-    let aci_dict = aci_keys.downcast::<PyDict>(py)?;
-    let pni_dict = pni_keys.downcast::<PyDict>(py)?;
+    let aci_dict = aci_keys.downcast_bound::<PyDict>(py)?;
+    let pni_dict = pni_keys.downcast_bound::<PyDict>(py)?;
 
-    let aci_sdict = aci_secrets.downcast::<PyDict>(py)?;
-    let pni_sdict = pni_secrets.downcast::<PyDict>(py)?;
+    let aci_sdict = aci_secrets.downcast_bound::<PyDict>(py)?;
+    let pni_sdict = pni_secrets.downcast_bound::<PyDict>(py)?;
 
     _ = merge_dicts(aci_dict, pni_dict);
     _ = merge_dicts(aci_sdict, pni_sdict);
-    Ok((aci_keys.into(), aci_sdict.into()))
+    Ok((aci_keys.to_object(py), aci_sdict.to_object(py)))
 }
 
 /// create_keys_data generates the specified number of one-time keys (PreKeys) for the client to
 /// upload to the server, and returns them as a tuple of dictionaries along with the secrets.
 /// This function is associated with the endpoint /v2/keys/.
 #[pyfunction]
+#[pyo3(signature = (num_keys, ik, spk=None, last_resort_pqk=None, prekey_start_at=None, kyber_prekey_start_at=None))]
 pub fn create_keys_data(
     py: Python,
     num_keys: u16,
@@ -258,7 +261,7 @@ pub fn create_keys_data(
     prekey_start_at: Option<u32>,
     kyber_prekey_start_at: Option<u32>,
 ) -> PyResult<(PyObject, PyObject)> {
-    let dict = PyDict::new(py);
+    let dict = PyDict::new_bound(py);
     match spk {
         Some(key) => {
             let _ = dict.set_item("signedPreKey", key.public_key()?.to_base64()?);
@@ -283,9 +286,9 @@ pub fn create_keys_data(
         ik.private_key()?,
     );
 
-    let secrets_dict = PyDict::new(py);
-    let secrets_prekeys = PyDict::new(py);
-    let secrets_kyber = PyDict::new(py);
+    let secrets_dict = PyDict::new_bound(py);
+    let secrets_prekeys = PyDict::new_bound(py);
+    let secrets_kyber = PyDict::new_bound(py);
 
     let mut prekey_vec: Vec<Py<PyDict>> = Vec::new();
 
@@ -321,7 +324,7 @@ pub fn create_keys_data(
     Ok((dict.into(), secrets_dict.into()))
 }
 
-pub fn init_submodule(module: &PyModule) -> PyResult<()> {
+pub fn init_submodule(module: &Bound<'_, PyModule>) -> PyResult<()> {
     module.add_wrapped(wrap_pyfunction!(create_registration_keys))?;
     module.add_wrapped(wrap_pyfunction!(create_registration))?;
     module.add_wrapped(wrap_pyfunction!(create_keys_data))?;

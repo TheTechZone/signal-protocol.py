@@ -34,7 +34,7 @@ impl IdentityKey {
     }
 
     pub fn serialize(&self, py: Python) -> PyObject {
-        PyBytes::new(py, &self.key.serialize()).into()
+        PyBytes::new_bound(py, &self.key.serialize()).into()
     }
 
     pub fn to_base64(&self) -> PyResult<String> {
@@ -129,7 +129,7 @@ impl IdentityKeyPair {
     }
 
     pub fn serialize(&self, py: Python) -> PyObject {
-        PyBytes::new(py, &self.key.serialize()).into()
+        PyBytes::new_bound(py, &self.key.serialize()).into()
     }
 
     pub fn sign_alternate_identity(&self, py: Python, other: &IdentityKey) -> PyResult<PyObject> {
@@ -137,12 +137,12 @@ impl IdentityKeyPair {
         let alt = self.key.sign_alternate_identity(&other.key, &mut csprng);
         match alt {
             Err(err) => Err(SignalProtocolError::err_from_str(err.to_string())),
-            Ok(data) => Ok(PyBytes::new(py, &data).into()),
+            Ok(data) => Ok(PyBytes::new_bound(py, &data).into()),
         }
     }
 }
 
-pub fn init_submodule(module: &PyModule) -> PyResult<()> {
+pub fn init_submodule(module: &Bound<'_, PyModule>) -> PyResult<()> {
     module.add_class::<IdentityKey>()?;
     module.add_class::<IdentityKeyPair>()?;
     Ok(())
