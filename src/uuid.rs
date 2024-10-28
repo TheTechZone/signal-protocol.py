@@ -487,8 +487,8 @@ fn uuid4_bulk(py: Python, n: usize) -> Vec<UUID> {
         iter::repeat_with(|| UUID {
             handle: Uuid::new_v4(),
         })
-            .take(n)
-            .collect()
+        .take(n)
+        .collect()
     })
 }
 
@@ -499,10 +499,10 @@ fn uuid4_as_strings_bulk(py: Python, n: usize) -> Vec<String> {
             (*Uuid::new_v4()
                 .simple()
                 .encode_lower(&mut Uuid::encode_buffer()))
-                .to_string()
+            .to_string()
         })
-            .take(n)
-            .collect()
+        .take(n)
+        .collect()
     })
 }
 

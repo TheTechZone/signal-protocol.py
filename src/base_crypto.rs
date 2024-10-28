@@ -35,7 +35,10 @@ impl Aes256GcmEncryption {
         let mut buf: Vec<u8> = Vec::from(data).clone();
         gcm_enc.encrypt(&mut buf);
         let tag = gcm_enc.compute_tag();
-        Ok((PyBytes::new_bound(py, &buf).into(), PyBytes::new_bound(py, &tag).into()))
+        Ok((
+            PyBytes::new_bound(py, &buf).into(),
+            PyBytes::new_bound(py, &tag).into(),
+        ))
     }
 }
 

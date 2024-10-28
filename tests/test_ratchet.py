@@ -14,7 +14,7 @@ from signal_protocol.ratchet import (
 
 PRE_KYBER_MESSAGE_VERSION = 3
 KYBER_AWARE_MESSAGE_VERSION = 4
-KYBER_1024_KEY_TYPE = KeyType(0)
+KYBER_1024_KEY_TYPE = KeyType(8)
 
 
 def test_ratcheting_session_as_bob():

@@ -18,7 +18,8 @@ impl KeyType {
     #[new]
     pub fn new(key_type: u8) -> PyResult<Self> {
         let key_enum = match key_type {
-            0 => libsignal_protocol::kem::KeyType::Kyber1024,
+            // 7 => libsignal_protocol::kem::KeyType::Kyber768,
+            8 => libsignal_protocol::kem::KeyType::Kyber1024,
             _ => {
                 // todo: wrap around SignalProtocolError::BadKEMKeyType
                 return Err(SignalProtocolError::err_from_str(format!(
@@ -30,10 +31,17 @@ impl KeyType {
         Ok(KeyType { key_type: key_enum })
     }
 
-    pub fn value(&self) -> u8 {
+    pub fn value(&self) -> PyResult<u8> {
         match &self.key_type {
-            libsignal_protocol::kem::KeyType::Kyber1024 => 0,
-            _ => 42, // todo: fixme later
+            // libsignal_protocol::kem::KeyType::Kyber768 => Ok(0x07),
+            libsignal_protocol::kem::KeyType::Kyber1024 => Ok(0x08),
+            _ => {
+                // todo: wrap around SignalProtocolError::BadKEMKeyType
+                Err(SignalProtocolError::err_from_str(format!(
+                    "unknown KEM key type: {}",
+                    &self.key_type
+                )))
+            }
         }
     }
 
@@ -116,7 +124,10 @@ impl KeyPair {
     pub fn encapsulate(&self, py: Python) -> (PyObject, PyObject) {
         // we could use get_public().encapsulate() but that does an extra copy operation for no good reason
         let (ss, ctxt) = self.key.public_key.encapsulate();
-        return (PyBytes::new_bound(py, &ss).into(), PyBytes::new_bound(py, &ctxt).into());
+        return (
+            PyBytes::new_bound(py, &ss).into(),
+            PyBytes::new_bound(py, &ctxt).into(),
+        );
     }
 
     /// Decapsulates a `SharedSecret` that was encapsulated into a `Ciphertext` by a holder of
@@ -186,7 +197,10 @@ impl PublicKey {
     /// `SharedSecret`.
     pub fn encapsulate(&self, py: Python) -> (PyObject, PyObject) {
         let (ss, ctxt) = self.key.encapsulate();
-        return (PyBytes::new_bound(py, &ss).into(), PyBytes::new_bound(py, &ctxt).into());
+        return (
+            PyBytes::new_bound(py, &ss).into(),
+            PyBytes::new_bound(py, &ctxt).into(),
+        );
     }
 }
 

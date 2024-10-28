@@ -13,7 +13,7 @@
 use base64::Engine;
 use libsignal_protocol::GenericSignedPreKey;
 use pyo3::prelude::*;
-use pyo3::types::{IntoPyDict, PyDict};
+use pyo3::types::PyDict;
 use rand::rngs::OsRng;
 use rand::Rng;
 use std::time::{SystemTime, UNIX_EPOCH};

@@ -12,6 +12,7 @@ mod helpers;
 mod identity_key;
 mod kem;
 mod key_transparency;
+mod net;
 mod protocol;
 mod ratchet;
 mod sealed_sender;
@@ -21,7 +22,6 @@ mod session_cipher;
 mod state;
 mod storage;
 mod uuid;
-mod net;
 
 /// Signal Protocol in Python
 ///
