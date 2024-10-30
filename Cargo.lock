@@ -1324,7 +1324,7 @@ dependencies = [
 [[package]]
 name = "libsignal-core"
 version = "0.1.0"
-source = "git+https://github.com/signalapp/libsignal?tag=v0.60.0#1b82e53c2be56f7ab0aef3650033f8fc4d584517"
+source = "git+https://github.com/signalapp/libsignal?tag=v0.60.1#29706a3bbbf97df5c05cd5e0487a74b40318ef09"
 dependencies = [
  "num_enum",
  "uuid",
@@ -1447,7 +1447,7 @@ dependencies = [
 [[package]]
 name = "libsignal-protocol"
 version = "0.1.0"
-source = "git+https://github.com/signalapp/libsignal?tag=v0.60.0#1b82e53c2be56f7ab0aef3650033f8fc4d584517"
+source = "git+https://github.com/signalapp/libsignal?tag=v0.60.1#29706a3bbbf97df5c05cd5e0487a74b40318ef09"
 dependencies = [
  "aes",
  "aes-gcm-siv",
@@ -1463,7 +1463,7 @@ dependencies = [
  "hmac",
  "indexmap",
  "itertools",
- "libsignal-core 0.1.0 (git+https://github.com/signalapp/libsignal?tag=v0.60.0)",
+ "libsignal-core 0.1.0 (git+https://github.com/signalapp/libsignal?tag=v0.60.1)",
  "log",
  "num_enum",
  "pqcrypto-kyber",
@@ -1474,7 +1474,7 @@ dependencies = [
  "rayon",
  "serde",
  "sha2",
- "signal-crypto 0.1.0 (git+https://github.com/signalapp/libsignal?tag=v0.60.0)",
+ "signal-crypto 0.1.0 (git+https://github.com/signalapp/libsignal?tag=v0.60.1)",
  "subtle",
  "thiserror",
  "uuid",
@@ -2417,7 +2417,7 @@ checksum = "0fda2ff0d084019ba4d7c6f371c95d8fd75ce3524c3cb8fb653a3023f6323e64"
 [[package]]
 name = "signal-crypto"
 version = "0.1.0"
-source = "git+https://github.com/signalapp/libsignal?tag=v0.60.0#1b82e53c2be56f7ab0aef3650033f8fc4d584517"
+source = "git+https://github.com/signalapp/libsignal?tag=v0.60.1#29706a3bbbf97df5c05cd5e0487a74b40318ef09"
 dependencies = [
  "aes",
  "cbc",
@@ -2459,7 +2459,7 @@ dependencies = [
  "libsignal-core 0.1.0 (git+https://github.com/signalapp/libsignal)",
  "libsignal-keytrans",
  "libsignal-net",
- "libsignal-protocol 0.1.0 (git+https://github.com/signalapp/libsignal?tag=v0.60.0)",
+ "libsignal-protocol 0.1.0 (git+https://github.com/signalapp/libsignal?tag=v0.60.1)",
  "mac_address",
  "pyo3",
  "pyo3-log",
