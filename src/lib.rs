@@ -128,8 +128,8 @@ fn signal_protocol(py: Python, module: &Bound<'_, PyModule>) -> PyResult<()> {
     // Workaround to enable imports from submodules. Upstream issue: pyo3 issue #759
     // https://github.com/PyO3/pyo3/issues/759#issuecomment-653964601
     let mods = [
-        "address",
         "account_keys",
+        "address",
         "base_crypto",
         "curve",
         "device_transfer",
