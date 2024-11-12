@@ -9,9 +9,7 @@ class CiphertextMessage(collections.abc.ByteString):
     """
     Represents a ciphertext message in the Signal Protocol.
     CiphertextMessage is a Rust enum in the upstream crate. Mapping of enums to Python enums
-
     is not supported in pyo3. We map the Rust enum and its variants to Python as a superclass
-
     (for CiphertextMessage) and subclasses (for variants of CiphertextMessage).
     """
 

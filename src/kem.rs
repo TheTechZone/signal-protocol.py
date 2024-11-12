@@ -124,10 +124,10 @@ impl KeyPair {
     pub fn encapsulate(&self, py: Python) -> (PyObject, PyObject) {
         // we could use get_public().encapsulate() but that does an extra copy operation for no good reason
         let (ss, ctxt) = self.key.public_key.encapsulate();
-        return (
+        (
             PyBytes::new_bound(py, &ss).into(),
             PyBytes::new_bound(py, &ctxt).into(),
-        );
+        )
     }
 
     /// Decapsulates a `SharedSecret` that was encapsulated into a `Ciphertext` by a holder of
@@ -197,10 +197,10 @@ impl PublicKey {
     /// `SharedSecret`.
     pub fn encapsulate(&self, py: Python) -> (PyObject, PyObject) {
         let (ss, ctxt) = self.key.encapsulate();
-        return (
+        (
             PyBytes::new_bound(py, &ss).into(),
             PyBytes::new_bound(py, &ctxt).into(),
-        );
+        )
     }
 }
 

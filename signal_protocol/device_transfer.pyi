@@ -1,6 +1,6 @@
 from typing import Optional
 
-def create_rsa_private_key(bits: Optional[int], key_format: Optional[int]):
+def create_rsa_private_key(bits: Optional[int], key_format: Optional[int]) -> bytes:
     """
     Generate a private key of size `bits` and export to a specified format.
 
@@ -14,20 +14,9 @@ def create_rsa_private_key(bits: Optional[int], key_format: Optional[int]):
     """
     ...
 
-def create_self_signed_cert(rsa_key_pkcs8: bytes, name: str, days_to_expire: int):
+def create_self_signed_cert(rsa_key_pkcs8: bytes, name: str, days_to_expire: int) -> bytes:
     """Generate a self-signed certificate of name `name`, expiring in `days_to_expire`.
 
-
-
-
-    <<<<<<<
-
-
-
-
     `rsa_key_pkcs8` should be the output of `create_rsa_private_key`.
-    =======
-    `rsa_key_pkcs8` should be the output of `create_rsa_private_key`.
-    >>>>>>>
     """
     ...

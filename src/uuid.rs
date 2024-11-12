@@ -450,10 +450,10 @@ fn _getnode() -> u64 {
     node
 }
 
-#[pyfunction]
-fn getnode() -> PyResult<u64> {
-    Ok(_getnode())
-}
+// #[pyfunction]
+// fn getnode() -> PyResult<u64> {
+//     Ok(_getnode())
+// }
 
 /// Fast path for uuid1 with a randomly generated MAC address.
 /// à la postgres' uuid extension.

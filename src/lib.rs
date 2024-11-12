@@ -121,6 +121,10 @@ fn signal_protocol(py: Python, module: &Bound<'_, PyModule>) -> PyResult<()> {
     let key_transparency = PyModule::new_bound(py, "key_transparency")?;
     key_transparency::init_submodule(&key_transparency)?;
     module.add_submodule(&key_transparency)?;
+
+    let net = PyModule::new_bound(py, "net")?;
+    net::init_submodule(&net)?;
+    module.add_submodule(&net)?;
     // Workaround to enable imports from submodules. Upstream issue: pyo3 issue #759
     // https://github.com/PyO3/pyo3/issues/759#issuecomment-653964601
     let mods = [
@@ -136,6 +140,7 @@ fn signal_protocol(py: Python, module: &Bound<'_, PyModule>) -> PyResult<()> {
         "identity_key",
         "kem",
         "key_transparency",
+        "net",
         "protocol",
         "ratchet",
         "sealed_sender",
