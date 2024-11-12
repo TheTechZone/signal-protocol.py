@@ -257,7 +257,7 @@ impl PreKeyBundle {
 
     fn signed_pre_key_signature(&self, py: Python) -> Result<PyObject> {
         let result = self.state.signed_pre_key_signature()?;
-        Ok(PyBytes::new(py, result).into())
+        Ok(PyBytes::new_bound(py, result).into())
     }
 
     fn identity_key(&self) -> Result<IdentityKey> {
@@ -327,7 +327,7 @@ impl PreKeyBundle {
 
     fn to_json(&self, py: Python) -> PyResult<String> {
         let dict = self.to_dict(py)?;
-        let json_module = py.import("json")?;
+        let json_module = py.import_bound("json")?;
         let json_str = json_module.call_method1("dumps", (dict,))?.extract()?;
 
         Ok(json_str)
@@ -335,9 +335,9 @@ impl PreKeyBundle {
 
     fn to_dict(&self, py: Python) -> PyResult<PyObject> {
         // let dict: &PyDict = [("registration_id", 0)].into_py_dict(py);
-        let dict = PyDict::new(py);
+        let dict = PyDict::new_bound(py);
         // Helper function to set an item in the dictionary if the result is Ok and Some
-        fn set_if_ok<T, F>(dict: &pyo3::types::PyDict, key: &str, result: Result<Option<T>>, f: F)
+        fn set_if_ok<T, F>(dict: &Bound<PyDict>, key: &str, result: Result<Option<T>>, f: F)
         where
             F: FnOnce(&T) -> PyObject,
         {
@@ -514,7 +514,7 @@ impl PreKeyRecord {
 
     fn serialize(&self, py: Python) -> Result<PyObject> {
         let result = self.state.serialize()?;
-        Ok(PyBytes::new(py, &result).into())
+        Ok(PyBytes::new_bound(py, &result).into())
     }
 
     // TODO: handle str/repr
@@ -632,7 +632,7 @@ impl SignedPreKeyRecord {
 
     pub fn signature(&self, py: Python) -> Result<PyObject> {
         let sig = self.state.signature()?;
-        Ok(PyBytes::new(py, &sig).into())
+        Ok(PyBytes::new_bound(py, &sig).into())
     }
 
     fn key_pair(&self) -> Result<KeyPair> {
@@ -655,7 +655,7 @@ impl SignedPreKeyRecord {
 
     fn serialize(&self, py: Python) -> Result<PyObject> {
         let result = self.state.serialize()?;
-        Ok(PyBytes::new(py, &result).into())
+        Ok(PyBytes::new_bound(py, &result).into())
     }
 }
 
@@ -690,7 +690,7 @@ impl SessionRecord {
 
     fn serialize(&self, py: Python) -> Result<PyObject> {
         let result = self.state.serialize()?;
-        Ok(PyBytes::new(py, &result).into())
+        Ok(PyBytes::new_bound(py, &result).into())
     }
 
     pub fn to_base64(&self) -> PyResult<String> {
@@ -722,12 +722,12 @@ impl SessionRecord {
 
     fn local_identity_key_bytes(&self, py: Python) -> Result<PyObject> {
         let result = self.state.local_identity_key_bytes()?;
-        Ok(PyBytes::new(py, &result).into())
+        Ok(PyBytes::new_bound(py, &result).into())
     }
 
     fn remote_identity_key_bytes(&self, py: Python) -> Result<Option<PyObject>> {
         match self.state.remote_identity_key_bytes()? {
-            Some(result) => Ok(Some(PyBytes::new(py, &result).into())),
+            Some(result) => Ok(Some(PyBytes::new_bound(py, &result).into())),
             None => Ok(None),
         }
     }
@@ -739,7 +739,7 @@ impl SessionRecord {
         py: Python,
     ) -> Result<Option<PyObject>> {
         match self.state.get_receiver_chain_key_bytes(&sender.key)? {
-            Some(result) => Ok(Some(PyBytes::new(py, &result[..]).into())),
+            Some(result) => Ok(Some(PyBytes::new_bound(py, &result[..]).into())),
             None => Ok(None),
         }
     }
@@ -752,18 +752,18 @@ impl SessionRecord {
 
     fn alice_base_key(&self, py: Python) -> Result<PyObject> {
         let result = self.state.alice_base_key()?;
-        Ok(PyBytes::new(py, &result).into())
+        Ok(PyBytes::new_bound(py, &result).into())
     }
 
     fn get_sender_chain_key_bytes(&self, py: Python) -> Result<PyObject> {
         let result = self.state.get_sender_chain_key_bytes()?;
-        Ok(PyBytes::new(py, &result).into())
+        Ok(PyBytes::new_bound(py, &result).into())
     }
 
     // TODO: check other missing functions on the struct
     fn get_kyber_ciphertext(&self, py: Python) -> Result<Option<PyObject>> {
         match self.state.get_kyber_ciphertext()? {
-            Some(result) => Ok(Some(PyBytes::new(py, &result).into())),
+            Some(result) => Ok(Some(PyBytes::new_bound(py, &result).into())),
             None => Ok(None),
         }
     }
@@ -851,7 +851,7 @@ impl KyberPreKeyRecord {
 
     fn signature(&self, py: Python) -> Result<PyObject> {
         let result = self.state.signature()?;
-        Ok(PyBytes::new(py, &result).into())
+        Ok(PyBytes::new_bound(py, &result).into())
     }
 
     fn get_storage(&self) -> PyResult<KyberPreKeyRecord> {
@@ -891,12 +891,12 @@ impl KyberPreKeyRecord {
 
     fn serialize(&self, py: Python) -> Result<PyObject> {
         let result = self.state.serialize()?;
-        Ok(PyBytes::new(py, &result).into())
+        Ok(PyBytes::new_bound(py, &result).into())
     }
 }
 
 /// UnacknowledgedPreKeyMessageItems is not exposed as part of the upstream public API.
-pub fn init_submodule(module: &PyModule) -> PyResult<()> {
+pub fn init_submodule(module: &Bound<'_, PyModule>) -> PyResult<()> {
     module.add_class::<PreKeyBundle>()?;
     module.add_class::<PreKeyRecord>()?;
     module.add_class::<SessionRecord>()?;

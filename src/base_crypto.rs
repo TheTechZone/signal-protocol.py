@@ -35,7 +35,10 @@ impl Aes256GcmEncryption {
         let mut buf: Vec<u8> = Vec::from(data).clone();
         gcm_enc.encrypt(&mut buf);
         let tag = gcm_enc.compute_tag();
-        Ok((PyBytes::new(py, &buf).into(), PyBytes::new(py, &tag).into()))
+        Ok((
+            PyBytes::new_bound(py, &buf).into(),
+            PyBytes::new_bound(py, &tag).into(),
+        ))
     }
 }
 
@@ -69,7 +72,7 @@ impl Aes256GcmDecryption {
         let mut buf: Vec<u8> = Vec::from(data).clone();
         gcm_dec.decrypt(&mut buf);
         match gcm_dec.verify_tag(tag) {
-            Ok(_) => Ok(PyBytes::new(py, &buf).into()),
+            Ok(_) => Ok(PyBytes::new_bound(py, &buf).into()),
             Err(err) => Err(SignalProtocolError::err_from_str(err.to_string())),
         }
     }
@@ -93,7 +96,7 @@ impl Aes256Ctr32 {
     fn process(&mut self, py: Python, data: &[u8]) -> PyResult<PyObject> {
         let mut buf: Vec<u8> = Vec::from(data).clone();
         self.inner.process(&mut buf);
-        Ok(PyBytes::new(py, &buf).into())
+        Ok(PyBytes::new_bound(py, &buf).into())
     }
 }
 
@@ -126,7 +129,7 @@ pub fn aes_256_gcm_decrypt(
 pub fn aes_256_cbc_encrypt(py: Python, ptext: &[u8], key: &[u8], iv: &[u8]) -> PyResult<PyObject> {
     match signal_crypto::aes_256_cbc_encrypt(ptext, key, iv) {
         Err(err) => Err(SignalProtocolError::err_from_str(err.to_string())),
-        Ok(ctxt) => Ok(PyBytes::new(py, &ctxt).into()),
+        Ok(ctxt) => Ok(PyBytes::new_bound(py, &ctxt).into()),
     }
 }
 
@@ -134,7 +137,7 @@ pub fn aes_256_cbc_encrypt(py: Python, ptext: &[u8], key: &[u8], iv: &[u8]) -> P
 pub fn aes_256_cbc_decrypt(py: Python, ctext: &[u8], key: &[u8], iv: &[u8]) -> PyResult<PyObject> {
     match signal_crypto::aes_256_cbc_decrypt(ctext, key, iv) {
         Err(err) => Err(SignalProtocolError::err_from_str(err.to_string())),
-        Ok(ctxt) => Ok(PyBytes::new(py, &ctxt).into()),
+        Ok(ctxt) => Ok(PyBytes::new_bound(py, &ctxt).into()),
     }
 }
 
@@ -159,7 +162,7 @@ impl CryptographicHash {
 
     pub fn finalize(&mut self, py: Python) -> PyObject {
         let result = self.inner.finalize();
-        PyBytes::new(py, &result).into()
+        PyBytes::new_bound(py, &result).into()
     }
 }
 
@@ -190,11 +193,11 @@ impl CryptographicMac {
 
     pub fn finalize(&mut self, py: Python) -> PyObject {
         let result = self.inner.finalize();
-        PyBytes::new(py, &result).into()
+        PyBytes::new_bound(py, &result).into()
     }
 }
 
-pub fn init_submodule(module: &PyModule) -> PyResult<()> {
+pub fn init_submodule(module: &Bound<'_, PyModule>) -> PyResult<()> {
     module.add_class::<Aes256GcmEncryption>()?;
     module.add_class::<Aes256GcmDecryption>()?;
     module.add_class::<Aes256Ctr32>()?;

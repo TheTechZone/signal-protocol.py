@@ -187,7 +187,9 @@ class KyberPreKeyRecord:
     def generate(
         key_type: KeyType, id: KyberPreKeyId, signing_key: PrivateKey
     ) -> KyberPreKeyRecord:
-        """Create a new signed Kyber record of given type"""
+        """
+        Create a new signed Kyber record of given type
+        """
         ...
 
     @staticmethod
@@ -258,9 +260,7 @@ def generate_n_prekeys(n: int, start_id: PreKeyId) -> list[PreKeyRecord]:
 
     Returns a list of PreKeyRecords.
 
-    =======
-
-    Example
+    # Example
 
     ```
     from signal_protocol import curve, state

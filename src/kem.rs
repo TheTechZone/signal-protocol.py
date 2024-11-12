@@ -18,7 +18,8 @@ impl KeyType {
     #[new]
     pub fn new(key_type: u8) -> PyResult<Self> {
         let key_enum = match key_type {
-            0 => libsignal_protocol::kem::KeyType::Kyber1024,
+            // 7 => libsignal_protocol::kem::KeyType::Kyber768,
+            8 => libsignal_protocol::kem::KeyType::Kyber1024,
             _ => {
                 // todo: wrap around SignalProtocolError::BadKEMKeyType
                 return Err(SignalProtocolError::err_from_str(format!(
@@ -30,9 +31,17 @@ impl KeyType {
         Ok(KeyType { key_type: key_enum })
     }
 
-    pub fn value(&self) -> u8 {
+    pub fn value(&self) -> PyResult<u8> {
         match &self.key_type {
-            libsignal_protocol::kem::KeyType::Kyber1024 => 0,
+            // libsignal_protocol::kem::KeyType::Kyber768 => Ok(0x07),
+            libsignal_protocol::kem::KeyType::Kyber1024 => Ok(0x08),
+            _ => {
+                // todo: wrap around SignalProtocolError::BadKEMKeyType
+                Err(SignalProtocolError::err_from_str(format!(
+                    "unknown KEM key type: {}",
+                    &self.key_type
+                )))
+            }
         }
     }
 
@@ -115,7 +124,10 @@ impl KeyPair {
     pub fn encapsulate(&self, py: Python) -> (PyObject, PyObject) {
         // we could use get_public().encapsulate() but that does an extra copy operation for no good reason
         let (ss, ctxt) = self.key.public_key.encapsulate();
-        return (PyBytes::new(py, &ss).into(), PyBytes::new(py, &ctxt).into());
+        (
+            PyBytes::new_bound(py, &ss).into(),
+            PyBytes::new_bound(py, &ctxt).into(),
+        )
     }
 
     /// Decapsulates a `SharedSecret` that was encapsulated into a `Ciphertext` by a holder of
@@ -125,7 +137,7 @@ impl KeyPair {
         let ctxt = libsignal_protocol::kem::SerializedCiphertext::from(ct_bytes);
         let ss = self.key.secret_key.decapsulate(&ctxt);
         match ss {
-            Ok(shared_secret) => Ok(PyBytes::new(py, &shared_secret).into()),
+            Ok(shared_secret) => Ok(PyBytes::new_bound(py, &shared_secret).into()),
             Err(err) => Err(SignalProtocolError::new_err(err)),
         }
     }
@@ -154,7 +166,7 @@ pub struct PublicKey {
 impl PublicKey {
     pub fn serialize(&self, py: Python) -> PyObject {
         let result = self.key.serialize();
-        PyBytes::new(py, &result).into()
+        PyBytes::new_bound(py, &result).into()
     }
 
     #[staticmethod]
@@ -185,7 +197,10 @@ impl PublicKey {
     /// `SharedSecret`.
     pub fn encapsulate(&self, py: Python) -> (PyObject, PyObject) {
         let (ss, ctxt) = self.key.encapsulate();
-        return (PyBytes::new(py, &ss).into(), PyBytes::new(py, &ctxt).into());
+        (
+            PyBytes::new_bound(py, &ss).into(),
+            PyBytes::new_bound(py, &ctxt).into(),
+        )
     }
 }
 
@@ -200,7 +215,7 @@ pub struct SecretKey {
 impl SecretKey {
     pub fn serialize(&self, py: Python) -> PyObject {
         let result = self.key.serialize();
-        PyBytes::new(py, &result).into()
+        PyBytes::new_bound(py, &result).into()
     }
 
     #[staticmethod]
@@ -228,7 +243,7 @@ impl SecretKey {
         let ctxt = libsignal_protocol::kem::SerializedCiphertext::from(ct_bytes);
         let ss = self.key.decapsulate(&ctxt);
         match ss {
-            Ok(shared_secret) => Ok(PyBytes::new(py, &shared_secret).into()),
+            Ok(shared_secret) => Ok(PyBytes::new_bound(py, &shared_secret).into()),
             Err(err) => Err(SignalProtocolError::new_err(err)),
         }
     }
@@ -251,11 +266,11 @@ impl SerializedCiphertext {
 
     /// Get the raw Kyber ciphertext bytes, without the KeyType prefix.
     fn raw(&self, py: Python) -> PyObject {
-        PyBytes::new(py, &(&*self.state)[1..]).into()
+        PyBytes::new_bound(py, &(&*self.state)[1..]).into()
     }
 }
 
-pub fn init_kem_submodule(module: &PyModule) -> PyResult<()> {
+pub fn init_kem_submodule(module: &Bound<'_, PyModule>) -> PyResult<()> {
     module.add_class::<KeyType>()?;
     module.add_class::<KeyPair>()?;
     module.add_class::<PublicKey>()?;

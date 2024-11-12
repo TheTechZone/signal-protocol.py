@@ -44,7 +44,7 @@ impl Fingerprint {
 
     pub fn serialize(&self, py: Python) -> Result<PyObject> {
         let fingerprint = self.state.scannable.serialize()?;
-        Ok(PyBytes::new(py, &fingerprint).into())
+        Ok(PyBytes::new_bound(py, &fingerprint).into())
     }
 
     fn __str__(&self) -> Result<String> {
@@ -61,7 +61,7 @@ impl Fingerprint {
 /// and ScannableFingerprint implemented on the Fingerprint directly.
 ///
 /// ScannableFingerprint::deserialize() is not implemented.
-pub fn init_submodule(module: &PyModule) -> PyResult<()> {
+pub fn init_submodule(module: &Bound<'_, PyModule>) -> PyResult<()> {
     module.add_class::<Fingerprint>()?;
     Ok(())
 }

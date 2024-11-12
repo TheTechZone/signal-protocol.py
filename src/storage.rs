@@ -222,7 +222,7 @@ impl InMemSignalProtocolStore {
 /// Python classes for InMemSenderKeyStore, InMemSessionStore, InMemIdentityKeyStore, InMemPreKeyStore
 /// or InMemSignedPreKeyStore are not exposed.
 /// One will need to operate on the InMemSignalProtocolStore instead.
-pub fn init_submodule(module: &PyModule) -> PyResult<()> {
+pub fn init_submodule(module: &Bound<'_, PyModule>) -> PyResult<()> {
     module.add_class::<InMemSignalProtocolStore>()?;
     Ok(())
 }

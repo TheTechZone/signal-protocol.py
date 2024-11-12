@@ -27,7 +27,7 @@ pub fn group_encrypt(
         plaintext,
         &mut csprng,
     ))?;
-    Ok(PyBytes::new(py, &ciphertext.serialized()).into())
+    Ok(PyBytes::new_bound(py, &ciphertext.serialized()).into())
 }
 
 #[pyfunction]
@@ -42,7 +42,7 @@ pub fn group_decrypt(
         &mut protocol_store.store.sender_key_store,
         &sender.state,
     ))?;
-    Ok(PyBytes::new(py, &plaintext).into())
+    Ok(PyBytes::new_bound(py, &plaintext).into())
 }
 
 #[pyfunction]
@@ -98,7 +98,7 @@ pub fn create_sender_key_distribution_message(
     })
 }
 
-pub fn init_submodule(module: &PyModule) -> PyResult<()> {
+pub fn init_submodule(module: &Bound<'_, PyModule>) -> PyResult<()> {
     module.add_wrapped(wrap_pyfunction!(group_encrypt))?;
     module.add_wrapped(wrap_pyfunction!(group_decrypt))?;
     module.add_wrapped(wrap_pyfunction!(process_sender_key_distribution_message))?;

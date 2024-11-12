@@ -51,10 +51,14 @@ impl SignalProtocolError {
     }
 }
 
-pub fn init_submodule(py: Python, module: &PyModule) -> PyResult<()> {
+pub fn init_submodule(py: Python, module: &Bound<'_, PyModule>) -> PyResult<()> {
+    // module.add(
+    //     "SignalProtocolException",
+    //     py.get_type_bound()::<SignalProtocolException>(),
+    // )?;
     module.add(
         "SignalProtocolException",
-        py.get_type::<SignalProtocolException>(),
+        py.get_type_bound::<SignalProtocolException>(),
     )?;
     Ok(())
 }

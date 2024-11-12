@@ -61,17 +61,17 @@ impl ServerCertificate {
 
     fn certificate(&self, py: Python) -> Result<PyObject> {
         let result = self.data.certificate()?;
-        Ok(PyBytes::new(py, &result).into())
+        Ok(PyBytes::new_bound(py, &result).into())
     }
 
     fn signature(&self, py: Python) -> Result<PyObject> {
         let result = self.data.signature()?;
-        Ok(PyBytes::new(py, &result).into())
+        Ok(PyBytes::new_bound(py, &result).into())
     }
 
     fn serialized(&self, py: Python) -> Result<PyObject> {
         let result = self.data.serialized()?;
-        Ok(PyBytes::new(py, &result).into())
+        Ok(PyBytes::new_bound(py, &result).into())
     }
 }
 
@@ -150,17 +150,17 @@ impl SenderCertificate {
 
     fn certificate(&self, py: Python) -> Result<PyObject> {
         let result = self.data.certificate()?;
-        Ok(PyBytes::new(py, &result).into())
+        Ok(PyBytes::new_bound(py, &result).into())
     }
 
     fn signature(&self, py: Python) -> Result<PyObject> {
         let result = self.data.signature()?;
-        Ok(PyBytes::new(py, &result).into())
+        Ok(PyBytes::new_bound(py, &result).into())
     }
 
     fn serialized(&self, py: Python) -> Result<PyObject> {
         let result = self.data.serialized()?;
-        Ok(PyBytes::new(py, &result).into())
+        Ok(PyBytes::new_bound(py, &result).into())
     }
 
     // fn preferred_address(&self, store: &InMemSignalProtocolStore) -> Result<ProtocolAddress> {
@@ -188,6 +188,7 @@ impl UnidentifiedSenderMessageContent {
     }
 
     #[new]
+    #[pyo3(signature = (msg_type_value, sender, contents, content_hint, group_id=None))]
     fn new(
         msg_type_value: u8,
         sender: SenderCertificate,
@@ -232,12 +233,12 @@ impl UnidentifiedSenderMessageContent {
 
     fn contents(&self, py: Python) -> Result<PyObject> {
         let result = self.data.contents()?;
-        Ok(PyBytes::new(py, &result).into())
+        Ok(PyBytes::new_bound(py, &result).into())
     }
 
     fn serialized(&self, py: Python) -> Result<PyObject> {
         let result = self.data.serialized()?;
-        Ok(PyBytes::new(py, &result).into())
+        Ok(PyBytes::new_bound(py, &result).into())
     }
 }
 
@@ -315,7 +316,7 @@ impl SealedSenderDecryptionResult {
     }
 
     fn message(&self, py: Python) -> Result<PyObject> {
-        Ok(PyBytes::new(py, &self.data.message).into())
+        Ok(PyBytes::new_bound(py, &self.data.message).into())
     }
 }
 
@@ -368,7 +369,7 @@ pub fn sealed_sender_encrypt(
         now2,
         &mut csprng,
     ))?;
-    Ok(PyBytes::new(py, &result).into())
+    Ok(PyBytes::new_bound(py, &result).into())
 }
 
 #[pyfunction]
@@ -385,7 +386,7 @@ pub fn sealed_sender_decrypt_to_usmc(
     }
 }
 
-pub fn init_submodule(module: &PyModule) -> PyResult<()> {
+pub fn init_submodule(module: &Bound<'_, PyModule>) -> PyResult<()> {
     module.add_class::<SenderCertificate>()?;
     module.add_class::<ServerCertificate>()?;
     module.add_class::<UnidentifiedSenderMessageContent>()?;

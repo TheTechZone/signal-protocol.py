@@ -234,7 +234,7 @@ pub fn initialize_bob_session(parameters: &BobSignalProtocolParameters) -> Resul
 }
 
 /// fn are_we_alice, ChainKey, RootKey, MessageKey are not exposed as part of the Python API.
-pub fn init_submodule(module: &PyModule) -> PyResult<()> {
+pub fn init_submodule(module: &Bound<'_, PyModule>) -> PyResult<()> {
     module.add_class::<AliceSignalProtocolParameters>()?;
     module.add_wrapped(wrap_pyfunction!(initialize_alice_session))?;
     module.add_class::<BobSignalProtocolParameters>()?;

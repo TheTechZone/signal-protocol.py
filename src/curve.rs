@@ -17,8 +17,8 @@ pub fn generate_keypair(py: Python) -> PyResult<(PyObject, PyObject)> {
     let key_pair = libsignal_protocol::KeyPair::generate(&mut csprng);
 
     Ok((
-        PyBytes::new(py, &key_pair.public_key.serialize()).into(),
-        PyBytes::new(py, &key_pair.private_key.serialize()).into(),
+        PyBytes::new_bound(py, &key_pair.public_key.serialize()).into(),
+        PyBytes::new_bound(py, &key_pair.private_key.serialize()).into(),
     ))
 }
 
@@ -53,18 +53,18 @@ impl KeyPair {
 
     pub fn serialize(&self, py: Python) -> PyObject {
         let result = self.key.public_key.serialize();
-        PyBytes::new(py, &result).into()
+        PyBytes::new_bound(py, &result).into()
     }
 
     pub fn calculate_signature(&self, py: Python, message: &[u8]) -> Result<PyObject> {
         let mut csprng = OsRng;
         let sig = self.key.calculate_signature(&message, &mut csprng)?;
-        Ok(PyBytes::new(py, &sig).into())
+        Ok(PyBytes::new_bound(py, &sig).into())
     }
 
     pub fn calculate_agreement(&self, py: Python, their_key: &PublicKey) -> Result<PyObject> {
         let agreement = self.key.calculate_agreement(&their_key.key)?;
-        Ok(PyBytes::new(py, &agreement).into())
+        Ok(PyBytes::new_bound(py, &agreement).into())
     }
 
     #[staticmethod]
@@ -108,7 +108,7 @@ impl PublicKey {
     }
 
     pub fn serialize(&self, py: Python) -> PyObject {
-        PyBytes::new(py, &self.key.serialize()).into()
+        PyBytes::new_bound(py, &self.key.serialize()).into()
     }
 
     pub fn to_base64(&self) -> PyResult<String> {
@@ -169,7 +169,7 @@ impl PrivateKey {
     }
 
     pub fn serialize(&self, py: Python) -> PyObject {
-        PyBytes::new(py, &self.key.serialize()).into()
+        PyBytes::new_bound(py, &self.key.serialize()).into()
     }
 
     pub fn to_base64(&self) -> PyResult<String> {
@@ -187,12 +187,12 @@ impl PrivateKey {
     pub fn calculate_signature(&self, message: &[u8], py: Python) -> Result<PyObject> {
         let mut csprng = OsRng;
         let sig = self.key.calculate_signature(message, &mut csprng)?;
-        Ok(PyBytes::new(py, &sig).into())
+        Ok(PyBytes::new_bound(py, &sig).into())
     }
 
     pub fn calculate_agreement(&self, py: Python, their_key: &PublicKey) -> Result<PyObject> {
         let result = self.key.calculate_agreement(&their_key.key)?;
-        Ok(PyBytes::new(py, &result).into())
+        Ok(PyBytes::new_bound(py, &result).into())
     }
 
     pub fn public_key(&self) -> Result<PublicKey> {
@@ -208,7 +208,7 @@ pub fn verify_signature(public_key: &PublicKey, message: &[u8], signature: &[u8]
 }
 
 /// KeyType is not exposed as part of the Python API.
-pub fn init_curve_submodule(module: &PyModule) -> PyResult<()> {
+pub fn init_submodule(module: &Bound<'_, PyModule>) -> PyResult<()> {
     module.add_class::<KeyPair>()?;
     module.add_class::<PublicKey>()?;
     module.add_class::<PrivateKey>()?;
