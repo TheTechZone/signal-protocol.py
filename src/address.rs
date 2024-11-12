@@ -12,13 +12,13 @@ pub struct DeviceId {
     pub value: libsignal_protocol::DeviceId,
 }
 
-impl convert::From<DeviceId> for u32 {
+impl From<DeviceId> for u32 {
     fn from(value: DeviceId) -> Self {
         u32::from(value.value)
     }
 }
 
-impl convert::From<u32> for DeviceId {
+impl From<u32> for DeviceId {
     fn from(value: u32) -> Self {
         DeviceId {
             value: libsignal_protocol::DeviceId::from(value),

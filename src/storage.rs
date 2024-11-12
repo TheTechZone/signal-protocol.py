@@ -62,7 +62,7 @@ impl InMemSignalProtocolStore {
 }
 
 /// libsignal_protocol::IdentityKeyStore
-/// is_trusted_identity is not implemented (it requries traits::Direction as arg)
+/// is_trusted_identity is not implemented (it requires traits::Direction as arg)
 #[pymethods]
 impl InMemSignalProtocolStore {
     fn get_identity_key_pair(&self) -> Result<IdentityKeyPair> {

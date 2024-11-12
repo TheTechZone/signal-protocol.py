@@ -12,13 +12,6 @@ pub struct SenderKeyRecord {
 /// as_protobuf are not implemented on the Python API.
 #[pymethods]
 impl SenderKeyRecord {
-    // #[staticmethod]
-    // pub fn new_empty() -> Self {
-    //     Self {
-    //         state: libsignal_protocol::SenderKeyRecord::new_empty(),
-    //     }
-    // }
-
     #[staticmethod]
     pub fn deserialize(buf: &[u8]) -> PyResult<Self> {
         match libsignal_protocol::SenderKeyRecord::deserialize(buf) {

@@ -124,7 +124,7 @@ impl SenderCertificate {
 
     fn signer(&self) -> Result<ServerCertificate> {
         Ok(ServerCertificate {
-            data: (self.data.signer()?).clone(),
+            data: self.data.signer()?.clone(),
         })
     }
 
@@ -227,7 +227,7 @@ impl UnidentifiedSenderMessageContent {
 
     fn sender(&self) -> Result<SenderCertificate> {
         Ok(SenderCertificate {
-            data: (self.data.sender()?).clone(),
+            data: self.data.sender()?.clone(),
         })
     }
 

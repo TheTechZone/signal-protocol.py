@@ -79,7 +79,7 @@ impl PreKeySignalMessage {
         // Workaround to allow two constructors with pyclass inheritence
         // let gil = Python::acquire_gil();
         // let py = gil.python();
-        return Python::with_gil(|py| {
+        Python::with_gil(|py| {
             Py::new(
                 py,
                 (
@@ -89,7 +89,7 @@ impl PreKeySignalMessage {
                     CiphertextMessage { data: ciphertext },
                 ),
             )
-        });
+        })
     }
 
     #[new]
@@ -155,7 +155,7 @@ impl PreKeySignalMessage {
         let key_id = u32::from(PreKeyId {
             value: self.data.pre_key_id()?,
         });
-        return Some(key_id);
+        Some(key_id)
     }
 
     pub fn signed_pre_key_id(&self) -> u32 {
@@ -207,9 +207,7 @@ impl PreKeySignalMessage {
     }
 
     pub fn message(&self) -> PyResult<Py<SignalMessage>> {
-        // let gil = Python::acquire_gil();
-        // let py = gil.python();
-        return Python::with_gil(|py| {
+        Python::with_gil(|py| {
             let upstream_data = self.data.message().clone();
             let ciphertext =
                 libsignal_protocol::CiphertextMessage::SignalMessage(upstream_data.clone());
@@ -222,7 +220,7 @@ impl PreKeySignalMessage {
                     CiphertextMessage { data: ciphertext },
                 ),
             )
-        });
+        })
     }
 }
 
@@ -245,9 +243,7 @@ impl SignalMessage {
             libsignal_protocol::CiphertextMessage::SignalMessage(upstream_data.clone());
 
         // Workaround to allow two constructors with pyclass inheritence
-        // let gil = Python::acquire_gil();
-        // let py = gil.python();
-        return Python::with_gil(|py| {
+        Python::with_gil(|py| {
             Py::new(
                 py,
                 (
@@ -257,7 +253,7 @@ impl SignalMessage {
                     CiphertextMessage { data: ciphertext },
                 ),
             )
-        });
+        })
     }
 
     #[new]
@@ -348,9 +344,7 @@ impl SenderKeyMessage {
             libsignal_protocol::CiphertextMessage::SenderKeyMessage(upstream_data.clone());
 
         // Workaround to allow two constructors with pyclass inheritence
-        // let gil = Python::acquire_gil();
-        // let py = gil.python();
-        return Python::with_gil(|py| {
+        Python::with_gil(|py| {
             Py::new(
                 py,
                 (
@@ -360,7 +354,7 @@ impl SenderKeyMessage {
                     CiphertextMessage { data: ciphertext },
                 ),
             )
-        });
+        })
     }
 
     #[new]
@@ -450,14 +444,14 @@ impl SenderKeyDistributionMessage {
         // Workaround to allow two constructors with pyclass inheritence
         // let gil = Python::acquire_gil();
         // let py = gil.python();
-        return Python::with_gil(|py| {
+        Python::with_gil(|py| {
             Py::new(
                 py,
                 SenderKeyDistributionMessage {
                     data: upstream_data,
                 },
             )
-        });
+        })
     }
 
     // todo :: they swapped the api -- CiphertextMessage::SenderKeyDistributionMessage is gone

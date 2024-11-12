@@ -39,7 +39,7 @@ impl KeyType {
                 // todo: wrap around SignalProtocolError::BadKEMKeyType
                 Err(SignalProtocolError::err_from_str(format!(
                     "unknown KEM key type: {}",
-                    &self.key_type
+                    self.key_type as u8
                 )))
             }
         }

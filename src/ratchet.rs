@@ -55,7 +55,7 @@ impl AliceSignalProtocolParameters {
             inner.set_their_kyber_pre_key(&_upstream_their_kyber_pre_key.unwrap())
         }
 
-        Self { inner: inner }
+        Self { inner }
     }
 
     pub fn our_identity_key_pair(&self) -> Result<IdentityKeyPair> {

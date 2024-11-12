@@ -18,15 +18,13 @@ use crate::kem::PublicKey as KemPublicKey;
 use crate::kem::SecretKey as KemSecretKey;
 use crate::kem::{self};
 
-use std::convert;
-
 // Newtypes from upstream crate not exposed as part of the public API
 #[pyclass]
 #[derive(Clone, Debug)]
 pub struct SignedPreKeyId {
     pub value: libsignal_protocol::SignedPreKeyId,
 }
-impl convert::From<SignedPreKeyId> for u32 {
+impl From<SignedPreKeyId> for u32 {
     fn from(value: SignedPreKeyId) -> Self {
         u32::from(value.value)
     }
@@ -64,13 +62,13 @@ pub struct PreKeyId {
     pub value: libsignal_protocol::PreKeyId,
 }
 
-impl convert::From<PreKeyId> for u32 {
+impl From<PreKeyId> for u32 {
     fn from(value: PreKeyId) -> Self {
         u32::from(value.value)
     }
 }
 
-impl convert::From<u32> for PreKeyId {
+impl From<u32> for PreKeyId {
     fn from(value: u32) -> Self {
         PreKeyId {
             value: libsignal_protocol::PreKeyId::from(value),
@@ -119,13 +117,13 @@ pub struct KyberPreKeyId {
     pub value: libsignal_protocol::KyberPreKeyId,
 }
 
-impl convert::From<KyberPreKeyId> for u32 {
+impl From<KyberPreKeyId> for u32 {
     fn from(value: KyberPreKeyId) -> Self {
         u32::from(value.value)
     }
 }
 
-impl convert::From<u32> for KyberPreKeyId {
+impl From<u32> for KyberPreKeyId {
     fn from(value: u32) -> Self {
         KyberPreKeyId {
             value: libsignal_protocol::KyberPreKeyId::from(value),
@@ -192,13 +190,11 @@ impl PreKeyBundle {
         signed_pre_key_signature: Vec<u8>,
         identity_key: IdentityKey,
     ) -> PyResult<Self> {
-        let pre_key: std::option::Option<(
-            libsignal_protocol::PreKeyId,
-            libsignal_protocol::PublicKey,
-        )> = match pre_key_public {
-            Some(inner) => Some((inner.0.value, inner.1.key)),
-            None => None,
-        };
+        let pre_key: Option<(libsignal_protocol::PreKeyId, libsignal_protocol::PublicKey)> =
+            match pre_key_public {
+                Some(inner) => Some((inner.0.value, inner.1.key)),
+                None => None,
+            };
 
         let signed_pre_key = signed_pre_key_public.key;
         let identity_key_direct = identity_key.key;
@@ -382,7 +378,7 @@ impl PreKeyBundle {
             "signed_pre_key_sign",
             self.signed_pre_key_signature(py).map(Some),
             |_| {
-                base64::engine::general_purpose::STANDARD
+                general_purpose::STANDARD
                     .encode(self.state.signed_pre_key_signature().unwrap())
                     .to_object(py)
             },
@@ -400,11 +396,7 @@ impl PreKeyBundle {
             &dict,
             "kyber_pre_key_sign",
             self.kyber_pre_key_signature(),
-            |sign| {
-                base64::engine::general_purpose::STANDARD
-                    .encode(sign)
-                    .to_object(py)
-            },
+            |sign| general_purpose::STANDARD.encode(sign).to_object(py),
         );
         set_if_ok(
             &dict,
@@ -622,7 +614,7 @@ impl SignedPreKeyRecord {
 
     pub fn id(&self) -> Result<SignedPreKeyId> {
         Ok(SignedPreKeyId {
-            value: (self.state.id()?),
+            value: self.state.id()?,
         })
     }
 
@@ -882,7 +874,7 @@ impl KyberPreKeyRecord {
     pub fn secret_key(&self) -> PyResult<KemSecretKey> {
         let sk = self.state.secret_key();
         match sk {
-            Ok(key) => Ok(KemSecretKey { key: key }),
+            Ok(key) => Ok(KemSecretKey { key }),
             Err(_) => Err(SignalProtocolError::err_from_str(
                 "no secret key. have you generated one?".to_string(),
             )),
@@ -906,11 +898,7 @@ pub fn init_submodule(module: &Bound<'_, PyModule>) -> PyResult<()> {
     module.add_class::<SignedPreKeyId>()?;
     module.add_class::<KyberPreKeyId>()?;
     module.add_class::<PreKeysUsed>()?;
-    module
-        .add_function(wrap_pyfunction!(generate_n_prekeys, module)?)
-        .unwrap();
-    module
-        .add_function(wrap_pyfunction!(generate_n_signed_kyberkeys, module)?)
-        .unwrap();
+    module.add_wrapped(wrap_pyfunction!(generate_n_prekeys))?;
+    module.add_wrapped(wrap_pyfunction!(generate_n_signed_kyberkeys))?;
     Ok(())
 }

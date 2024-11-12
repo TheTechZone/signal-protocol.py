@@ -8,7 +8,7 @@ use pyo3::{
 use rand::{random, RngCore};
 use std::hash::Hasher;
 use std::sync::atomic::{AtomicU64, Ordering};
-use std::{collections::hash_map::DefaultHasher, convert, hash::Hash, iter};
+use std::{collections::hash_map::DefaultHasher, hash::Hash, iter};
 use uuid::{Builder, Bytes, Context, Timestamp, Uuid, Variant, Version};
 
 static NODE: AtomicU64 = AtomicU64::new(0);
@@ -90,7 +90,7 @@ impl UUID {
         };
 
         match version {
-            Some(v) => result.unwrap().set_version(v),
+            Some(v) => result?.set_version(v),
             None => result,
         }
     }
@@ -236,14 +236,14 @@ impl UUID {
 
     #[getter]
     fn clock_seq(&self) -> u16 {
-        let high = (self.clock_seq_hi_variant()) as u16 & 0x3f;
+        let high = self.clock_seq_hi_variant() as u16 & 0x3f;
         high.wrapping_shl(8) | self.clock_seq_low() as u16
     }
 
     #[getter]
     fn time(&self) -> u64 {
         let high = self.time_hi_version() as u64 & 0x0fff;
-        let mid = (self.time_mid()) as u64;
+        let mid = self.time_mid() as u64;
         high.wrapping_shl(48) | mid.wrapping_shl(32) | self.time_low() as u64
     }
 
@@ -254,11 +254,9 @@ impl UUID {
                 let (secs, nanos) = timestamp.to_unix();
                 Ok(secs * 1_000 + nanos as u64 / 1_000 / 1_000)
             }
-            _ => {
-                return Err(PyErr::new::<PyValueError, &str>(
-                    "UUID version should be one of (v1, v6 or v7).",
-                ))
-            }
+            _ => Err(PyErr::new::<PyValueError, &str>(
+                "UUID version should be one of (v1, v6 or v7).",
+            )),
         }
     }
 
@@ -468,7 +466,7 @@ fn uuid_v1mc() -> UUID {
     }
 }
 
-impl convert::From<u128> for UUID {
+impl From<u128> for UUID {
     fn from(value: u128) -> Self {
         UUID {
             handle: Uuid::from_u128(value),

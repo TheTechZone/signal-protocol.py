@@ -29,15 +29,13 @@ use crate::{
     },
 };
 
-use std::convert;
-
 struct UploadKeyType {
     key_id: u32,
     public_key: Vec<u8>,
     signature: Option<Vec<u8>>,
 }
 
-impl convert::From<PreKeyRecord> for UploadKeyType {
+impl From<PreKeyRecord> for UploadKeyType {
     fn from(value: PreKeyRecord) -> Self {
         UploadKeyType {
             key_id: u32::from(value.state.id().unwrap()),
@@ -47,7 +45,7 @@ impl convert::From<PreKeyRecord> for UploadKeyType {
     }
 }
 
-impl convert::From<SignedPreKeyRecord> for UploadKeyType {
+impl From<SignedPreKeyRecord> for UploadKeyType {
     fn from(value: SignedPreKeyRecord) -> Self {
         UploadKeyType {
             key_id: u32::from(value.id().unwrap()),
@@ -57,7 +55,7 @@ impl convert::From<SignedPreKeyRecord> for UploadKeyType {
     }
 }
 
-impl convert::From<KyberPreKeyRecord> for UploadKeyType {
+impl From<KyberPreKeyRecord> for UploadKeyType {
     fn from(value: KyberPreKeyRecord) -> Self {
         UploadKeyType {
             key_id: u32::from(value.state.id().unwrap()),
@@ -295,7 +293,7 @@ pub fn create_keys_data(
     let mut kyberkey_vec: Vec<Py<PyDict>> = Vec::new();
 
     for k in pre_keys {
-        prekey_vec.push(UploadKeyType::from(k.clone()).to_py_dict(py).unwrap());
+        prekey_vec.push(UploadKeyType::from(k.clone()).to_py_dict(py)?);
 
         // TODO: a bit hacky
         _ = secrets_prekeys.set_item(
@@ -305,7 +303,7 @@ pub fn create_keys_data(
         );
     }
     for k in kyber_keys {
-        kyberkey_vec.push(UploadKeyType::from(k.clone()).to_py_dict(py).unwrap());
+        kyberkey_vec.push(UploadKeyType::from(k.clone()).to_py_dict(py)?);
 
         // TODO: a bit hacky
         _ = secrets_kyber.set_item(

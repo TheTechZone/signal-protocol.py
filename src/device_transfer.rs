@@ -6,8 +6,8 @@ use crate::error::SignalProtocolError;
 /// Generate a private key of size `bits` and export to a specified format.
 ///
 /// Arguments:
-///     bits - the bitlength of the key (optional: defaults to 4096)
-///     key_format - key format (optional: defaults to )
+///     bits - the bit-length of the key (optional: defaults to 4096)
+///     key_format - key format (optional: defaults to Pkcs8)
 #[pyfunction]
 #[pyo3(signature = (bits=None, key_format=None))]
 pub fn create_rsa_private_key(

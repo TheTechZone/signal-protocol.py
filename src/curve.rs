@@ -92,7 +92,7 @@ impl Serialize for PublicKey {
     where
         S: serde::Serializer,
     {
-        let encoded_pk = base64::engine::general_purpose::STANDARD.encode(self.key.serialize());
+        let encoded_pk = general_purpose::STANDARD.encode(self.key.serialize());
         serializer.serialize_str(&encoded_pk)
     }
 }
