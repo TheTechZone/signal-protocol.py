@@ -93,6 +93,8 @@ impl InMemSignalProtocolStore {
         }
     }
 
+    /// Resets all identity information in the store.
+    /// WARNING: This is a destructive operation that clears all identity keys.
     fn reset_identities(&mut self) {
         self.store.identity_store.reset();
     }
@@ -210,9 +212,9 @@ impl InMemSignalProtocolStore {
         )?)
     }
 
-    fn mark_kyber_pre_key_used(&mut self, _kyber_prekey_id: KyberPreKeyId) -> Result<()> {
+    fn mark_kyber_pre_key_used(&mut self, kyber_prekey_id: KyberPreKeyId) -> Result<()> {
         Ok(block_on(
-            self.store.mark_kyber_pre_key_used(_kyber_prekey_id.value),
+            self.store.mark_kyber_pre_key_used(kyber_prekey_id.value),
         )?)
     }
 }

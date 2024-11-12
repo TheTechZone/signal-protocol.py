@@ -1,11 +1,10 @@
 use pyo3::prelude::*;
 use serde::Serialize;
-use std::convert;
 
 /// The type used in memory to represent a device, i.e. a particular Signal client instance which represents some user.
 ///
 /// Used in ProtocolAddress.
-/// *N.B* the DeviceID ranges from 1 (primary device) to n (the maximum number of devices per user), Any DeviceID > 1 will implictly represent a secondary device.
+/// *N.B* the DeviceID ranges from 1 (primary device) to n (the maximum number of devices per user), Any DeviceID > 1 will implicitly represent a secondary device.
 #[pyclass]
 #[derive(Clone, Debug)]
 pub struct DeviceId {
@@ -54,11 +53,7 @@ impl DeviceId {
     }
 
     fn __repr__(&self) -> PyResult<String> {
-        let memory_address = std::ptr::addr_of!(self) as usize;
-        Ok(String::from(format!(
-            "DeviceId({}) at 0x{:x}",
-            self.value, memory_address
-        )))
+        Ok(String::from(format!("DeviceId({})", self.value)))
     }
 }
 

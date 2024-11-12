@@ -40,6 +40,15 @@ impl CiphertextMessage {
     pub fn message_type(&self) -> u8 {
         self.data.message_type() as u8
     }
+
+    pub fn message_type_str(&self) -> &'static str {
+        match self.data {
+            libsignal_protocol::CiphertextMessage::SignalMessage(_) => "Whisper",
+            libsignal_protocol::CiphertextMessage::PreKeySignalMessage(_) => "PreKey",
+            libsignal_protocol::CiphertextMessage::SenderKeyMessage(_) => "SenderKey",
+            libsignal_protocol::CiphertextMessage::PlaintextContent(_) => "Plaintext",
+        }
+    }
 }
 
 #[pyclass]
@@ -407,11 +416,6 @@ impl SenderKeyMessage {
         self.data.chain_id()
     }
 
-    // TODO: looks deprecated
-    // pub fn key_id(&self) -> u32 {
-    //     self.data.key_id()
-    // }
-
     pub fn iteration(&self) -> u32 {
         self.data.iteration()
     }
@@ -479,9 +483,7 @@ impl SenderKeyDistributionMessage {
         let variant_msg = SenderKeyDistributionMessage {
             data: upstream_data.clone(),
         };
-        // let ciphertext_msg = CiphertextMessage::new(
-        //     libsignal_protocol::CiphertextMessage::SenderKeyDistributionMessage(upstream_data),
-        // );
+
         Ok(variant_msg)
     }
 
@@ -492,10 +494,6 @@ impl SenderKeyDistributionMessage {
     pub fn message_version(&self) -> u8 {
         self.data.message_version()
     }
-
-    // pub fn id(&self) -> Result<u32> {
-    //     Ok(self.data.id()?)
-    // }
 
     pub fn iteration(&self) -> Result<u32> {
         Ok(self.data.iteration()?)

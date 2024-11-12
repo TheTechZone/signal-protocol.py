@@ -1,3 +1,4 @@
+use crate::error::SignalProtocolError;
 use mac_address::get_mac_address;
 use pyo3::{
     exceptions::{PyTypeError, PyValueError},
@@ -134,7 +135,12 @@ impl UUID {
             6 => Version::SortMac,
             7 => Version::SortRand,
             8 => Version::Custom,
-            _ => return Err(PyErr::new::<PyValueError, &str>("illegal version number.")),
+            _ => {
+                return Err(SignalProtocolError::err_from_str(format!(
+                    "illegal version number: valid versions are 1-8, got {}",
+                    version.to_string()
+                )))
+            }
         };
 
         let mut builder = Builder::from_u128(self.handle.as_u128());

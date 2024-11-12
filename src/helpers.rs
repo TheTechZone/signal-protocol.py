@@ -72,14 +72,12 @@ impl UploadKeyType {
         dict.set_item(
             "publicKey",
             base64::engine::general_purpose::STANDARD.encode(&self.public_key),
-        )?
-        .to_object(py);
+        )?;
         if let Some(signature) = &self.signature {
             dict.set_item(
                 "signature",
                 base64::engine::general_purpose::STANDARD.encode(signature),
-            )?
-            .to_object(py);
+            )?;
         }
         Ok(dict.into())
     }
@@ -150,13 +148,11 @@ pub fn create_registration_keys(
                 .calculate_signature(&keypair.key.public_key.serialize(), &mut csprng);
             let new_spk = SignedPreKeyRecord::new(id, ts, &keypair, &sig.unwrap());
             // keep track of the private key
-
             _ = secrets.set_item(
                 format!("{}SignedPreKeySecret", key_kind),
                 base64::engine::general_purpose::STANDARD
                     .encode(new_spk.state.private_key().unwrap().serialize()),
             );
-            // TODO: also must be outputted
             new_spk
         }
     };
@@ -172,7 +168,6 @@ pub fn create_registration_keys(
             let id: KyberPreKeyId =
                 KyberPreKeyId::new(pq_id.unwrap_or(rand::thread_rng().gen_range(100..10000)));
             let key_type = KeyType::new(0)?;
-            // TODO: pq must also be outputted
             let pq = KyberPreKeyRecord::generate(key_type, id, ik.private_key()?)?;
             _ = secrets.set_item(
                 format!("{}PqLastResortSecret", key_kind),
@@ -295,7 +290,6 @@ pub fn create_keys_data(
     for k in pre_keys {
         prekey_vec.push(UploadKeyType::from(k.clone()).to_py_dict(py)?);
 
-        // TODO: a bit hacky
         _ = secrets_prekeys.set_item(
             format!("{}", u32::from(k.id()?)),
             base64::engine::general_purpose::STANDARD
@@ -305,7 +299,6 @@ pub fn create_keys_data(
     for k in kyber_keys {
         kyberkey_vec.push(UploadKeyType::from(k.clone()).to_py_dict(py)?);
 
-        // TODO: a bit hacky
         _ = secrets_kyber.set_item(
             format!("{}", u32::from(k.state.id().unwrap())),
             base64::engine::general_purpose::STANDARD

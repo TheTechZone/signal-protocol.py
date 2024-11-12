@@ -11,6 +11,11 @@ use crate::error::Result;
 use crate::error::SignalProtocolError;
 use base64::{engine::general_purpose, Engine as _};
 
+pub const AGREEMENT_LENGTH: usize = 32;
+pub const PRIVATE_KEY_LENGTH: usize = 32;
+pub const PUBLIC_KEY_LENGTH: usize = 32;
+pub const SIGNATURE_LENGTH: usize = 64;
+
 #[pyfunction]
 pub fn generate_keypair(py: Python) -> PyResult<(PyObject, PyObject)> {
     let mut csprng = OsRng;
@@ -119,7 +124,10 @@ impl PublicKey {
     pub fn from_base64(input: &[u8]) -> PyResult<Self> {
         match general_purpose::STANDARD.decode(input) {
             Ok(byte_data) => Ok(Self::deserialize(&byte_data)?),
-            Err(err) => Err(SignalProtocolError::err_from_str(err.to_string())),
+            Err(err) => Err(SignalProtocolError::err_from_str(format!(
+                "Failed to decode base64 public key: {}",
+                err
+            ))),
         }
     }
 
@@ -136,10 +144,18 @@ impl PublicKey {
     }
 
     #[staticmethod]
-    pub fn from_public_key_bytes(bytes: &[u8]) -> Result<Self> {
+    pub fn from_public_key_bytes(bytes: &[u8]) -> PyResult<Self> {
+        if bytes.len() != PUBLIC_KEY_LENGTH {
+            return Err(SignalProtocolError::err_from_str(format!(
+                "Invalid public key length: {}, expected {}",
+                bytes.len(),
+                PUBLIC_KEY_LENGTH
+            )));
+        }
+
         let upstream: libsignal_protocol::PublicKey =
             match libsignal_protocol::PublicKey::from_djb_public_key_bytes(bytes) {
-                Err(err) => return Err(SignalProtocolError::from(err)),
+                Err(err) => return Err(SignalProtocolError::new_err(err.into())),
                 Ok(key) => key,
             };
         Ok(Self { key: upstream })
@@ -180,7 +196,10 @@ impl PrivateKey {
     pub fn from_base64(input: &[u8]) -> PyResult<Self> {
         match general_purpose::STANDARD.decode(input) {
             Ok(byte_data) => Ok(Self::deserialize(&byte_data)?),
-            Err(err) => Err(SignalProtocolError::err_from_str(err.to_string())),
+            Err(err) => Err(SignalProtocolError::err_from_str(format!(
+                "Failed to decode base64 private key: {}",
+                err
+            ))),
         }
     }
 

@@ -18,7 +18,7 @@ use crate::kem::PublicKey as KemPublicKey;
 use crate::kem::SecretKey as KemSecretKey;
 use crate::kem::{self};
 
-// Newtypes from upstream crate not exposed as part of the public API
+// New types from upstream crate not exposed as part of the public API
 #[pyclass]
 #[derive(Clone, Debug)]
 pub struct SignedPreKeyId {
@@ -180,7 +180,8 @@ pub struct PreKeyBundle {
 impl PreKeyBundle {
     //TODO: this constructor will *likely* have to change once kyber rolls out (and it is updated upstream)
     #[new]
-    #[pyo3(signature = (registration_id, device_id, pre_key_public,signed_pre_key_id,signed_pre_key_public,signed_pre_key_signature,identity_key))]
+    #[pyo3(signature = (registration_id, device_id, pre_key_public,signed_pre_key_id,signed_pre_key_public,signed_pre_key_signature,identity_key)
+    )]
     fn new(
         registration_id: u32,
         device_id: DeviceId,
@@ -267,7 +268,6 @@ impl PreKeyBundle {
     }
 
     fn kyber_pre_key_id(&self) -> Result<Option<KyberPreKeyId>> {
-        // TODO: for now suppress errors as they kyber part is not initilized
         let val = match self.state.kyber_pre_key_id() {
             Err(_) => return Ok(None),
             Ok(val) => match val {
@@ -279,7 +279,7 @@ impl PreKeyBundle {
     }
 
     fn kyber_pre_key_public(&self) -> Result<Option<KemPublicKey>> {
-        // TODO: for now suppress errors as they kyber part is not initilized
+        // TODO: for now suppress errors as they kyber part is not initialized
         let upstream_key = match self.state.kyber_pre_key_public() {
             Err(_) => return Ok(None),
             Ok(val) => match val {
@@ -408,22 +408,22 @@ impl PreKeyBundle {
         Ok(dict.into())
     }
 
-    // TODO: add str / repr
-    // fn __str__(&self) -> PyResult<String> {
-    //     Ok(String::from(format!(
-    //         "{}",
-    //         self.value
-    //     )))
-    // }
+    fn __str__(&self) -> PyResult<String> {
+        Ok(format!(
+            "PreKeyBundle(registration_id={})",
+            self.registration_id()?
+        ))
+    }
 
-    // fn __repr__(&self) -> PyResult<String> {
-    //     let memory_address = std::ptr::addr_of!(self) as usize;
-    //     Ok(String::from(format!(
-    //         "PreKeyBundle({}) at 0x{:x}",
-    //         self.value,
-    //         memory_address
-    //     )))
-    // }
+    fn __repr__(&self) -> PyResult<String> {
+        // TODO: add str / repr
+        let memory_address = std::ptr::addr_of!(self) as usize;
+        Ok(format!(
+            "PreKeyBundle(registration_id={}) at 0x{:x}",
+            self.registration_id()?,
+            memory_address
+        ))
+    }
 }
 
 impl Serialize for PreKeyBundle {
@@ -450,10 +450,10 @@ impl Serialize for PreKeyBundle {
 
         let device_id = self.device_id().unwrap_or(DeviceId::from(0));
 
-        _ = state.serialize_field("registration_id", &rid);
-        _ = state.serialize_field("device_id", &device_id);
-        _ = state.serialize_field("pre_key_id", &pk_id);
-        _ = state.serialize_field("pre_key_public", &pk);
+        state.serialize_field("registration_id", &rid)?;
+        state.serialize_field("device_id", &device_id)?;
+        state.serialize_field("pre_key_id", &pk_id)?;
+        state.serialize_field("pre_key_public", &pk)?;
         state.end()
     }
 }
@@ -550,37 +550,23 @@ pub fn generate_n_prekeys(n: u16, id: PreKeyId) -> Vec<PreKeyRecord> {
     keyvec
 }
 
-// #[pyfunction]
-// pub fn generate_n_kyberkeys(n: u16, id: KyberPreKeyId) -> Vec<KyberPreKeyRecord> {
-//     let mut keyvec: Vec<KyberPreKeyRecord> = Vec::new();
-//     let mut i: u32 = u32::from(id);
-//     for _n in 0..n {
-//         let key_type = kem::KeyType::new(0).unwrap();
-//         let keypair = kem::KeyPair::generate(key_type);
-//         keyvec.push(prekey);
-//         i += 1;
-//     }
-
-//     keyvec
-// }
-
 #[pyfunction]
 pub fn generate_n_signed_kyberkeys(
     n: u16,
     id: KyberPreKeyId,
     signing_key: PrivateKey,
 ) -> Vec<KyberPreKeyRecord> {
-    let mut keyvec: Vec<KyberPreKeyRecord> = Vec::new();
+    let mut keys: Vec<KyberPreKeyRecord> = Vec::new();
     let mut i: u32 = u32::from(id);
     for _n in 0..n {
         let id = KyberPreKeyId::from(i);
         let key_type = kem::KeyType::new(0);
-        let prekey = KyberPreKeyRecord::generate(key_type.unwrap(), id, signing_key).unwrap();
-        keyvec.push(prekey);
+        let pre_key = KyberPreKeyRecord::generate(key_type.unwrap(), id, signing_key).unwrap();
+        keys.push(pre_key);
         i += 1;
     }
 
-    keyvec
+    keys
 }
 
 #[pyclass]
@@ -834,10 +820,9 @@ impl KyberPreKeyRecord {
         let key_pair = libsignal_protocol::kem::KeyPair::from_public_and_private(
             &upstream.public_key,
             &upstream.private_key,
-        );
-        Ok(KemKeyPair {
-            key: key_pair.unwrap(), // todo: fixme and look at the api
-        })
+        )
+        .map_err(|e| SignalProtocolError::new_err(e))?;
+        Ok(KemKeyPair { key: key_pair })
         // &self.state.get_storage().
     }
 

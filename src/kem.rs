@@ -64,8 +64,6 @@ pub struct KeyPair {
     pub key: libsignal_protocol::kem::KeyPair,
 }
 
-// todo: kem::KeyPair impl
-
 #[pymethods]
 impl KeyPair {
     #[new]
