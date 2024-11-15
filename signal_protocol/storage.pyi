@@ -88,7 +88,7 @@ class InMemSignalProtocolStore:
         """
         ...
 
-    def get_pre_key(self, id: PreKeyId) -> PreKeyRecord:
+    def get_pre_key(self, pre_key_id: PreKeyId) -> PreKeyRecord:
         """
         Gets a pre-key.
 
@@ -100,7 +100,7 @@ class InMemSignalProtocolStore:
         """
         ...
 
-    def save_pre_key(self, id: PreKeyId, record: PreKeyRecord) -> None:
+    def save_pre_key(self, pre_key_id: PreKeyId, record: PreKeyRecord) -> None:
         """
         Saves a pre-key.
 
@@ -110,7 +110,7 @@ class InMemSignalProtocolStore:
         """
         ...
 
-    def remove_pre_key(self, id: PreKeyId) -> None:
+    def remove_pre_key(self, pre_key_id: PreKeyId) -> None:
         """
         Removes a pre-key.
 
@@ -119,7 +119,9 @@ class InMemSignalProtocolStore:
         """
         ...
 
-    def get_signed_pre_key(self, id: SignedPreKeyId) -> SignedPreKeyRecord:
+    def get_signed_pre_key(
+        self, signed_pre_key_id: SignedPreKeyId
+    ) -> SignedPreKeyRecord:
         """
         Gets a signed pre-key.
 
@@ -132,7 +134,7 @@ class InMemSignalProtocolStore:
         ...
 
     def save_signed_pre_key(
-        self, id: SignedPreKeyId, record: SignedPreKeyRecord
+        self, signed_pre_key_id: SignedPreKeyId, record: SignedPreKeyRecord
     ) -> None:
         """
         Saves a signed pre-key.
@@ -150,7 +152,8 @@ class InMemSignalProtocolStore:
         Stores a sender key.
 
         Args:
-            sender_key_name (SenderKeyName): The sender key name.
+            sender (ProtocolAddress): The sender key name.
+            distribution_id (UUID): The distribution ID.
             record (SenderKeyRecord): The sender key record.
         """
         ...
@@ -162,7 +165,8 @@ class InMemSignalProtocolStore:
         Loads a sender key.
 
         Args:
-            sender_key_name (SenderKeyName): The sender key name.
+            sender: ProtocolAddress: The sender key name.
+            distribution_id (UUID): The distribution ID.
 
         Returns:
             SenderKeyRecord: The sender key record.
