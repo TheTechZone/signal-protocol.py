@@ -164,7 +164,7 @@ checksum = "1505bd5d3d116872e7271a6d4e16d81d0c8570876c8de68093a09ac269d8aac0"
 [[package]]
 name = "attest"
 version = "0.1.0"
-source = "git+https://github.com/signalapp/libsignal#bcfa9a7d8ed6cc250bcc8128e06b725c8fe5b4f6"
+source = "git+https://github.com/signalapp/libsignal#90ba45384073a467422d44783bc22a1152acd4c4"
 dependencies = [
  "asn1",
  "base64",
@@ -355,9 +355,9 @@ dependencies = [
 
 [[package]]
 name = "cc"
-version = "1.2.0"
+version = "1.2.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "1aeb932158bd710538c73702db6945cb68a8fb08c519e6e12706b94263b36db8"
+checksum = "fd9de9f2205d5ef3fd67e685b0df337994ddd4495e2a28d185500d0e1edfea47"
 dependencies = [
  "jobserver",
  "libc",
@@ -644,7 +644,7 @@ dependencies = [
 [[package]]
 name = "device-transfer"
 version = "0.1.0"
-source = "git+https://github.com/signalapp/libsignal#bcfa9a7d8ed6cc250bcc8128e06b725c8fe5b4f6"
+source = "git+https://github.com/signalapp/libsignal#90ba45384073a467422d44783bc22a1152acd4c4"
 dependencies = [
  "boring",
  "libc",
@@ -1435,7 +1435,7 @@ dependencies = [
 [[package]]
 name = "libsignal-account-keys"
 version = "0.1.0"
-source = "git+https://github.com/signalapp/libsignal#bcfa9a7d8ed6cc250bcc8128e06b725c8fe5b4f6"
+source = "git+https://github.com/signalapp/libsignal#90ba45384073a467422d44783bc22a1152acd4c4"
 dependencies = [
  "argon2",
  "displaydoc",
@@ -1454,7 +1454,7 @@ dependencies = [
 [[package]]
 name = "libsignal-core"
 version = "0.1.0"
-source = "git+https://github.com/signalapp/libsignal?tag=v0.61.0#0a06f69bce222c184a8d4022b8cf4202b02b9001"
+source = "git+https://github.com/signalapp/libsignal?tag=v0.62.0#90ba45384073a467422d44783bc22a1152acd4c4"
 dependencies = [
  "num_enum",
  "uuid",
@@ -1463,7 +1463,7 @@ dependencies = [
 [[package]]
 name = "libsignal-core"
 version = "0.1.0"
-source = "git+https://github.com/signalapp/libsignal#bcfa9a7d8ed6cc250bcc8128e06b725c8fe5b4f6"
+source = "git+https://github.com/signalapp/libsignal#90ba45384073a467422d44783bc22a1152acd4c4"
 dependencies = [
  "num_enum",
  "uuid",
@@ -1472,7 +1472,7 @@ dependencies = [
 [[package]]
 name = "libsignal-keytrans"
 version = "0.0.1"
-source = "git+https://github.com/signalapp/libsignal#bcfa9a7d8ed6cc250bcc8128e06b725c8fe5b4f6"
+source = "git+https://github.com/signalapp/libsignal#90ba45384073a467422d44783bc22a1152acd4c4"
 dependencies = [
  "curve25519-dalek",
  "displaydoc",
@@ -1486,7 +1486,7 @@ dependencies = [
 [[package]]
 name = "libsignal-net"
 version = "0.1.0"
-source = "git+https://github.com/signalapp/libsignal#bcfa9a7d8ed6cc250bcc8128e06b725c8fe5b4f6"
+source = "git+https://github.com/signalapp/libsignal#90ba45384073a467422d44783bc22a1152acd4c4"
 dependencies = [
  "async-trait",
  "attest",
@@ -1499,10 +1499,13 @@ dependencies = [
  "either",
  "futures-util",
  "hex",
+ "hex-literal",
  "hmac",
  "http",
  "itertools",
+ "lazy_static",
  "libsignal-core 0.1.0 (git+https://github.com/signalapp/libsignal)",
+ "libsignal-keytrans",
  "libsignal-net-infra",
  "libsignal-protocol 0.1.0 (git+https://github.com/signalapp/libsignal)",
  "libsignal-svr3",
@@ -1536,7 +1539,7 @@ dependencies = [
 [[package]]
 name = "libsignal-net-infra"
 version = "0.1.0"
-source = "git+https://github.com/signalapp/libsignal#bcfa9a7d8ed6cc250bcc8128e06b725c8fe5b4f6"
+source = "git+https://github.com/signalapp/libsignal#90ba45384073a467422d44783bc22a1152acd4c4"
 dependencies = [
  "async-trait",
  "attest",
@@ -1579,7 +1582,7 @@ dependencies = [
 [[package]]
 name = "libsignal-protocol"
 version = "0.1.0"
-source = "git+https://github.com/signalapp/libsignal?tag=v0.61.0#0a06f69bce222c184a8d4022b8cf4202b02b9001"
+source = "git+https://github.com/signalapp/libsignal?tag=v0.62.0#90ba45384073a467422d44783bc22a1152acd4c4"
 dependencies = [
  "aes",
  "aes-gcm-siv",
@@ -1595,7 +1598,7 @@ dependencies = [
  "hmac",
  "indexmap",
  "itertools",
- "libsignal-core 0.1.0 (git+https://github.com/signalapp/libsignal?tag=v0.61.0)",
+ "libsignal-core 0.1.0 (git+https://github.com/signalapp/libsignal?tag=v0.62.0)",
  "log",
  "num_enum",
  "pqcrypto-kyber",
@@ -1606,7 +1609,7 @@ dependencies = [
  "rayon",
  "serde",
  "sha2",
- "signal-crypto 0.1.0 (git+https://github.com/signalapp/libsignal?tag=v0.61.0)",
+ "signal-crypto 0.1.0 (git+https://github.com/signalapp/libsignal?tag=v0.62.0)",
  "subtle",
  "thiserror",
  "uuid",
@@ -1616,7 +1619,7 @@ dependencies = [
 [[package]]
 name = "libsignal-protocol"
 version = "0.1.0"
-source = "git+https://github.com/signalapp/libsignal#bcfa9a7d8ed6cc250bcc8128e06b725c8fe5b4f6"
+source = "git+https://github.com/signalapp/libsignal#90ba45384073a467422d44783bc22a1152acd4c4"
 dependencies = [
  "aes",
  "aes-gcm-siv",
@@ -1653,7 +1656,7 @@ dependencies = [
 [[package]]
 name = "libsignal-svr3"
 version = "0.1.0"
-source = "git+https://github.com/signalapp/libsignal#bcfa9a7d8ed6cc250bcc8128e06b725c8fe5b4f6"
+source = "git+https://github.com/signalapp/libsignal#90ba45384073a467422d44783bc22a1152acd4c4"
 dependencies = [
  "aes-gcm-siv",
  "curve25519-dalek",
@@ -2561,7 +2564,7 @@ checksum = "0fda2ff0d084019ba4d7c6f371c95d8fd75ce3524c3cb8fb653a3023f6323e64"
 [[package]]
 name = "signal-crypto"
 version = "0.1.0"
-source = "git+https://github.com/signalapp/libsignal?tag=v0.61.0#0a06f69bce222c184a8d4022b8cf4202b02b9001"
+source = "git+https://github.com/signalapp/libsignal?tag=v0.62.0#90ba45384073a467422d44783bc22a1152acd4c4"
 dependencies = [
  "aes",
  "cbc",
@@ -2578,7 +2581,7 @@ dependencies = [
 [[package]]
 name = "signal-crypto"
 version = "0.1.0"
-source = "git+https://github.com/signalapp/libsignal#bcfa9a7d8ed6cc250bcc8128e06b725c8fe5b4f6"
+source = "git+https://github.com/signalapp/libsignal#90ba45384073a467422d44783bc22a1152acd4c4"
 dependencies = [
  "aes",
  "cbc",
@@ -2603,7 +2606,7 @@ dependencies = [
  "libsignal-core 0.1.0 (git+https://github.com/signalapp/libsignal)",
  "libsignal-keytrans",
  "libsignal-net",
- "libsignal-protocol 0.1.0 (git+https://github.com/signalapp/libsignal?tag=v0.61.0)",
+ "libsignal-protocol 0.1.0 (git+https://github.com/signalapp/libsignal?tag=v0.62.0)",
  "mac_address",
  "pyo3",
  "pyo3-log",

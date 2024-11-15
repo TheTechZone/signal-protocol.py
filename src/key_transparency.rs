@@ -183,29 +183,26 @@ impl PublicConfig {
 
 #[derive(Clone)]
 #[pyclass]
-pub struct SearchRequest {
-    inner: libsignal_keytrans::SearchRequest,
+pub struct SlimSearchRequest {
+    inner: libsignal_keytrans::SlimSearchRequest,
 }
 
 #[pymethods]
-impl SearchRequest {
+impl SlimSearchRequest {
     #[new]
-    fn new(search_key: &[u8], mapped_value: &[u8], unidentified_access_key: &[u8]) -> Self {
-        SearchRequest {
-            inner: libsignal_keytrans::SearchRequest {
-                search_key: Vec::from(search_key),
-                version: None,
-                consistency: None,
-                mapped_value: Vec::from(mapped_value),
-                unidentified_access_key: Some(Vec::from(unidentified_access_key)),
-            },
+    fn new(search_key: &[u8]) -> Self {
+        SlimSearchRequest {
+            inner: libsignal_keytrans::SlimSearchRequest::new(search_key.into()),
         }
-    }
-    #[staticmethod]
-    fn default() -> Self {
-        SearchRequest {
-            inner: libsignal_keytrans::SearchRequest::default(),
-        }
+        // SlimSearchRequest {
+        //     inner: libsignal_keytrans::SlimSearchRequest {
+        //         search_key: Vec::from(search_key),
+        //         version: None,
+        //         // consistency: None,
+        //         // mapped_value: Vec::from(mapped_value),
+        //         // unidentified_access_key: Some(Vec::from(unidentified_access_key)),
+        //     },
+        // }
     }
 }
 
@@ -333,13 +330,14 @@ impl SearchContext {
     }
 }
 
+#[derive(Debug)]
 #[pyclass]
-pub struct SearchUpdate {
-    inner: libsignal_keytrans::SearchUpdate,
+pub struct VerifiedSearchResult {
+    inner: libsignal_keytrans::VerifiedSearchResult,
 }
 
 #[pymethods]
-impl SearchUpdate {}
+impl VerifiedSearchResult {}
 
 #[pyclass]
 pub struct KeyTransparency {
@@ -362,10 +360,10 @@ impl KeyTransparency {
     */
     fn verify_search(
         &mut self,
-        request: SearchRequest,
+        request: SlimSearchRequest,
         response: SearchResponse,
         context: SearchContext,
-    ) -> PyResult<SearchUpdate> {
+    ) -> PyResult<VerifiedSearchResult> {
         match self.inner.verify_search(
             request.inner,
             response.inner,
@@ -373,7 +371,7 @@ impl KeyTransparency {
             false,
             SystemTime::now(),
         ) {
-            Ok(update) => Ok(SearchUpdate { inner: update }),
+            Ok(update) => Ok(VerifiedSearchResult { inner: update }),
             Err(err) => Err(SignalProtocolError::err_from_str(err.to_string())),
         }
     }
@@ -400,7 +398,7 @@ pub fn init_submodule(module: &Bound<'_, PyModule>) -> PyResult<()> {
     module.add_class::<VrfPublicKey>()?;
     module.add_class::<DeploymentMode>()?;
     module.add_class::<PublicConfig>()?;
-    module.add_class::<SearchRequest>()?;
+    module.add_class::<SlimSearchRequest>()?;
     module.add_class::<KeyTransparency>()?;
     Ok(())
 }
