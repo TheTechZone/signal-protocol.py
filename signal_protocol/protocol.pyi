@@ -325,7 +325,7 @@ class SignalMessage(CiphertextMessage):
 
     def __init__(
         self,
-        messsage_version: int,
+        message_version: int,
         mac_key: bytes,
         sender_ratchet_key: PublicKey,
         counter: int,
@@ -334,7 +334,7 @@ class SignalMessage(CiphertextMessage):
         sender_identity_key: IdentityKey,
         receiver_identity_key: IdentityKey,
     ) -> None: ...
-    def __new__(cls) -> tuple[Self, CiphertextMessage]: ...
+    def __new__(cls, *args, **kwargs) -> tuple[Self, CiphertextMessage]: ...
     @staticmethod
     def try_from(data: bytes) -> SignalMessage:
         """
