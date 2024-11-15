@@ -1,18 +1,11 @@
 from typing import Optional
 
 def create_rsa_private_key(bits: Optional[int], key_format: Optional[int]) -> bytes:
-    """
-    Generate a private key of size `bits` and export to a specified format.
-
-
+    """Generate a private key of size `bits` and export to a specified format.
 
     Arguments:
-
-        bits - the bitlength of the key (optional: defaults to 4096)
-
-        key_format - key format (optional: defaults to )
-    """
-    ...
+        bits - the bit-length of the key (optional: defaults to 4096)
+        key_format - key format (optional: defaults to Pkcs8)"""
 
 def create_self_signed_cert(
     rsa_key_pkcs8: bytes, name: str, days_to_expire: int

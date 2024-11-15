@@ -42,6 +42,8 @@ class CiphertextMessage(collections.abc.ByteString):
         """
         ...
 
+    def message_type_str(self) -> str: ...
+
 class PreKeySignalMessage(CiphertextMessage):
     """
     Represents a pre-key signal message in the Signal Protocol.

@@ -62,7 +62,10 @@ class InMemSignalProtocolStore:
         """
         ...
 
-    def reset_identities(self): ...
+    def reset_identities(self):
+        """Resets all identity information in the store.
+        WARNING: This is a destructive operation that clears all identity keys."""
+
     def load_session(self, address: ProtocolAddress) -> Optional[SessionRecord]:
         """
         Loads a session.
