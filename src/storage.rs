@@ -203,18 +203,19 @@ impl InMemSignalProtocolStore {
 
     fn save_kyber_pre_key(
         &mut self,
-        kyber_prekey_id: KyberPreKeyId,
+        kyber_pre_key_id: KyberPreKeyId,
         record: &KyberPreKeyRecord,
     ) -> Result<()> {
-        Ok(block_on(
-            self.store
-                .save_kyber_pre_key(kyber_prekey_id.value, &record.state),
-        )?)
+        Ok(block_on(self.store.save_kyber_pre_key(
+            kyber_pre_key_id.value,
+            &record.state,
+        ))?)
     }
 
-    fn mark_kyber_pre_key_used(&mut self, kyber_prekey_id: KyberPreKeyId) -> Result<()> {
+    /// Mark the entry for kyber_pre_key_id as "used". This would mean different things for one-time and last-resort Kyber keys.
+    fn mark_kyber_pre_key_used(&mut self, kyber_pre_key_id: KyberPreKeyId) -> Result<()> {
         Ok(block_on(
-            self.store.mark_kyber_pre_key_used(kyber_prekey_id.value),
+            self.store.mark_kyber_pre_key_used(kyber_pre_key_id.value),
         )?)
     }
 }

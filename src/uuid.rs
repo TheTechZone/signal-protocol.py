@@ -382,6 +382,20 @@ fn uuid5(namespace: &UUID, name: StringOrBytes) -> PyResult<UUID> {
     }
 }
 
+/// Generate a UUID v6 (reordered time-based UUID).
+///
+/// UUID v6 is a field-compatible version of UUIDv1, reordered for improved
+/// timestamp sorting. It includes:
+///
+/// - 48-bit timestamp
+/// - 12-bit clock sequence
+/// - 62-bit node ID
+///
+///  References:
+///  - RFC: https://www.rfc-editor.org/rfc/rfc9562.html#name-uuid-version-6
+///
+///  Returns:
+///      UUID: A new UUID v6 instance
 #[pyfunction]
 #[pyo3(signature = (node=None, timestamp=None, nanos=None))]
 fn uuid6(node: Option<u64>, timestamp: Option<u64>, nanos: Option<u32>) -> PyResult<UUID> {
@@ -404,6 +418,13 @@ fn uuid6(node: Option<u64>, timestamp: Option<u64>, nanos: Option<u32>) -> PyRes
     Ok(UUID { handle })
 }
 
+/// Generate a UUID v7
+///
+///  References:
+///  - RFC: https://www.rfc-editor.org/rfc/rfc9562.html#name-uuid-version-7
+///
+///  Returns:
+///      UUID: A new UUID v7 instance
 #[pyfunction]
 #[pyo3(signature = (timestamp=None, nanos=None))]
 fn uuid7(timestamp: Option<u64>, nanos: Option<u32>) -> PyResult<UUID> {
@@ -420,6 +441,13 @@ fn uuid7(timestamp: Option<u64>, nanos: Option<u32>) -> PyResult<UUID> {
     Ok(UUID { handle })
 }
 
+/// Generate a UUID v8
+///
+///  References:
+///  - RFC: https://www.rfc-editor.org/rfc/rfc9562.html#name-uuid-version-8
+///
+///  Returns:
+///      UUID: A new UUID v7 instance
 #[pyfunction]
 fn uuid8(bytes: &Bound<'_, PyBytes>) -> PyResult<UUID> {
     let bytes: Bytes = bytes.extract()?;

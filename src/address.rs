@@ -50,7 +50,7 @@ impl DeviceId {
     }
 
     fn __str__(&self) -> PyResult<String> {
-        Ok(String::from(format!("{}", self.value)))
+        Ok(self.value.to_string())
     }
 
     fn __repr__(&self) -> PyResult<String> {

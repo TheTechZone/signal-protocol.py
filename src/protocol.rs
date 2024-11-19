@@ -335,7 +335,7 @@ impl SignalMessage {
     }
 }
 
-/// CiphertextMessageType::SenderKey => 4
+/// CiphertextMessageType::SenderKey => 7
 #[pyclass(extends=CiphertextMessage)]
 pub struct SenderKeyMessage {
     pub data: libsignal_protocol::SenderKeyMessage,

@@ -1,4 +1,5 @@
 use crate::error::SignalProtocolError;
+use libsignal_net::infra::AsHttpHeader;
 use pyo3::prelude::*;
 use std::time::SystemTime;
 
@@ -53,6 +54,13 @@ impl Auth {
 
     fn password(&self) -> &[u8] {
         (&self.inner.password).as_ref()
+    }
+
+    fn as_http_header(&self) -> (String, String) {
+        let header = &self.inner.as_header();
+        let name = header.0.as_str();
+        let val = header.1.to_str().unwrap();
+        (name.into(), val.into())
     }
 }
 

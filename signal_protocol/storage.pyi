@@ -187,5 +187,20 @@ class InMemSignalProtocolStore:
 
     def save_kyber_pre_key(
         self, kyber_pre_key_id: KyberPreKeyId, record: KyberPreKeyRecord
-    ): ...
-    def mark_kyber_pre_key_used(self, kyber_pre_key_id: KyberPreKeyId): ...
+    ) -> None:
+        """Saves a Kyber pre-key.
+
+        Args:
+            kyber_pre_key_id (KyberPreKeyId): The Kyber pre-key ID.
+            record (KyberPreKeyRecord): The Kyber pre-key record to save.
+        """
+        ...
+
+    def mark_kyber_pre_key_used(self, kyber_pre_key_id: KyberPreKeyId) -> None:
+        """
+        Mark the entry for kyber_pre_key_id as "used". This would mean different things for one-time and last-resort Kyber keys.
+
+        Args:
+            kyber_pre_key_id (KyberPreKeyId): The Kyber pre-key ID.
+        """
+        ...
