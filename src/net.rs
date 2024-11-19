@@ -56,11 +56,14 @@ impl Auth {
         (&self.inner.password).as_ref()
     }
 
-    fn as_http_header(&self) -> (String, String) {
+    fn as_http_header(&self) -> PyResult<(String, String)> {
         let header = &self.inner.as_header();
         let name = header.0.as_str();
-        let val = header.1.to_str().unwrap();
-        (name.into(), val.into())
+        let val = match header.1.to_str() {
+            Ok(val) => val,
+            Err(err) => return Err(SignalProtocolError::err_from_str(err.to_string())),
+        };
+        Ok((name.into(), val.into()))
     }
 }
 

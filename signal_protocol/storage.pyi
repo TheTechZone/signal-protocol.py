@@ -62,7 +62,7 @@ class InMemSignalProtocolStore:
         """
         ...
 
-    def reset_identities(self):
+    def reset_identities(self) -> None:
         """Resets all identity information in the store.
         WARNING: This is a destructive operation that clears all identity keys."""
 
