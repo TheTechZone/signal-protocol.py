@@ -1,0 +1,30 @@
+#!/bin/bash
+set -e
+
+# Colors for output
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+NC='\033[0m' # No Color
+
+echo -e "${YELLOW}Running security checks before push...${NC}"
+
+# Run cargo audit if Cargo.lock exists
+if [ -f "Cargo.lock" ]; then
+    echo "Running cargo audit..."
+    if ! cargo audit; then
+        echo -e "${RED}Security vulnerabilities found! Please review and update dependencies.${NC}"
+        exit 1
+    fi
+fi
+
+# Run cargo deny if deny.toml exists
+if [ -f "deny.toml" ]; then
+    echo "Running cargo deny check..."
+    if ! cargo deny check; then
+        echo -e "${RED}License or dependency issues found! Please review.${NC}"
+        exit 1
+    fi
+fi
+
+echo -e "${GREEN}All security checks passed!${NC}"

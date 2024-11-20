@@ -49,6 +49,10 @@ impl SignalProtocolError {
         let local_error = SignalProtocolError { err };
         SignalProtocolException::new_err(local_error.to_string())
     }
+
+    pub fn into_py_err(err: libsignal_protocol::SignalProtocolError) -> PyErr {
+        SignalProtocolError::new_err(err)
+    }
 }
 
 pub fn init_submodule(py: Python, module: &Bound<'_, PyModule>) -> PyResult<()> {

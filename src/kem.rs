@@ -18,7 +18,6 @@ impl KeyType {
     #[new]
     pub fn new(key_type: u8) -> PyResult<Self> {
         let key_enum = match key_type {
-            // 7 => libsignal_protocol::kem::KeyType::Kyber768,
             8 => libsignal_protocol::kem::KeyType::Kyber1024,
             _ => {
                 // todo: wrap around SignalProtocolError::BadKEMKeyType
@@ -33,7 +32,6 @@ impl KeyType {
 
     pub fn value(&self) -> PyResult<u8> {
         match &self.key_type {
-            // libsignal_protocol::kem::KeyType::Kyber768 => Ok(0x07),
             libsignal_protocol::kem::KeyType::Kyber1024 => Ok(0x08),
             _ => {
                 // todo: wrap around SignalProtocolError::BadKEMKeyType
