@@ -159,12 +159,10 @@ impl PreKeySignalMessage {
     }
 
     pub fn pre_key_id(&self) -> Option<u32> {
-        // self.data.pre_key_id()
-        // TODO:: check this
-        let key_id = u32::from(PreKeyId {
-            value: self.data.pre_key_id()?,
-        });
-        Some(key_id)
+        match self.data.pre_key_id() {
+            Some(key_id) => Some(u32::from(key_id)),
+            None => None,
+        }
     }
 
     pub fn signed_pre_key_id(&self) -> u32 {
@@ -189,9 +187,7 @@ impl PreKeySignalMessage {
 
         match (pre_key_id, kyber_ctxt) {
             (Some(pki), Some(ctxt)) => {
-                // let kyber_id = KyberPreKeyId::from(u32::from(pki));
                 let kyber_id = KyberPreKeyId { value: pki };
-                // Some(libsignal_protocol::KyberPayload::new(kyber_id, ctxt))
                 let sc = SerializedCiphertext::new(&ctxt).ok()?;
                 Some(KyberPayload {
                     data: libsignal_protocol::KyberPayload::new(kyber_id.value, sc.state),

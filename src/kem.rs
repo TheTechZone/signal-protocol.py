@@ -48,11 +48,7 @@ impl KeyType {
     }
 
     fn __repr__(&self) -> PyResult<String> {
-        let memory_address = std::ptr::addr_of!(self) as usize;
-        Ok(String::from(format!(
-            "KeyType({}) at 0x{:x}",
-            self.key_type, memory_address
-        )))
+        Ok(String::from(format!("KeyType({})", self.key_type)))
     }
 }
 

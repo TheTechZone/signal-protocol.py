@@ -138,7 +138,7 @@ pub fn create_registration_keys(
                 SignedPreKeyId::new(spk_id.unwrap_or(rand::thread_rng().gen_range(100..10000)));
             let ts = SystemTime::now()
                 .duration_since(UNIX_EPOCH)
-                .unwrap()
+                .map_err(|e| SignalProtocolError::err_from_str(e.to_string()))?
                 .as_secs();
 
             let mut csprng: OsRng = OsRng;
@@ -167,7 +167,7 @@ pub fn create_registration_keys(
         None => {
             let id: KyberPreKeyId =
                 KyberPreKeyId::new(pq_id.unwrap_or(rand::thread_rng().gen_range(100..10000)));
-            let key_type = KeyType::new(0)?;
+            let key_type = KeyType::new(8)?;
             let pq = KyberPreKeyRecord::generate(key_type, id, ik.private_key()?)?;
             _ = secrets.set_item(
                 format!("{}PqLastResortSecret", key_kind),

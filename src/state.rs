@@ -560,7 +560,7 @@ pub fn generate_n_signed_kyberkeys(
     let mut i: u32 = u32::from(id);
     for _n in 0..n {
         let id = KyberPreKeyId::from(i);
-        let key_type = kem::KeyType::new(0);
+        let key_type = kem::KeyType::new(8);
         let pre_key = KyberPreKeyRecord::generate(key_type.unwrap(), id, signing_key).unwrap();
         keys.push(pre_key);
         i += 1;
