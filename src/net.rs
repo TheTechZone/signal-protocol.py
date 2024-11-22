@@ -31,8 +31,13 @@ impl Auth {
         }
         Ok(Self {
             inner: libsignal_net::auth::Auth::from_uid_and_secret(
-                <[u8; 16]>::try_from(uid).unwrap(),
-                <[u8; 32]>::try_from(secret).unwrap(),
+                // <[u8; 16]>::try_from(uid).unwrap(),
+                <[u8; 16]>::try_from(uid).map_err(|_| {
+                    SignalProtocolError::err_from_str("Failed to convert UID".to_string())
+                })?,
+                <[u8; 32]>::try_from(secret).map_err(|_| {
+                    SignalProtocolError::err_from_str("Failed to convert secret".to_string())
+                })?,
             ),
         })
     }
