@@ -4,7 +4,9 @@ class Auth:
     def otp(self): ...
     def username(self): ...
     def password(self): ...
-    def as_http_header(self) -> (str, str):
+    def as_http_header(self) -> tuple(str, str):
         """
-        :return: Return a HTTP header tuple (name, value) for this auth instance that can be used to authenticate with a server.
+        Returns:
+            A HTTP header tuple (name, value) containing the Authorization header name
+            and its Basic auth value for server authentication.
         """
