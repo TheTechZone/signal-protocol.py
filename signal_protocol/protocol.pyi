@@ -224,13 +224,9 @@ class SenderKeyDistributionMessage(CiphertextMessage):
 
 class SenderKeyMessage(CiphertextMessage):
     """
-    <<<<<<<
     Represents a sender key message in the Signal Protocol.
 
-    CiphertextMessageType::SenderKey => 4
-    =======
     CiphertextMessageType::SenderKey => 7
-    >>>>>>>
     """
 
     def __new__(
