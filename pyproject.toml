@@ -1,6 +1,6 @@
 [build-system]
-requires = ["setuptools>=62.4", "setuptools-rust>=1.10.1", "wheel"]
-build-backend = "setuptools.build_meta"
+requires = ["maturin>=1.7,<2.0"]
+build-backend = "maturin"
 
 [project]
 name = "signal-protocol"
@@ -8,15 +8,20 @@ version = "0.2.3-alpha1"
 description = "Python bindings for the Signal Protocol"
 requires-python = ">=3.8"
 readme = "README.md"
+license = {text = "AGPL-3.0-or-later"}
 classifiers = [
+    "License :: OSI Approved :: GNU Affero General Public License v3 or later (AGPLv3+)",
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "Programming Language :: Python",
     "Programming Language :: Rust",
-    "Programming Language :: Python :: Implementation :: CPython",
-    "Programming Language :: Python :: 3.8",
-    "Programming Language :: Python :: 3.9",
-    "Programming Language :: Python :: 3.10",
-    "Programming Language :: Python :: 3.11",
-    "Programming Language :: Python :: 3.12",
 ]
+
+[tool.maturin]
+features = ["pyo3/extension-module"]
+module-name = "signal_protocol"
+include = ["signal_protocol/py.typed", "signal_protocol/*.pyi"]
+manifest-path = "Cargo.toml"
 
 [tool.ruff]
 target-version = "py38"

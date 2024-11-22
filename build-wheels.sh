@@ -18,11 +18,12 @@ export PATH="${HOME}/.cargo/bin:${PATH}"
 cd /io
 
 for PYBIN in /opt/python/cp{36,37,38,39,310,311,312}*/bin; do
-    rm -f /io/build/lib.*
-    "${PYBIN}/pip" install -U setuptools wheel setuptools-rust
-    "${PYBIN}/python" setup.py bdist_wheel
+    "${PYBIN}/pip" install -U maturin[patchelf]
+    "${PYBIN}/maturin" build --release --strip --interpreter "${PYBIN}/python"
 done
 
-for whl in dist/*.whl; do
-    auditwheel repair "$whl" -w dist/
+# Use the most recent Python version to repair wheels
+LATEST_PYBIN=$(ls -d /opt/python/cp3* | sort -V | tail -n1)/bin
+for whl in target/wheels/*.whl; do
+    "${LATEST_PYBIN}/python" -m auditwheel repair "$whl" -w dist/
 done

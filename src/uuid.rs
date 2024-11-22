@@ -277,6 +277,12 @@ impl UUID {
         ))
     }
 
+    /// Create a UUID from a hex string.
+    ///
+    /// # Arguments
+    /// * `hex`: a 32-character hex string
+    ///
+    /// returns: a new UUID instance
     #[staticmethod]
     fn from_hex(hex: &str) -> PyResult<UUID> {
         match Uuid::parse_str(hex) {
@@ -287,6 +293,12 @@ impl UUID {
         }
     }
 
+    /// Create a UUID from a bytes.
+    ///
+    /// # Arguments
+    /// * `bytes`: a 16-byte array
+    ///
+    /// returns: a new UUID instance
     #[staticmethod]
     fn from_bytes(bytes: &Bound<'_, PyBytes>) -> PyResult<UUID> {
         let bytes: Bytes = bytes.extract()?;
@@ -295,6 +307,13 @@ impl UUID {
         })
     }
 
+    /// Creates a UUID using the supplied bytes in little endian order.
+    /// The individual fields encoded in the buffer will be flipped.
+    ///
+    /// # Arguments
+    /// * `bytes`: a 16-byte array
+    ///
+    /// returns: a new UUID instance
     #[staticmethod]
     fn from_bytes_le(bytes: &Bound<'_, PyBytes>) -> PyResult<UUID> {
         let bytes: Bytes = bytes.extract()?;
@@ -324,6 +343,11 @@ impl UUID {
         })
     }
 
+    /// Create a UUID from a 128bit value.
+    /// # Arguments
+    /// * `int`: a 128bit value
+    ///
+    /// returns: a new UUID instance
     #[staticmethod]
     fn from_int(int: u128) -> PyResult<UUID> {
         Ok(UUID {
@@ -442,11 +466,17 @@ fn uuid7(timestamp: Option<u64>, nanos: Option<u32>) -> PyResult<UUID> {
 
 /// Generate a UUID v8
 ///
-///  References:
+/// UUID v8 is a custom-formatted UUID that allows for application-specific
+/// formatting of the bits. It provides:
+/// - Maximum flexibility for custom use cases
+/// - Ability to encode application-specific data
+/// - Must maintain version and variant bits
+///
+/// References:
 ///  - RFC: https://www.rfc-editor.org/rfc/rfc9562.html#name-uuid-version-8
 ///
 ///  Returns:
-///      UUID: A new UUID v7 instance
+///      UUID: A new UUID v8 instance
 #[pyfunction]
 fn uuid8(bytes: &Bound<'_, PyBytes>) -> PyResult<UUID> {
     let bytes: Bytes = bytes.extract()?;

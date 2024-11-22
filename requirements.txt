@@ -1,6 +1,6 @@
 black
 astor
+maturin[patchelf]>=1.7.0,<2.0
 setuptools
-setuptools-rust
 wheel
 pytest

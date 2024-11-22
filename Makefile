@@ -28,7 +28,6 @@ venv: requirements.txt  ## Build the virtual environment
 	$(pip) install -U -r requirements.txt
 	touch .venv
 
-
 .PHONY:
 lint: ## Fix style issues
 	. .venv/bin/activate && black .
@@ -36,11 +35,11 @@ lint: ## Fix style issues
 
 .PHONY:
 dev: ## Build the library (dev mode)
-	. .venv/bin/activate && SETUPTOOLS_ENABLE_FEATURES="legacy-editable" python -m pip install --editable .
+	. .venv/bin/activate && maturin develop
 
 .PHONY:
 build: ## Build wheels (both source and binary)
-	. .venv/bin/activate && python -m build
+	. .venv/bin/activate && maturin build --release
 
 .PHONY:
 test: ## Run the Python test suite
@@ -51,17 +50,34 @@ stubs: ## Sync python stubs files with the rust codebase - in particular docstri
 	. .venv/bin/activate && python3 script/fix-docstrings.py && black signal_protocol/*.pyi
 
 .PHONY:
-clean: ## Clean up
-	@[ -d ./.pytest_cache ] && rm -rf .pytest_cache || true
-	@[ -d ./signal_protocol.egg-info ] && rm -rf ./signal_protocol.egg-info || true
-	@[ -d ./build ] && rm -rf build || true
-	@[ -d ./dist ] && rm -rf dist || true
-	@[ -d ./target ] && rm -rf target || true
-	@[ -d ./__pycache__ ] && rm -rf ./__pycache__ || true
-	@[ -d ./signal_protocol/__pycache__ ] && rm -rf ./signal_protocol/__pycache__ || true
-	@[ -d ./tests/__pycache__ ] && rm -rf ./tests/__pycache__ || true
+check-rust: ## Run Rust checks (clippy, fmt)
+	cargo fmt -- --check
+	cargo clippy -- -D warnings
+
+.PHONY:
+check-python: ## Run Python checks (black, mypy)
+	. .venv/bin/activate && black --check .
+	. .venv/bin/activate && mypy signal_protocol
+
+.PHONY:
+check: check-rust check-python ## Run all code quality checks
+
+.PHONY:
+clean: ## Clean build artifacts
+	cargo clean
+	rm -rf target/
+	rm -rf dist/
+	rm -rf *.egg-info/
+	rm -rf .pytest_cache/
+	rm -rf .mypy_cache/
+	find . -type d -name "__pycache__" -exec rm -rf {} +
+
+.PHONY:
+wheels: ## Build wheels for all supported Python versions using Docker
+	docker run --rm -v $(PWD):/io ghcr.io/pyo3/maturin build --release --strip
+
+.PHONY:
+help: ## Display this help
+	@awk 'BEGIN {FS = ":.*##"; printf "Usage:\n  make \033[36m<target>\033[0m\n\nTargets:\n"} /^[a-zA-Z0-9_-]+:.*?##/ { printf "  \033[36m%-15s\033[0m %s\n", $$1, $$2 }' $(MAKEFILE_LIST)
 
 .DEFAULT_GOAL := help
-.PHONY: help
-help: ## Display this help section
-	@awk 'BEGIN {FS = ":.*?## "} /^[a-zA-Z\$$/]+.*:.*?##\s/ {printf "\033[36m%-38s\033[0m %s\n", $$1, $$2}' $(MAKEFILE_LIST)

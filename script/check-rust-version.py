@@ -64,11 +64,11 @@ def check_file(filename: str, upstream_version: str) -> Optional[bool]:
 
         for line in f:
             line = line.strip()
-            if "rustup" in line:
+            if "nightly" in line:
                 rustupLines.append(line)
 
         for line in rustupLines:
-            if upstream_version in line:
+            if upstream_version in line or line.startswith("#"):
                 continue
             else:
                 print("{} contains incorrect Rust version ✗".format(filename))

@@ -66,12 +66,32 @@ class UUID:
     @property
     def node(self) -> _Int: ...
     @staticmethod
-    def from_hex(hex: str) -> UUID: ...
+    def from_hex(hex: str) -> UUID:
+        """Create a UUID from a hex string.
+
+        # Arguments
+        * `hex`: a 32-character hex string
+
+        returns: a new UUID instance"""
+
     @staticmethod
-    def from_bytes(data: _Bytes) -> UUID: ...
+    def from_bytes(data: _Bytes) -> UUID:
+        """Create a UUID from a bytes.
+
+        # Arguments
+        * `bytes`: a 16-byte array
+
+        returns: a new UUID instance"""
+
     def timestamp(self) -> _Int: ...
     @staticmethod
-    def from_int(data: _Int) -> UUID: ...
+    def from_int(data: _Int) -> UUID:
+        """Create a UUID from a 128bit value.
+        # Arguments
+        * `int`: a 128bit value
+
+        returns: a new UUID instance"""
+
     def __int__(self) -> _Int: ...
     def __eq__(self, other: object) -> bool: ...
     def __lt__(self, other: UUID) -> bool: ...
@@ -131,11 +151,18 @@ def uuid7() -> UUID:
 def uuid8() -> UUID:
     """Generate a UUID v8
 
+    UUID v8 is a custom-formatted UUID that allows for application-specific
+    formatting of the bits. It provides:
+
+    - Maximum flexibility for custom use cases
+    - Ability to encode application-specific data
+    - Must maintain version and variant bits
+
     References:
     - RFC: https://www.rfc-editor.org/rfc/rfc9562.html#name-uuid-version-8
 
     Returns:
-        UUID: A new UUID v7 instance
+         UUID: A new UUID v8 instance
     """
     ...
 
