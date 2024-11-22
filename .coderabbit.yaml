@@ -1,0 +1,28 @@
+language: "en-GB"
+early_access: true
+reviews:
+  profile: "chill"
+  request_changes_workflow: true
+  high_level_summary: true
+  poem: true
+  review_status: true
+  collapse_walkthrough: true
+  sequence_diagrams: true
+  path_instructions:
+    - path: "**/*.rs"
+      instructions: |
+        This is a Rust cryptographic library that provides Python bindings using PyO3.
+        Pay special attention to:
+        1. Memory safety and proper resource cleanup
+        2. Cryptographic operations and key handling
+        3. Error handling and propagation
+        4. PyO3 usage and Python integration
+        5. API design and documentation
+
+    - path: "**/*.pyi"
+      instructions: |
+        These are Python files stubs for the Rust bindings.
+        Pay special attention to:
+        1. Type safety and proper type hints
+        2. API usage examples
+        3. Documentation

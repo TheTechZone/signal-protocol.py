@@ -40,7 +40,6 @@ pub struct UUID {
 /// The "multicast bit" of a MAC address is defined to be "the least
 /// significant bit of the first octet". This works out to be the 41st bit
 /// counting from 1 being the least significant bit, or 1<<40.
-///
 #[inline]
 fn random_node_id() -> [u8; 6] {
     let bytes = random::<u64>().to_be_bytes();
