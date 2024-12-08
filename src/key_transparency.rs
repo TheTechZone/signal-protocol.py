@@ -206,34 +206,34 @@ impl SlimSearchRequest {
     }
 }
 
-#[derive(Clone)]
-#[pyclass]
-pub struct SearchResponse {
-    inner: libsignal_keytrans::SearchResponse,
-}
+// #[derive(Clone)]
+// #[pyclass]
+// pub struct SearchResponse {
+//     inner: libsignal_keytrans::SearchResponse,
+// }
 
-#[pymethods]
-impl SearchResponse {
-    #[new]
-    fn new() -> Self {
-        SearchResponse {
-            inner: libsignal_keytrans::SearchResponse {
-                tree_head: None,
-                vrf_proof: vec![],
-                search: None,
-                opening: vec![],
-                value: None,
-            },
-        }
-    }
-
-    #[staticmethod]
-    fn default() -> Self {
-        SearchResponse {
-            inner: libsignal_keytrans::SearchResponse::default(),
-        }
-    }
-}
+// #[pymethods]
+// impl SearchResponse {
+//     #[new]
+//     fn new() -> Self {
+//         SearchResponse {
+//             inner: libsignal_keytrans::SearchResponse {
+//                 tree_head: None,
+//                 vrf_proof: vec![],
+//                 search: None,
+//                 opening: vec![],
+//                 value: None,
+//             },
+//         }
+//     }
+//
+//     #[staticmethod]
+//     fn default() -> Self {
+//         SearchResponse {
+//             inner: libsignal_keytrans::SearchResponse::default(),
+//         }
+//     }
+// }
 
 #[derive(Clone, PartialEq)]
 #[pyclass]
@@ -291,44 +291,44 @@ impl MonitoringData {
     }
 }
 
-#[pyclass]
-pub struct SearchContext {
-    inner: libsignal_keytrans::SearchContext,
-}
-
-impl Clone for SearchContext {
-    fn clone(&self) -> Self {
-        // SearchContext {
-        //     inner: sel
-        // }
-        SearchContext::default()
-    }
-}
-
-#[pymethods]
-impl SearchContext {
-    #[new]
-    fn new() -> Self {
-        // SearchContext {
-        //     inner: libsignal_keytrans::SearchContext{
-        //         last_tree_head: Some(tree_head.inner),
-        //         data: Some(data.inner)
-        //         // last_tree_head: tree_head.inner,
-        //         // data: None
-        //     }
-        // }
-        SearchContext {
-            inner: Default::default(),
-        }
-    }
-
-    #[staticmethod]
-    fn default() -> Self {
-        SearchContext {
-            inner: libsignal_keytrans::SearchContext::default(),
-        }
-    }
-}
+// #[pyclass]
+// pub struct SearchContext {
+//     inner: libsignal_keytrans::SearchContext,
+// }
+//
+// impl Clone for SearchContext {
+//     fn clone(&self) -> Self {
+//         // SearchContext {
+//         //     inner: sel
+//         // }
+//         SearchContext::default()
+//     }
+// }
+//
+// #[pymethods]
+// impl SearchContext {
+//     #[new]
+//     fn new() -> Self {
+//         // SearchContext {
+//         //     inner: libsignal_keytrans::SearchContext{
+//         //         last_tree_head: Some(tree_head.inner),
+//         //         data: Some(data.inner)
+//         //         // last_tree_head: tree_head.inner,
+//         //         // data: None
+//         //     }
+//         // }
+//         SearchContext {
+//             inner: Default::default(),
+//         }
+//     }
+//
+//     #[staticmethod]
+//     fn default() -> Self {
+//         SearchContext {
+//             inner: libsignal_keytrans::SearchContext::default(),
+//         }
+//     }
+// }
 
 #[derive(Debug)]
 #[pyclass]
@@ -339,59 +339,59 @@ pub struct VerifiedSearchResult {
 #[pymethods]
 impl VerifiedSearchResult {}
 
-#[pyclass]
-pub struct KeyTransparency {
-    inner: libsignal_keytrans::KeyTransparency,
-}
-
-#[pymethods]
-impl KeyTransparency {
-    #[new]
-    fn new(config: PublicConfig) -> Self {
-        KeyTransparency {
-            inner: libsignal_keytrans::KeyTransparency {
-                config: config.inner,
-            },
-        }
-    }
-
-    /**
-    Checks that the output of a Search operation is valid and updates the client's stored data. res. value. value may only be consumed by the application if this function returns successfully.
-    */
-    fn verify_search(
-        &mut self,
-        request: SlimSearchRequest,
-        response: SearchResponse,
-        context: SearchContext,
-    ) -> PyResult<VerifiedSearchResult> {
-        match self.inner.verify_search(
-            request.inner,
-            response.inner,
-            context.inner,
-            false,
-            SystemTime::now(),
-        ) {
-            Ok(update) => Ok(VerifiedSearchResult { inner: update }),
-            Err(err) => Err(SignalProtocolError::err_from_str(err.to_string())),
-        }
-    }
-
-    fn verify_distinguished(&self) {
-        todo!("not yet implemented")
-    }
-
-    fn truncate_search_response(&self) {
-        todo!()
-    }
-
-    fn verify_monitor(&self) {
-        todo!()
-    }
-
-    fn verify_update(&self) {
-        todo!()
-    }
-}
+// #[pyclass]
+// pub struct KeyTransparency {
+//     inner: libsignal_keytrans::KeyTransparency,
+// }
+//
+// #[pymethods]
+// impl KeyTransparency {
+//     #[new]
+//     fn new(config: PublicConfig) -> Self {
+//         KeyTransparency {
+//             inner: libsignal_keytrans::KeyTransparency {
+//                 config: config.inner,
+//             },
+//         }
+//     }
+//
+//     /**
+//     Checks that the output of a Search operation is valid and updates the client's stored data. res. value. value may only be consumed by the application if this function returns successfully.
+//     */
+//     fn verify_search(
+//         &mut self,
+//         request: SlimSearchRequest,
+//         response: SearchResponse,
+//         context: SearchContext,
+//     ) -> PyResult<VerifiedSearchResult> {
+//         match self.inner.verify_search(
+//             request.inner,
+//             response.inner,
+//             context.inner,
+//             false,
+//             SystemTime::now(),
+//         ) {
+//             Ok(update) => Ok(VerifiedSearchResult { inner: update }),
+//             Err(err) => Err(SignalProtocolError::err_from_str(err.to_string())),
+//         }
+//     }
+//
+//     fn verify_distinguished(&self) {
+//         todo!("not yet implemented")
+//     }
+//
+//     fn truncate_search_response(&self) {
+//         todo!()
+//     }
+//
+//     fn verify_monitor(&self) {
+//         todo!()
+//     }
+//
+//     fn verify_update(&self) {
+//         todo!()
+//     }
+// }
 
 pub fn init_submodule(module: &Bound<'_, PyModule>) -> PyResult<()> {
     module.add_class::<VerifyingKey>()?;
@@ -399,6 +399,6 @@ pub fn init_submodule(module: &Bound<'_, PyModule>) -> PyResult<()> {
     module.add_class::<DeploymentMode>()?;
     module.add_class::<PublicConfig>()?;
     module.add_class::<SlimSearchRequest>()?;
-    module.add_class::<KeyTransparency>()?;
+    // module.add_class::<KeyTransparency>()?;
     Ok(())
 }
