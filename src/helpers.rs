@@ -67,7 +67,7 @@ impl From<KyberPreKeyRecord> for UploadKeyType {
 
 impl UploadKeyType {
     fn to_py_dict(&self, py: Python) -> PyResult<Py<PyDict>> {
-        let dict: Bound<PyDict> = PyDict::new_bound(py);
+        let dict: Bound<PyDict> = PyDict::new(py);
         dict.set_item("keyId", self.key_id)?;
         dict.set_item(
             "publicKey",
@@ -117,8 +117,8 @@ pub fn create_registration_keys(
         }
     };
 
-    let dict = PyDict::new_bound(py);
-    let secrets = PyDict::new_bound(py);
+    let dict = PyDict::new(py);
+    let secrets = PyDict::new(py);
 
     _ = match ik.public_key() {
         Ok(res) => match res.to_base64() {
@@ -237,7 +237,13 @@ pub fn create_registration(
 
     _ = merge_dicts(aci_dict, pni_dict);
     _ = merge_dicts(aci_sdict, pni_sdict);
-    Ok((aci_keys.to_object(py), aci_sdict.to_object(py)))
+
+    Ok((
+        aci_keys,
+        aci_sdict
+            .extract()
+            .expect("failed to extract bound PrivateKeys"),
+    ))
 }
 
 /// create_keys_data generates the specified number of one-time keys (PreKeys) for the client to
@@ -254,7 +260,7 @@ pub fn create_keys_data(
     prekey_start_at: Option<u32>,
     kyber_prekey_start_at: Option<u32>,
 ) -> PyResult<(PyObject, PyObject)> {
-    let dict = PyDict::new_bound(py);
+    let dict = PyDict::new(py);
     match spk {
         Some(key) => {
             let _ = dict.set_item("signedPreKey", key.public_key()?.to_base64()?);
@@ -279,9 +285,9 @@ pub fn create_keys_data(
         ik.private_key()?,
     );
 
-    let secrets_dict = PyDict::new_bound(py);
-    let secrets_prekeys = PyDict::new_bound(py);
-    let secrets_kyber = PyDict::new_bound(py);
+    let secrets_dict = PyDict::new(py);
+    let secrets_prekeys = PyDict::new(py);
+    let secrets_kyber = PyDict::new(py);
 
     let mut prekey_vec: Vec<Py<PyDict>> = Vec::new();
 

@@ -27,7 +27,7 @@ pub fn group_encrypt(
         plaintext,
         &mut csprng,
     ))?;
-    Ok(PyBytes::new_bound(py, &ciphertext.serialized()).into())
+    Ok(PyBytes::new(py, &ciphertext.serialized()).into())
 }
 
 #[pyfunction]
@@ -42,7 +42,7 @@ pub fn group_decrypt(
         &mut protocol_store.store.sender_key_store,
         &sender.state,
     ))?;
-    Ok(PyBytes::new_bound(py, &plaintext).into())
+    Ok(PyBytes::new(py, &plaintext).into())
 }
 
 #[pyfunction]

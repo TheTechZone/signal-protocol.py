@@ -58,7 +58,7 @@ impl PinHash {
     /// * `group_id` - The attested group id returned by the SVR service
     #[staticmethod]
     pub fn make_salt(py: Python, username: &str, group_id: u64) -> PyObject {
-        PyBytes::new_bound(
+        PyBytes::new(
             py,
             &libsignal_account_keys::PinHash::make_salt(username, group_id),
         )
@@ -69,13 +69,13 @@ impl PinHash {
     /// them to a secure store.
     /// The 32 byte prefix of the 64 byte hashed pin.
     pub fn encryption_key(&self, py: Python) -> PyObject {
-        PyBytes::new_bound(py, &self.inner.encryption_key).into()
+        PyBytes::new(py, &self.inner.encryption_key).into()
     }
 
     /// Returns a secret that can be used to access a value in a secure store. The 32 byte suffix of
     /// the 64 byte hashed pin.
     pub fn access_key(&self, py: Python) -> PyObject {
-        PyBytes::new_bound(py, &self.inner.access_key).into()
+        PyBytes::new(py, &self.inner.access_key).into()
     }
 }
 
@@ -151,6 +151,7 @@ impl BackupKey {
     }
 
     #[staticmethod]
+    #[allow(deprecated)] // for now, it's okay as th API is WIP
     fn derive_from_master_key(master_key: &[u8]) -> PyResult<Self> {
         if master_key.len() != libsignal_account_keys::BackupKey::MASTER_KEY_LEN {
             return Err(SignalProtocolError::err_from_str(String::from(

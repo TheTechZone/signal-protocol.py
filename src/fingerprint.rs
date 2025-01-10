@@ -44,7 +44,7 @@ impl Fingerprint {
 
     pub fn serialize(&self, py: Python) -> Result<PyObject> {
         let fingerprint = self.state.scannable.serialize()?;
-        Ok(PyBytes::new_bound(py, &fingerprint).into())
+        Ok(PyBytes::new(py, &fingerprint).into())
     }
 
     fn __str__(&self) -> Result<String> {

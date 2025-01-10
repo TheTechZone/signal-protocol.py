@@ -47,7 +47,7 @@ pub fn message_decrypt(
         &mut protocol_store.store.kyber_pre_key_store,
         &mut csprng,
     ))?;
-    Ok(PyBytes::new_bound(py, &plaintext).into())
+    Ok(PyBytes::new(py, &plaintext).into())
 }
 
 #[pyfunction]
@@ -68,7 +68,7 @@ pub fn message_decrypt_prekey(
         &mut protocol_store.store.kyber_pre_key_store,
         &mut csprng,
     ))?;
-    Ok(PyBytes::new_bound(py, &plaintext).into())
+    Ok(PyBytes::new(py, &plaintext).into())
 }
 
 #[pyfunction]
@@ -86,7 +86,7 @@ pub fn message_decrypt_signal(
         &mut protocol_store.store.identity_store,
         &mut csprng,
     ))?;
-    Ok(PyBytes::new_bound(py, &plaintext).into())
+    Ok(PyBytes::new(py, &plaintext).into())
 }
 
 pub fn init_submodule(module: &Bound<'_, PyModule>) -> PyResult<()> {

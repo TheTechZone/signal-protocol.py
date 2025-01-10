@@ -18,7 +18,7 @@ pub fn create_rsa_private_key(
     let kf = device_transfer::KeyFormat::from(key_format.unwrap_or(0));
     match device_transfer::create_rsa_private_key(bits.unwrap_or(4096), kf) {
         Err(err) => Err(SignalProtocolError::err_from_str(err.to_string())),
-        Ok(key) => Ok(PyBytes::new_bound(py, &key).into()),
+        Ok(key) => Ok(PyBytes::new(py, &key).into()),
     }
 }
 
@@ -34,7 +34,7 @@ pub fn create_self_signed_cert(
 ) -> PyResult<PyObject> {
     match device_transfer::create_self_signed_cert(rsa_key_pkcs8, name, days_to_expire) {
         Err(err) => Err(SignalProtocolError::err_from_str(err.to_string())),
-        Ok(key) => Ok(PyBytes::new_bound(py, &key).into()),
+        Ok(key) => Ok(PyBytes::new(py, &key).into()),
     }
 }
 

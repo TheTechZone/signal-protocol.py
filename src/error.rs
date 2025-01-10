@@ -62,7 +62,7 @@ pub fn init_submodule(py: Python, module: &Bound<'_, PyModule>) -> PyResult<()> 
     // )?;
     module.add(
         "SignalProtocolException",
-        py.get_type_bound::<SignalProtocolException>(),
+        py.get_type::<SignalProtocolException>(),
     )?;
     Ok(())
 }

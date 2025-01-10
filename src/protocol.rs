@@ -29,7 +29,7 @@ impl CiphertextMessage {
 #[pymethods]
 impl CiphertextMessage {
     pub fn serialize(&self, py: Python) -> PyResult<PyObject> {
-        Ok(PyBytes::new_bound(py, self.data.serialize()).into())
+        Ok(PyBytes::new(py, self.data.serialize()).into())
     }
 
     /// We're using the following mapping of libsignal_protocol::CiphertextMessageType to u8:
@@ -147,7 +147,7 @@ impl PreKeySignalMessage {
     }
 
     pub fn serialized(&self, py: Python) -> PyObject {
-        PyBytes::new_bound(py, &self.data.serialized()).into()
+        PyBytes::new(py, &self.data.serialized()).into()
     }
 
     pub fn message_version(&self) -> u8 {
@@ -206,7 +206,7 @@ impl PreKeySignalMessage {
 
     pub fn kyber_ciphertext(&self, py: Python) -> Option<PyObject> {
         match self.data.kyber_ciphertext() {
-            Some(ctxt) => Some(PyBytes::new_bound(py, &ctxt).into()),
+            Some(ctxt) => Some(PyBytes::new(py, &ctxt).into()),
             None => None,
         }
     }
@@ -310,11 +310,11 @@ impl SignalMessage {
     }
 
     pub fn serialized(&self, py: Python) -> PyObject {
-        PyBytes::new_bound(py, &self.data.serialized()).into()
+        PyBytes::new(py, &self.data.serialized()).into()
     }
 
     pub fn body(&self, py: Python) -> PyObject {
-        PyBytes::new_bound(py, &self.data.body()).into()
+        PyBytes::new(py, &self.data.body()).into()
     }
 
     pub fn verify_mac(
@@ -395,7 +395,7 @@ impl SenderKeyMessage {
     }
 
     pub fn serialized(&self, py: Python) -> PyObject {
-        PyBytes::new_bound(py, &self.data.serialized()).into()
+        PyBytes::new(py, &self.data.serialized()).into()
     }
 
     pub fn message_version(&self) -> u8 {
@@ -417,7 +417,7 @@ impl SenderKeyMessage {
     }
 
     pub fn ciphertext(&self, py: Python) -> PyObject {
-        PyBytes::new_bound(py, &self.data.ciphertext()).into()
+        PyBytes::new(py, &self.data.ciphertext()).into()
     }
 
     pub fn verify_signature(&self, signature_key: &PublicKey) -> Result<bool> {
@@ -484,7 +484,7 @@ impl SenderKeyDistributionMessage {
     }
 
     pub fn serialized(&self, py: Python) -> PyObject {
-        PyBytes::new_bound(py, &self.data.serialized()).into()
+        PyBytes::new(py, &self.data.serialized()).into()
     }
 
     pub fn message_version(&self) -> u8 {
@@ -496,7 +496,7 @@ impl SenderKeyDistributionMessage {
     }
 
     pub fn chain_key(&self, py: Python) -> Result<PyObject> {
-        Ok(PyBytes::new_bound(py, &self.data.chain_key()?).into())
+        Ok(PyBytes::new(py, &self.data.chain_key()?).into())
     }
 
     pub fn signing_key(&self) -> Result<PublicKey> {

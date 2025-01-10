@@ -1,4 +1,5 @@
 use pyo3::prelude::*;
+use std::ffi::CString;
 
 mod account_keys;
 mod address;
@@ -38,91 +39,91 @@ fn signal_protocol(py: Python, module: &Bound<'_, PyModule>) -> PyResult<()> {
     // A good place to install the Rust -> Python logger.
     pyo3_log::init();
 
-    let account_keys = PyModule::new_bound(py, "account_keys")?;
+    let account_keys = PyModule::new(py, "account_keys")?;
     account_keys::init_submodule(&account_keys)?;
     module.add_submodule(&account_keys)?;
 
-    let address_submod = PyModule::new_bound(py, "address")?;
+    let address_submod = PyModule::new(py, "address")?;
     address::init_submodule(&address_submod)?;
     module.add_submodule(&address_submod)?;
 
-    let curve_submod = PyModule::new_bound(py, "curve")?;
+    let curve_submod = PyModule::new(py, "curve")?;
     curve::init_submodule(&curve_submod)?;
     module.add_submodule(&curve_submod)?;
 
-    let error_submod = PyModule::new_bound(py, "error")?;
+    let error_submod = PyModule::new(py, "error")?;
     error::init_submodule(py, &error_submod)?;
     module.add_submodule(&error_submod)?;
 
-    let fingerprint_submod = PyModule::new_bound(py, "fingerprint")?;
+    let fingerprint_submod = PyModule::new(py, "fingerprint")?;
     fingerprint::init_submodule(&fingerprint_submod)?;
     module.add_submodule(&fingerprint_submod)?;
 
-    let group_cipher_submod = PyModule::new_bound(py, "group_cipher")?;
+    let group_cipher_submod = PyModule::new(py, "group_cipher")?;
     group_cipher::init_submodule(&group_cipher_submod)?;
     module.add_submodule(&group_cipher_submod)?;
 
-    let identity_key_submod = PyModule::new_bound(py, "identity_key")?;
+    let identity_key_submod = PyModule::new(py, "identity_key")?;
     identity_key::init_submodule(&identity_key_submod)?;
     module.add_submodule(&identity_key_submod)?;
 
-    let kem_submod = PyModule::new_bound(py, "kem")?;
+    let kem_submod = PyModule::new(py, "kem")?;
     kem::init_kem_submodule(&kem_submod)?;
     module.add_submodule(&kem_submod)?;
 
-    let protocol_submod = PyModule::new_bound(py, "protocol")?;
+    let protocol_submod = PyModule::new(py, "protocol")?;
     protocol::init_submodule(&protocol_submod)?;
     module.add_submodule(&protocol_submod)?;
 
-    let ratchet_submod = PyModule::new_bound(py, "ratchet")?;
+    let ratchet_submod = PyModule::new(py, "ratchet")?;
     ratchet::init_submodule(&ratchet_submod)?;
     module.add_submodule(&ratchet_submod)?;
 
-    let sealed_sender_submod = PyModule::new_bound(py, "sealed_sender")?;
+    let sealed_sender_submod = PyModule::new(py, "sealed_sender")?;
     sealed_sender::init_submodule(&sealed_sender_submod)?;
     module.add_submodule(&sealed_sender_submod)?;
 
-    let sender_keys_submod = PyModule::new_bound(py, "sender_keys")?;
+    let sender_keys_submod = PyModule::new(py, "sender_keys")?;
     sender_keys::init_submodule(&sender_keys_submod)?;
     module.add_submodule(&sender_keys_submod)?;
 
-    let session_cipher_submod = PyModule::new_bound(py, "session_cipher")?;
+    let session_cipher_submod = PyModule::new(py, "session_cipher")?;
     session_cipher::init_submodule(&session_cipher_submod)?;
     module.add_submodule(&session_cipher_submod)?;
 
-    let session_submod = PyModule::new_bound(py, "session")?;
+    let session_submod = PyModule::new(py, "session")?;
     session::init_submodule(&session_submod)?;
     module.add_submodule(&session_submod)?;
 
-    let state_submod = PyModule::new_bound(py, "state")?;
+    let state_submod = PyModule::new(py, "state")?;
     state::init_submodule(&state_submod)?;
     module.add_submodule(&state_submod)?;
 
-    let storage_submod = PyModule::new_bound(py, "storage")?;
+    let storage_submod = PyModule::new(py, "storage")?;
     storage::init_submodule(&storage_submod)?;
     module.add_submodule(&storage_submod)?;
 
-    let uuid_submod = PyModule::new_bound(py, "uuid")?;
+    let uuid_submod = PyModule::new(py, "uuid")?;
     uuid::init_submodule(&uuid_submod)?;
     module.add_submodule(&uuid_submod)?;
 
-    let helpers_submod = PyModule::new_bound(py, "helpers")?;
+    let helpers_submod = PyModule::new(py, "helpers")?;
     helpers::init_submodule(&helpers_submod)?;
     module.add_submodule(&helpers_submod)?;
 
-    let crypto_submod = PyModule::new_bound(py, "base_crypto")?;
+    let crypto_submod = PyModule::new(py, "base_crypto")?;
     base_crypto::init_submodule(&crypto_submod)?;
     module.add_submodule(&crypto_submod)?;
 
-    let device_transfer = PyModule::new_bound(py, "device_transfer")?;
+    let device_transfer = PyModule::new(py, "device_transfer")?;
     device_transfer::init_submodule(&device_transfer)?;
     module.add_submodule(&device_transfer)?;
 
-    let key_transparency = PyModule::new_bound(py, "key_transparency")?;
+    let key_transparency = PyModule::new(py, "key_transparency")?;
     key_transparency::init_submodule(&key_transparency)?;
     module.add_submodule(&key_transparency)?;
 
-    let net = PyModule::new_bound(py, "net")?;
+    let net = PyModule::new(py, "net")?;
     net::init_submodule(&net)?;
     module.add_submodule(&net)?;
     // Workaround to enable imports from submodules. Upstream issue: pyo3 issue #759
@@ -156,7 +157,11 @@ fn signal_protocol(py: Python, module: &Bound<'_, PyModule>) -> PyResult<()> {
             "import sys; sys.modules['signal_protocol.{}'] = {}",
             module_name, module_name
         );
-        py.run_bound(&cmd, None, Some(&module.dict()))?;
+        py.run(
+            CString::new(cmd).unwrap().as_c_str(),
+            None,
+            Some(&module.dict()),
+        )?;
     }
     Ok(())
 }

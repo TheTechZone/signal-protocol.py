@@ -1,7 +1,6 @@
 use crate::error::SignalProtocolError;
 use pyo3::prelude::*;
 use pyo3::types::PyBytes;
-use std::time::SystemTime;
 
 #[derive(Copy, Clone, Debug)]
 #[pyclass]
@@ -86,12 +85,12 @@ impl VrfPublicKey {
     fn as_bytes(&self, py: Python) -> PyObject {
         // self.inner.as_bytes().to_vec()
         let data = self.inner.as_bytes().to_vec();
-        PyBytes::new_bound(py, &data).into()
+        PyBytes::new(py, &data).into()
     }
 
     fn proof_to_hash(&self, m: &[u8], proof: &[u8], py: Python) -> PyResult<PyObject> {
         match self.inner.proof_to_hash(m, <&[u8; 80]>::try_from(proof)?) {
-            Ok(hash) => Ok(PyBytes::new_bound(py, &hash).into()),
+            Ok(hash) => Ok(PyBytes::new(py, &hash).into()),
             Err(err) => Err(SignalProtocolError::err_from_str(format!(
                 "proof to hash failed: {:?}",
                 err
@@ -100,111 +99,111 @@ impl VrfPublicKey {
     }
 }
 
-#[derive(Clone)]
-#[pyclass]
-struct DeploymentMode {
-    inner: libsignal_keytrans::DeploymentMode,
-    byte: u8,
-    key: Option<VerifyingKey>,
-}
+// #[derive(Clone)]
+// #[pyclass]
+// struct DeploymentMode {
+//     inner: libsignal_keytrans::DeploymentMode,
+//     byte: u8,
+//     key: Option<VerifyingKey>,
+// }
+//
+// #[pymethods]
+// impl DeploymentMode {
+//     #[new]
+//     #[pyo3(signature = (value, key=None))]
+//     fn new(value: u8, key: Option<VerifyingKey>) -> PyResult<Self> {
+//         if value != 1 && key.is_none() {
+//             return Err(SignalProtocolError::err_from_str(format!(
+//                 "invalid DeployMode: {}, no key provided",
+//                 value
+//             )));
+//         }
+//         let vf = match key {
+//             Some(ref key) => Some(VerifyingKey {
+//                 inner: key.inner.clone(),
+//             }),
+//             None => None,
+//         };
+//         match value {
+//             1 => Ok(DeploymentMode {
+//                 inner: libsignal_keytrans::DeploymentMode::ContactMonitoring,
+//                 byte: value,
+//                 key: None,
+//             }),
+//             2 => Ok(DeploymentMode {
+//                 inner: libsignal_keytrans::DeploymentMode::ThirdPartyAuditing(vf.unwrap().inner),
+//                 byte: value,
+//                 key: Some(VerifyingKey {
+//                     inner: key.unwrap().inner,
+//                 }),
+//             }),
+//             3 => Ok(DeploymentMode {
+//                 inner: libsignal_keytrans::DeploymentMode::ThirdPartyManagement(vf.unwrap().inner),
+//                 byte: value,
+//                 key: Some(VerifyingKey {
+//                     inner: key.unwrap().inner,
+//                 }),
+//             }),
+//             _ => Err(SignalProtocolError::err_from_str(format!(
+//                 "unknown DeploymentMode: {}",
+//                 value
+//             ))),
+//         }
+//     }
+//
+//     fn byte(&self) -> u8 {
+//         self.byte
+//     }
+//
+//     fn get_associated_key(&self) -> Option<VerifyingKey> {
+//         self.key.clone()
+//     }
+// }
 
-#[pymethods]
-impl DeploymentMode {
-    #[new]
-    #[pyo3(signature = (value, key=None))]
-    fn new(value: u8, key: Option<VerifyingKey>) -> PyResult<Self> {
-        if value != 1 && key.is_none() {
-            return Err(SignalProtocolError::err_from_str(format!(
-                "invalid DeployMode: {}, no key provided",
-                value
-            )));
-        }
-        let vf = match key {
-            Some(ref key) => Some(VerifyingKey {
-                inner: key.inner.clone(),
-            }),
-            None => None,
-        };
-        match value {
-            1 => Ok(DeploymentMode {
-                inner: libsignal_keytrans::DeploymentMode::ContactMonitoring,
-                byte: value,
-                key: None,
-            }),
-            2 => Ok(DeploymentMode {
-                inner: libsignal_keytrans::DeploymentMode::ThirdPartyAuditing(vf.unwrap().inner),
-                byte: value,
-                key: Some(VerifyingKey {
-                    inner: key.unwrap().inner,
-                }),
-            }),
-            3 => Ok(DeploymentMode {
-                inner: libsignal_keytrans::DeploymentMode::ThirdPartyManagement(vf.unwrap().inner),
-                byte: value,
-                key: Some(VerifyingKey {
-                    inner: key.unwrap().inner,
-                }),
-            }),
-            _ => Err(SignalProtocolError::err_from_str(format!(
-                "unknown DeploymentMode: {}",
-                value
-            ))),
-        }
-    }
+// #[derive(Clone)]
+// #[pyclass]
+// struct PublicConfig {
+//     inner: libsignal_keytrans::PublicConfig,
+// }
+//
+// #[pymethods]
+// impl PublicConfig {
+//     #[new]
+//     pub fn new(mode: DeploymentMode, signature_key: VerifyingKey, vrf_key: VrfPublicKey) -> Self {
+//         PublicConfig {
+//             inner: libsignal_keytrans::PublicConfig {
+//                 mode: mode.inner,
+//                 signature_key: signature_key.inner,
+//                 vrf_key: vrf_key.inner,
+//             },
+//         }
+//     }
+// }
 
-    fn byte(&self) -> u8 {
-        self.byte
-    }
-
-    fn get_associated_key(&self) -> Option<VerifyingKey> {
-        self.key.clone()
-    }
-}
-
-#[derive(Clone)]
-#[pyclass]
-struct PublicConfig {
-    inner: libsignal_keytrans::PublicConfig,
-}
-
-#[pymethods]
-impl PublicConfig {
-    #[new]
-    pub fn new(mode: DeploymentMode, signature_key: VerifyingKey, vrf_key: VrfPublicKey) -> Self {
-        PublicConfig {
-            inner: libsignal_keytrans::PublicConfig {
-                mode: mode.inner,
-                signature_key: signature_key.inner,
-                vrf_key: vrf_key.inner,
-            },
-        }
-    }
-}
-
-#[derive(Clone)]
-#[pyclass]
-pub struct SlimSearchRequest {
-    inner: libsignal_keytrans::SlimSearchRequest,
-}
-
-#[pymethods]
-impl SlimSearchRequest {
-    #[new]
-    fn new(search_key: &[u8]) -> Self {
-        SlimSearchRequest {
-            inner: libsignal_keytrans::SlimSearchRequest::new(search_key.into()),
-        }
-        // SlimSearchRequest {
-        //     inner: libsignal_keytrans::SlimSearchRequest {
-        //         search_key: Vec::from(search_key),
-        //         version: None,
-        //         // consistency: None,
-        //         // mapped_value: Vec::from(mapped_value),
-        //         // unidentified_access_key: Some(Vec::from(unidentified_access_key)),
-        //     },
-        // }
-    }
-}
+// #[derive(Clone)]
+// #[pyclass]
+// pub struct SlimSearchRequest {
+//     inner: libsignal_keytrans::SlimSearchRequest,
+// }
+//
+// #[pymethods]
+// impl SlimSearchRequest {
+//     #[new]
+//     fn new(search_key: &[u8]) -> Self {
+//         SlimSearchRequest {
+//             inner: libsignal_keytrans::SlimSearchRequest::new(search_key.into()),
+//         }
+// SlimSearchRequest {
+//     inner: libsignal_keytrans::SlimSearchRequest {
+//         search_key: Vec::from(search_key),
+//         version: None,
+//         // consistency: None,
+//         // mapped_value: Vec::from(mapped_value),
+//         // unidentified_access_key: Some(Vec::from(unidentified_access_key)),
+//     },
+// }
+//     }
+// }
 
 // #[derive(Clone)]
 // #[pyclass]
@@ -267,29 +266,29 @@ impl TreeHead {
     }
 }
 
-#[pyclass]
-struct LastTreeHead {
-    inner: libsignal_keytrans::LastTreeHead,
-}
+// #[pyclass]
+// struct LastTreeHead {
+//     inner: libsignal_keytrans::LastTreeHead,
+// }
+//
+// #[pymethods]
+// impl LastTreeHead {}
 
-#[pymethods]
-impl LastTreeHead {}
-
-#[derive(Debug, Eq, PartialEq, Clone)]
-#[pyclass]
-pub struct MonitoringData {
-    inner: libsignal_keytrans::MonitoringData,
-}
-
-impl MonitoringData {
-    fn next_monitor(&self) -> u64 {
-        self.inner.next_monitor()
-    }
-
-    pub fn entries(&self) -> Vec<u64> {
-        self.inner.entries()
-    }
-}
+// #[derive(Debug, Eq, PartialEq, Clone)]
+// #[pyclass]
+// pub struct MonitoringData {
+//     inner: libsignal_keytrans::MonitoringData,
+// }
+//
+// impl MonitoringData {
+//     fn next_monitor(&self) -> u64 {
+//         self.inner.next_monitor()
+//     }
+//
+//     pub fn entries(&self) -> Vec<u64> {
+//         self.inner.entries()
+//     }
+// }
 
 // #[pyclass]
 // pub struct SearchContext {
@@ -330,14 +329,14 @@ impl MonitoringData {
 //     }
 // }
 
-#[derive(Debug)]
-#[pyclass]
-pub struct VerifiedSearchResult {
-    inner: libsignal_keytrans::VerifiedSearchResult,
-}
-
-#[pymethods]
-impl VerifiedSearchResult {}
+// #[derive(Debug)]
+// #[pyclass]
+// pub struct VerifiedSearchResult {
+//     inner: libsignal_keytrans::VerifiedSearchResult,
+// }
+//
+// #[pymethods]
+// impl VerifiedSearchResult {}
 
 // #[pyclass]
 // pub struct KeyTransparency {
@@ -396,9 +395,9 @@ impl VerifiedSearchResult {}
 pub fn init_submodule(module: &Bound<'_, PyModule>) -> PyResult<()> {
     module.add_class::<VerifyingKey>()?;
     module.add_class::<VrfPublicKey>()?;
-    module.add_class::<DeploymentMode>()?;
-    module.add_class::<PublicConfig>()?;
-    module.add_class::<SlimSearchRequest>()?;
+    // module.add_class::<DeploymentMode>()?;
+    // module.add_class::<PublicConfig>()?;
+    // module.add_class::<SlimSearchRequest>()?;
     // module.add_class::<KeyTransparency>()?;
     Ok(())
 }

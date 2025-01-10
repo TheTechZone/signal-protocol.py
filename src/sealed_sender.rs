@@ -61,17 +61,17 @@ impl ServerCertificate {
 
     fn certificate(&self, py: Python) -> Result<PyObject> {
         let result = self.data.certificate()?;
-        Ok(PyBytes::new_bound(py, &result).into())
+        Ok(PyBytes::new(py, &result).into())
     }
 
     fn signature(&self, py: Python) -> Result<PyObject> {
         let result = self.data.signature()?;
-        Ok(PyBytes::new_bound(py, &result).into())
+        Ok(PyBytes::new(py, &result).into())
     }
 
     fn serialized(&self, py: Python) -> Result<PyObject> {
         let result = self.data.serialized()?;
-        Ok(PyBytes::new_bound(py, &result).into())
+        Ok(PyBytes::new(py, &result).into())
     }
 }
 
@@ -150,17 +150,17 @@ impl SenderCertificate {
 
     fn certificate(&self, py: Python) -> Result<PyObject> {
         let result = self.data.certificate()?;
-        Ok(PyBytes::new_bound(py, &result).into())
+        Ok(PyBytes::new(py, &result).into())
     }
 
     fn signature(&self, py: Python) -> Result<PyObject> {
         let result = self.data.signature()?;
-        Ok(PyBytes::new_bound(py, &result).into())
+        Ok(PyBytes::new(py, &result).into())
     }
 
     fn serialized(&self, py: Python) -> Result<PyObject> {
         let result = self.data.serialized()?;
-        Ok(PyBytes::new_bound(py, &result).into())
+        Ok(PyBytes::new(py, &result).into())
     }
 
     // fn preferred_address(&self, store: &InMemSignalProtocolStore) -> Result<ProtocolAddress> {
@@ -233,12 +233,12 @@ impl UnidentifiedSenderMessageContent {
 
     fn contents(&self, py: Python) -> Result<PyObject> {
         let result = self.data.contents()?;
-        Ok(PyBytes::new_bound(py, &result).into())
+        Ok(PyBytes::new(py, &result).into())
     }
 
     fn serialized(&self, py: Python) -> Result<PyObject> {
         let result = self.data.serialized()?;
-        Ok(PyBytes::new_bound(py, &result).into())
+        Ok(PyBytes::new(py, &result).into())
     }
 }
 
@@ -316,7 +316,7 @@ impl SealedSenderDecryptionResult {
     }
 
     fn message(&self, py: Python) -> Result<PyObject> {
-        Ok(PyBytes::new_bound(py, &self.data.message).into())
+        Ok(PyBytes::new(py, &self.data.message).into())
     }
 }
 
@@ -369,7 +369,7 @@ pub fn sealed_sender_encrypt(
         now2,
         &mut csprng,
     ))?;
-    Ok(PyBytes::new_bound(py, &result).into())
+    Ok(PyBytes::new(py, &result).into())
 }
 
 #[pyfunction]

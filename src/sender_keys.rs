@@ -24,7 +24,7 @@ impl SenderKeyRecord {
 
     pub fn serialize(&self, py: Python) -> Result<PyObject> {
         let bytes = self.state.serialize()?;
-        Ok(PyBytes::new_bound(py, &bytes).into())
+        Ok(PyBytes::new(py, &bytes).into())
     }
 }
 

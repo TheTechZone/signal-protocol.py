@@ -159,8 +159,8 @@ impl UUID {
         (self.__str__(),)
     }
 
-    pub fn __deepcopy__(&self, py: Python, _memo: &Bound<'_, PyDict>) -> Py<PyAny> {
-        self.clone().into_py(py)
+    pub fn __deepcopy__(&self, _memo: &Bound<'_, PyDict>) -> Self {
+        self.clone()
     }
 
     #[getter]
@@ -180,7 +180,7 @@ impl UUID {
             bytes[3], bytes[2], bytes[1], bytes[0], bytes[5], bytes[4], bytes[7], bytes[6],
             bytes[8], bytes[9], bytes[10], bytes[11], bytes[12], bytes[13], bytes[14], bytes[15],
         ];
-        PyBytes::new_bound(py, &bytes)
+        PyBytes::new(py, &bytes)
     }
 
     #[getter]

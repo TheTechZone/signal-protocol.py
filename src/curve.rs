@@ -11,10 +11,10 @@ use crate::error::Result;
 use crate::error::SignalProtocolError;
 use base64::{engine::general_purpose, Engine as _};
 
-pub const AGREEMENT_LENGTH: usize = 32;
-pub const PRIVATE_KEY_LENGTH: usize = 32;
+// pub const AGREEMENT_LENGTH: usize = 32;
+// pub const PRIVATE_KEY_LENGTH: usize = 32;
 pub const PUBLIC_KEY_LENGTH: usize = 32;
-pub const SIGNATURE_LENGTH: usize = 64;
+// pub const SIGNATURE_LENGTH: usize = 64;
 
 #[pyfunction]
 pub fn generate_keypair(py: Python) -> PyResult<(PyObject, PyObject)> {
@@ -22,8 +22,8 @@ pub fn generate_keypair(py: Python) -> PyResult<(PyObject, PyObject)> {
     let key_pair = libsignal_protocol::KeyPair::generate(&mut csprng);
 
     Ok((
-        PyBytes::new_bound(py, &key_pair.public_key.serialize()).into(),
-        PyBytes::new_bound(py, &key_pair.private_key.serialize()).into(),
+        PyBytes::new(py, &key_pair.public_key.serialize()).into(),
+        PyBytes::new(py, &key_pair.private_key.serialize()).into(),
     ))
 }
 
@@ -48,35 +48,61 @@ impl KeyPair {
         KeyPair { key: keypair }
     }
 
-    pub fn public_key(&self) -> Result<PublicKey> {
-        Ok(PublicKey::deserialize(&self.key.public_key.serialize())?)
+    pub fn public_key(&self) -> PyResult<PublicKey> {
+        match PublicKey::deserialize(&self.key.public_key.serialize()) {
+            Ok(key) => Ok(key),
+            Err(err) => Err(err),
+        }
     }
 
-    pub fn private_key(&self) -> Result<PrivateKey> {
-        Ok(PrivateKey::deserialize(&self.key.private_key.serialize())?)
+    pub fn private_key(&self) -> PyResult<PrivateKey> {
+        match PrivateKey::deserialize(&self.key.private_key.serialize()) {
+            Ok(key) => Ok(key),
+            Err(err) => Err(err),
+        }
     }
 
     pub fn serialize(&self, py: Python) -> PyObject {
         let result = self.key.public_key.serialize();
-        PyBytes::new_bound(py, &result).into()
+        PyBytes::new(py, &result).into()
     }
 
-    pub fn calculate_signature(&self, py: Python, message: &[u8]) -> Result<PyObject> {
+    pub fn calculate_signature(&self, py: Python, message: &[u8]) -> PyResult<PyObject> {
         let mut csprng = OsRng;
-        let sig = self.key.calculate_signature(&message, &mut csprng)?;
-        Ok(PyBytes::new_bound(py, &sig).into())
+        match self.key.calculate_signature(&message, &mut csprng) {
+            Ok(sig) => match sig.into_pyobject(py) {
+                Ok(s) => Ok(s.extract()?),
+                Err(err) => Err(SignalProtocolError::err_from_str(format!(
+                    "failed to calculate signature: {}",
+                    err
+                ))),
+            },
+            Err(err) => Err(SignalProtocolError::err_from_str(format!(
+                "failed to calculate signature: {}",
+                err
+            ))),
+        }
     }
 
-    pub fn calculate_agreement(&self, py: Python, their_key: &PublicKey) -> Result<PyObject> {
-        let agreement = self.key.calculate_agreement(&their_key.key)?;
-        Ok(PyBytes::new_bound(py, &agreement).into())
+    pub fn calculate_agreement(&self, py: Python, their_key: &PublicKey) -> PyResult<PyObject> {
+        match self.key.calculate_agreement(&their_key.key) {
+            Ok(agreement) => Ok(PyBytes::new(py, &agreement).into()),
+            Err(err) => Err(SignalProtocolError::err_from_str(format!(
+                "failed to calculate agreement: {}",
+                err
+            ))),
+        }
     }
 
     #[staticmethod]
-    pub fn from_public_and_private(public_key: &[u8], private_key: &[u8]) -> Result<Self> {
-        Ok(KeyPair {
-            key: libsignal_protocol::KeyPair::from_public_and_private(public_key, private_key)?,
-        })
+    pub fn from_public_and_private(public_key: &[u8], private_key: &[u8]) -> PyResult<Self> {
+        match libsignal_protocol::KeyPair::from_public_and_private(public_key, private_key) {
+            Ok(key) => Ok(KeyPair { key }),
+            Err(err) => Err(SignalProtocolError::err_from_str(format!(
+                "failed to create keypair: {}",
+                err
+            ))),
+        }
     }
 }
 
@@ -106,14 +132,15 @@ impl Serialize for PublicKey {
 #[pymethods]
 impl PublicKey {
     #[staticmethod]
-    pub fn deserialize(key: &[u8]) -> Result<Self> {
-        Ok(Self {
-            key: libsignal_protocol::PublicKey::deserialize(key)?,
-        })
+    pub fn deserialize(key: &[u8]) -> PyResult<Self> {
+        match libsignal_protocol::PublicKey::deserialize(key) {
+            Ok(key) => Ok(Self { key }),
+            Err(err) => Err(SignalProtocolError::err_from_str(err.to_string())),
+        }
     }
 
     pub fn serialize(&self, py: Python) -> PyObject {
-        PyBytes::new_bound(py, &self.key.serialize()).into()
+        PyBytes::new(py, &self.key.serialize()).into()
     }
 
     pub fn to_base64(&self) -> PyResult<String> {
@@ -132,7 +159,7 @@ impl PublicKey {
     }
 
     pub fn verify_signature(&self, message: &[u8], signature: &[u8]) -> Result<bool> {
-        Ok(self.key.verify_signature(&message, &signature)?)
+        Ok(self.key.verify_signature(&message, &signature))
     }
 
     fn __richcmp__(&self, other: PublicKey, op: CompareOp) -> PyResult<bool> {
@@ -178,14 +205,15 @@ impl PrivateKey {
 #[pymethods]
 impl PrivateKey {
     #[staticmethod]
-    pub fn deserialize(key: &[u8]) -> Result<Self> {
-        Ok(Self {
-            key: libsignal_protocol::PrivateKey::deserialize(key)?,
-        })
+    pub fn deserialize(key: &[u8]) -> PyResult<Self> {
+        match libsignal_protocol::PrivateKey::deserialize(key) {
+            Ok(key) => Ok(Self { key }),
+            Err(err) => Err(SignalProtocolError::err_from_str(err.to_string())),
+        }
     }
 
     pub fn serialize(&self, py: Python) -> PyObject {
-        PyBytes::new_bound(py, &self.key.serialize()).into()
+        PyBytes::new(py, &self.key.serialize()).into()
     }
 
     pub fn to_base64(&self) -> PyResult<String> {
@@ -203,21 +231,35 @@ impl PrivateKey {
         }
     }
 
-    pub fn calculate_signature(&self, message: &[u8], py: Python) -> Result<PyObject> {
+    pub fn calculate_signature(&self, message: &[u8], py: Python) -> PyResult<PyObject> {
         let mut csprng = OsRng;
-        let sig = self.key.calculate_signature(message, &mut csprng)?;
-        Ok(PyBytes::new_bound(py, &sig).into())
+        match self.key.calculate_signature(message, &mut csprng) {
+            Ok(sig) => Ok(PyBytes::new(py, &sig).into()),
+            Err(err) => Err(SignalProtocolError::err_from_str(format!(
+                "failed to calculate signature: {}",
+                err
+            ))),
+        }
     }
 
-    pub fn calculate_agreement(&self, py: Python, their_key: &PublicKey) -> Result<PyObject> {
-        let result = self.key.calculate_agreement(&their_key.key)?;
-        Ok(PyBytes::new_bound(py, &result).into())
+    pub fn calculate_agreement(&self, py: Python, their_key: &PublicKey) -> PyResult<PyObject> {
+        match self.key.calculate_agreement(&their_key.key) {
+            Ok(result) => Ok(PyBytes::new(py, &result).into()),
+            Err(err) => Err(SignalProtocolError::err_from_str(format!(
+                "failed to calculate agreement: {}",
+                err
+            ))),
+        }
     }
 
-    pub fn public_key(&self) -> Result<PublicKey> {
-        Ok(PublicKey {
-            key: self.key.public_key()?,
-        })
+    pub fn public_key(&self) -> PyResult<PublicKey> {
+        match self.key.public_key() {
+            Ok(key) => Ok(PublicKey { key }),
+            Err(err) => Err(SignalProtocolError::err_from_str(format!(
+                "curve error: {}",
+                err
+            ))),
+        }
     }
 }
 

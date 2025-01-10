@@ -30,6 +30,7 @@ impl KeyType {
         Ok(KeyType { key_type: key_enum })
     }
 
+    #[allow(unreachable_patterns)]
     pub fn value(&self) -> PyResult<u8> {
         match &self.key_type {
             libsignal_protocol::kem::KeyType::Kyber1024 => Ok(0x08),
@@ -116,10 +117,7 @@ impl KeyPair {
     pub fn encapsulate(&self, py: Python) -> (PyObject, PyObject) {
         // we could use get_public().encapsulate() but that does an extra copy operation for no good reason
         let (ss, ctxt) = self.key.public_key.encapsulate();
-        (
-            PyBytes::new_bound(py, &ss).into(),
-            PyBytes::new_bound(py, &ctxt).into(),
-        )
+        (PyBytes::new(py, &ss).into(), PyBytes::new(py, &ctxt).into())
     }
 
     /// Decapsulates a `SharedSecret` that was encapsulated into a `Ciphertext` by a holder of
@@ -129,7 +127,7 @@ impl KeyPair {
         let ctxt = libsignal_protocol::kem::SerializedCiphertext::from(ct_bytes);
         let ss = self.key.secret_key.decapsulate(&ctxt);
         match ss {
-            Ok(shared_secret) => Ok(PyBytes::new_bound(py, &shared_secret).into()),
+            Ok(shared_secret) => Ok(PyBytes::new(py, &shared_secret).into()),
             Err(err) => Err(SignalProtocolError::new_err(err)),
         }
     }
@@ -158,7 +156,7 @@ pub struct PublicKey {
 impl PublicKey {
     pub fn serialize(&self, py: Python) -> PyObject {
         let result = self.key.serialize();
-        PyBytes::new_bound(py, &result).into()
+        PyBytes::new(py, &result).into()
     }
 
     #[staticmethod]
@@ -189,10 +187,7 @@ impl PublicKey {
     /// `SharedSecret`.
     pub fn encapsulate(&self, py: Python) -> (PyObject, PyObject) {
         let (ss, ctxt) = self.key.encapsulate();
-        (
-            PyBytes::new_bound(py, &ss).into(),
-            PyBytes::new_bound(py, &ctxt).into(),
-        )
+        (PyBytes::new(py, &ss).into(), PyBytes::new(py, &ctxt).into())
     }
 }
 
@@ -207,7 +202,7 @@ pub struct SecretKey {
 impl SecretKey {
     pub fn serialize(&self, py: Python) -> PyObject {
         let result = self.key.serialize();
-        PyBytes::new_bound(py, &result).into()
+        PyBytes::new(py, &result).into()
     }
 
     #[staticmethod]
@@ -235,7 +230,7 @@ impl SecretKey {
         let ctxt = libsignal_protocol::kem::SerializedCiphertext::from(ct_bytes);
         let ss = self.key.decapsulate(&ctxt);
         match ss {
-            Ok(shared_secret) => Ok(PyBytes::new_bound(py, &shared_secret).into()),
+            Ok(shared_secret) => Ok(PyBytes::new(py, &shared_secret).into()),
             Err(err) => Err(SignalProtocolError::new_err(err)),
         }
     }
@@ -258,7 +253,7 @@ impl SerializedCiphertext {
 
     /// Get the raw Kyber ciphertext bytes, without the KeyType prefix.
     fn raw(&self, py: Python) -> PyObject {
-        PyBytes::new_bound(py, &(&*self.state)[1..]).into()
+        PyBytes::new(py, &(&*self.state)[1..]).into()
     }
 }
 
