@@ -769,18 +769,6 @@ impl KyberPreKeyRecord {
         );
 
         KyberPreKeyRecord { state: upstream }
-
-        // let key = KeyPair::from_public_and_private(key_pair.key.public_key.serialize().as_ref(), key_pair.key.secret_key.serialize().as_ref());
-        // let spk_record = SignedPreKeyRecord::new(
-        //     SignedPreKeyId::new(id.get_id()),
-        //     timestamp,
-        //     &key.unwrap(),
-        //     &signature,
-        // ).state;
-        // let data = spk_record.serialize().unwrap();
-        // KyberPreKeyRecord{
-        //     state: libsignal_protocol::KyberPreKeyRecord::deserialize(data.as_ref()).unwrap(),
-        // }
     }
 
     #[staticmethod]
@@ -822,7 +810,6 @@ impl KyberPreKeyRecord {
         )
         .map_err(|e| SignalProtocolError::new_err(e))?;
         Ok(KemKeyPair { key: key_pair })
-        // &self.state.get_storage().
     }
 
     fn signature(&self, py: Python) -> Result<PyObject> {
