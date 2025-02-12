@@ -7,9 +7,9 @@ license = "AGPL-3.0-only"
 
 [dependencies]
 rand = "0.8"
-mac_address = "1.1.7"
+mac_address = "1.1.8"
 
-libsignal-protocol = { git = "https://github.com/signalapp/libsignal", tag="v0.65.3"}
+libsignal-protocol = { git = "https://github.com/signalapp/libsignal", tag="v0.66.1"}
 libsignal-core = { git = "https://github.com/signalapp/libsignal", version = "0.1.0" }
 libsignal-keytrans = { git = "https://github.com/signalapp/libsignal", version = "0.0.1" }
 signal-crypto = { git = "https://github.com/signalapp/libsignal", version = "0.1.0" }
