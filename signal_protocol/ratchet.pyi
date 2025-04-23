@@ -1,4 +1,5 @@
 from .curve import KeyPair, PublicKey
+from .kem import PublicKey as KemPublicKey, KeyPair as KemKeyPair
 from .identity_key import IdentityKey, IdentityKeyPair
 from typing import Optional, Any
 from .state import SessionRecord
@@ -16,6 +17,7 @@ class AliceSignalProtocolParameters:
         their_signed_pre_key: PublicKey,
         _their_one_time_pre_key: Optional[PublicKey],
         their_ratchet_key: PublicKey,
+        _their_kyber_pre_key: KemPublicKey,
     ) -> None:
         """TODO: revise when their_otpk is used"""
         ...
@@ -74,6 +76,8 @@ class AliceSignalProtocolParameters:
         """
         ...
 
+    def their_kyber_pre_key(self) -> Optional[KemPublicKey]: ...
+
 class BobSignalProtocolParameters:
     """
     This class represents the protocol parameters for Bob in the Signal Protocol.
@@ -88,7 +92,7 @@ class BobSignalProtocolParameters:
         our_kyber_pre_key_pair: Optional[Any],
         their_identity_key: IdentityKey,
         their_base_key: PublicKey,
-        _their_kyber_ciphertext: Optional[Any],
+        their_kyber_ciphertext: Optional[Any],
     ) -> None:
         """TODO: adapt when done"""
         ...
@@ -129,6 +133,7 @@ class BobSignalProtocolParameters:
         """
         ...
 
+    def our_kyber_pre_key_pair(self) -> Optional[KemKeyPair]: ...
     def their_identity_key(self) -> IdentityKey:
         """
         Returns the other party's identity key.
@@ -146,6 +151,8 @@ class BobSignalProtocolParameters:
             BaseKey: The other party's base key.
         """
         ...
+
+    def their_kyber_ciphertext(self) -> Optional[bytes]: ...
 
 def initialize_alice_session() -> SessionRecord:
     """

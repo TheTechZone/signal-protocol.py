@@ -16,7 +16,7 @@ use rand::rngs::OsRng;
 pub struct ContentHint {
     pub data: libsignal_protocol::ContentHint,
 }
-// todo: impl
+// TODO: impl
 
 #[pyclass]
 #[derive(Debug, Clone)]
@@ -124,7 +124,7 @@ impl SenderCertificate {
 
     fn signer(&self) -> Result<ServerCertificate> {
         Ok(ServerCertificate {
-            data: (self.data.signer()?).clone(),
+            data: self.data.signer()?.clone(),
         })
     }
 
@@ -188,6 +188,7 @@ impl UnidentifiedSenderMessageContent {
     }
 
     #[new]
+    #[pyo3(signature = (msg_type_value, sender, contents, content_hint, group_id=None))]
     fn new(
         msg_type_value: u8,
         sender: SenderCertificate,
@@ -226,7 +227,7 @@ impl UnidentifiedSenderMessageContent {
 
     fn sender(&self) -> Result<SenderCertificate> {
         Ok(SenderCertificate {
-            data: (self.data.sender()?).clone(),
+            data: self.data.sender()?.clone(),
         })
     }
 
@@ -354,7 +355,7 @@ pub fn sealed_sender_encrypt(
     sender_cert: &SenderCertificate,
     ptext: &[u8],
     protocol_store: &mut InMemSignalProtocolStore,
-    // now: SystemTime, // todo: should SystemTime be exposed?
+    // now: SystemTime, // TODO: should SystemTime be exposed?
     py: Python,
 ) -> Result<PyObject> {
     let mut csprng = OsRng;
@@ -385,7 +386,7 @@ pub fn sealed_sender_decrypt_to_usmc(
     }
 }
 
-pub fn init_submodule(module: &PyModule) -> PyResult<()> {
+pub fn init_submodule(module: &Bound<'_, PyModule>) -> PyResult<()> {
     module.add_class::<SenderCertificate>()?;
     module.add_class::<ServerCertificate>()?;
     module.add_class::<UnidentifiedSenderMessageContent>()?;

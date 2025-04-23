@@ -14,8 +14,8 @@ pub struct Aes256GcmEncryption {
 #[pymethods]
 impl Aes256GcmEncryption {
     #[new]
-    /// Expect to have a 32bit key and 12bit nonce
-    /// nonce must be unique for the (msg,key) combination
+    /// Expect to have a 32bit key and 12bit nonce.
+    /// The nonce must be unique for the (msg,key) combination
     pub fn new(key: &[u8], nonce: &[u8], associated_data: &[u8]) -> Self {
         Self {
             key: key.to_vec(),
@@ -194,7 +194,7 @@ impl CryptographicMac {
     }
 }
 
-pub fn init_submodule(module: &PyModule) -> PyResult<()> {
+pub fn init_submodule(module: &Bound<'_, PyModule>) -> PyResult<()> {
     module.add_class::<Aes256GcmEncryption>()?;
     module.add_class::<Aes256GcmDecryption>()?;
     module.add_class::<Aes256Ctr32>()?;

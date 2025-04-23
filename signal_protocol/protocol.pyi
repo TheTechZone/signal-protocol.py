@@ -1,6 +1,6 @@
 from .curve import PublicKey, PrivateKey
 from .identity_key import IdentityKey
-from .state import PreKeyId, SignedPreKeyId
+from .state import PreKeyId, SignedPreKeyId, KyberPreKeyId
 from .uuid import UUID
 from typing import Optional, Self
 import collections.abc
@@ -9,9 +9,7 @@ class CiphertextMessage(collections.abc.ByteString):
     """
     Represents a ciphertext message in the Signal Protocol.
     CiphertextMessage is a Rust enum in the upstream crate. Mapping of enums to Python enums
-
     is not supported in pyo3. We map the Rust enum and its variants to Python as a superclass
-
     (for CiphertextMessage) and subclasses (for variants of CiphertextMessage).
     """
 
@@ -29,21 +27,24 @@ class CiphertextMessage(collections.abc.ByteString):
         Returns the type of the ciphertext message.
 
         Returns:
+
             int: The type of the ciphertext message.
+
+        We're using the following mapping of libsignal_protocol::CiphertextMessageType to u8:
+
+        - CiphertextMessageType::Whisper => 2
+
+        - CiphertextMessageType::PreKey => 3
+
+        - CiphertextMessageType::SenderKey => 7
+
+        - CiphertextMessageType::Plaintext => 8
         """
         ...
 
-class KemKeyPair:
-    """Represents a KEM key pair in the Signal Protocol."""
+    def message_type_str(self) -> str: ...
 
-    ...
-
-class KemSerializedCiphertext:
-    """Represents a serialized KEM ciphertext in the Signal Protocol."""
-
-    ...
-
-class PreKeySignalMessage:
+class PreKeySignalMessage(CiphertextMessage):
     """
     Represents a pre-key signal message in the Signal Protocol.
     CiphertextMessageType::PreKey => 3
@@ -136,6 +137,9 @@ class PreKeySignalMessage:
         """
         ...
 
+    def kyber_payload(self) -> Optional[KyberPayload]: ...
+    def kyber_id(self) -> Optional[KyberPreKeyId]: ...
+    def kyber_ciphertext(self) -> Optional[bytes]: ...
     def message(self) -> SignalMessage:
         """
         Returns the signal message of the pre-key signal message.
@@ -145,7 +149,7 @@ class PreKeySignalMessage:
         """
         ...
 
-class SenderKeyDistributionMessage:
+class SenderKeyDistributionMessage(CiphertextMessage):
     """
     Represents a sender key distribution message in the Signal Protocol.
     CiphertextMessageType::SenderKeyDistribution => 5
@@ -218,10 +222,11 @@ class SenderKeyDistributionMessage:
         """
         ...
 
-class SenderKeyMessage:
+class SenderKeyMessage(CiphertextMessage):
     """
     Represents a sender key message in the Signal Protocol.
-    CiphertextMessageType::SenderKey => 4
+
+    CiphertextMessageType::SenderKey => 7
     """
 
     def __new__(
@@ -313,7 +318,7 @@ class SenderKeyMessage:
         """
         ...
 
-class SignalMessage:
+class SignalMessage(CiphertextMessage):
     """
     Represents a signal message in the Signal Protocol.
     CiphertextMessageType::Whisper
@@ -321,7 +326,7 @@ class SignalMessage:
 
     def __init__(
         self,
-        messsage_version: int,
+        message_version: int,
         mac_key: bytes,
         sender_ratchet_key: PublicKey,
         counter: int,
@@ -330,7 +335,7 @@ class SignalMessage:
         sender_identity_key: IdentityKey,
         receiver_identity_key: IdentityKey,
     ) -> None: ...
-    def __new__(cls) -> tuple[Self, CiphertextMessage]: ...
+    def __new__(cls, *args, **kwargs) -> tuple[Self, CiphertextMessage]: ...
     @staticmethod
     def try_from(data: bytes) -> SignalMessage:
         """
@@ -408,4 +413,5 @@ class SignalMessage:
         """
         ...
 
-class KyberPayload: ...  # TODO: handle once the rust exports it
+class KyberPayload:
+    def __init__(self, kyber_pre_key_id: KyberPreKeyId, ciphertext: bytes) -> None: ...

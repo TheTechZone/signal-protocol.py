@@ -1,0 +1,13 @@
+#!/bin/bash
+
+echo -e "\033[1;33mRunning security checks before push...\033[0m"
+
+# Run cargo deny check first
+echo "Running cargo deny check..."
+if ! cargo deny check; then
+    echo -e "\033[0;31mLicense or dependency issues found! Please review.\033[0m"
+    exit 1
+fi
+
+echo "All checks passed successfully!"
+exit 0

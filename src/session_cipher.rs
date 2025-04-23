@@ -8,7 +8,6 @@ use rand::rngs::OsRng;
 use crate::address::ProtocolAddress;
 use crate::error::Result;
 use crate::protocol::{CiphertextMessage, PreKeySignalMessage, SignalMessage};
-// use crate::state::SystemTime;
 use crate::storage::InMemSignalProtocolStore;
 
 #[pyfunction]
@@ -16,7 +15,7 @@ pub fn message_encrypt(
     protocol_store: &mut InMemSignalProtocolStore,
     remote_address: &ProtocolAddress,
     msg: &[u8],
-    // now: SystemTime, // todo: should SystemTime be exposed?
+    // now: SystemTime, // TODO: should SystemTime be exposed?
 ) -> Result<CiphertextMessage> {
     let now2 = std::time::SystemTime::now();
 
@@ -90,7 +89,7 @@ pub fn message_decrypt_signal(
     Ok(PyBytes::new(py, &plaintext).into())
 }
 
-pub fn init_submodule(module: &PyModule) -> PyResult<()> {
+pub fn init_submodule(module: &Bound<'_, PyModule>) -> PyResult<()> {
     module.add_wrapped(wrap_pyfunction!(message_encrypt))?;
     module.add_wrapped(wrap_pyfunction!(message_decrypt))?;
     module.add_wrapped(wrap_pyfunction!(message_decrypt_prekey))?;

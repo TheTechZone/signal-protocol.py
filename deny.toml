@@ -1,0 +1,54 @@
+[advisories]
+db-path = "~/.cargo/advisory-db"
+ignore = [
+    "RUSTSEC-2024-0381",  # pqcrypto-kyber - no safe upgrade path yet
+    "RUSTSEC-2024-0370",  # proc-macro-error - no safe alternatives yet
+    "RUSTSEC-2024-0436"   # libsignal uses paste?
+]
+yanked = "warn"
+
+[licenses]
+allow = [
+    "MIT",
+    "Apache-2.0",
+    "Apache-2.0 WITH LLVM-exception",
+    "BSD-3-Clause",
+    "BSD-2-Clause",
+    "ISC",
+    "OpenSSL",
+    "MPL-2.0",
+    "Unicode-3.0",
+    "AGPL-3.0",
+    "CC0-1.0",
+]
+confidence-threshold = 0.8
+[[licenses.clarify]]
+name = "ring"
+expression = "MIT AND ISC AND OpenSSL"
+license-files = [
+    { path = "LICENSE", hash = 0xbd0eed23 }
+]
+
+[bans]
+multiple-versions = "warn"
+wildcards = "allow"
+skip = [
+    { name = "pqcrypto-kyber" },  # Replaced by pqcrypto-mlkem but no safe upgrade path yet
+    { name = "syn" },             # Multiple versions due to macro dependencies
+    { name = "windows-sys" }      # Multiple versions from different dependency chains
+]
+skip-tree = [
+    { name = "libsignal-core" },    # Multiple versions from git dependencies
+    { name = "libsignal-protocol" }, # Multiple versions from git dependencies
+    { name = "signal-crypto" }       # Multiple versions from git dependencies
+]
+
+[sources]
+unknown-registry = "warn"
+unknown-git = "warn"
+allow-registry = ["https://github.com/rust-lang/crates.io-index"]
+allow-git = [
+    "https://github.com/signalapp/libsignal",
+    "https://github.com/signalapp/curve25519-dalek",
+    "https://github.com/signalapp/boring"
+]

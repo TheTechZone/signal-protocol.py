@@ -19,8 +19,9 @@ class InMemSignalProtocolStore:
     """
 
     def __init__(self, key_pair: IdentityKeyPair, registration_id: int) -> None: ...
-    ...
-
+    def all_pre_key_ids(self) -> list[PreKeyId]: ...
+    def all_signed_pre_key_ids(self) -> list[SignedPreKeyId]: ...
+    def all_kyber_pre_key_ids(self) -> list[KyberPreKeyId]: ...
     def get_identity_key_pair(self) -> IdentityKeyPair:
         """
         Gets the identity key pair.
@@ -61,6 +62,10 @@ class InMemSignalProtocolStore:
         """
         ...
 
+    def reset_identities(self) -> None:
+        """Resets all identity information in the store.
+        WARNING: This is a destructive operation that clears all identity keys."""
+
     def load_session(self, address: ProtocolAddress) -> Optional[SessionRecord]:
         """
         Loads a session.
@@ -83,7 +88,7 @@ class InMemSignalProtocolStore:
         """
         ...
 
-    def get_pre_key(self, id: PreKeyId) -> PreKeyRecord:
+    def get_pre_key(self, pre_key_id: PreKeyId) -> PreKeyRecord:
         """
         Gets a pre-key.
 
@@ -95,7 +100,7 @@ class InMemSignalProtocolStore:
         """
         ...
 
-    def save_pre_key(self, id: PreKeyId, record: PreKeyRecord) -> None:
+    def save_pre_key(self, pre_key_id: PreKeyId, record: PreKeyRecord) -> None:
         """
         Saves a pre-key.
 
@@ -105,7 +110,7 @@ class InMemSignalProtocolStore:
         """
         ...
 
-    def remove_pre_key(self, id: PreKeyId) -> None:
+    def remove_pre_key(self, pre_key_id: PreKeyId) -> None:
         """
         Removes a pre-key.
 
@@ -114,7 +119,9 @@ class InMemSignalProtocolStore:
         """
         ...
 
-    def get_signed_pre_key(self, id: SignedPreKeyId) -> SignedPreKeyRecord:
+    def get_signed_pre_key(
+        self, signed_pre_key_id: SignedPreKeyId
+    ) -> SignedPreKeyRecord:
         """
         Gets a signed pre-key.
 
@@ -127,7 +134,7 @@ class InMemSignalProtocolStore:
         ...
 
     def save_signed_pre_key(
-        self, id: SignedPreKeyId, record: SignedPreKeyRecord
+        self, signed_pre_key_id: SignedPreKeyId, record: SignedPreKeyRecord
     ) -> None:
         """
         Saves a signed pre-key.
@@ -145,7 +152,8 @@ class InMemSignalProtocolStore:
         Stores a sender key.
 
         Args:
-            sender_key_name (SenderKeyName): The sender key name.
+            sender (ProtocolAddress): The sender key name.
+            distribution_id (UUID): The distribution ID.
             record (SenderKeyRecord): The sender key record.
         """
         ...
@@ -157,7 +165,8 @@ class InMemSignalProtocolStore:
         Loads a sender key.
 
         Args:
-            sender_key_name (SenderKeyName): The sender key name.
+            sender: ProtocolAddress: The sender key name.
+            distribution_id (UUID): The distribution ID.
 
         Returns:
             SenderKeyRecord: The sender key record.
@@ -173,5 +182,25 @@ class InMemSignalProtocolStore:
 
         Returns:
             KyberPreKeyRecord: The Kyber pre-key record.
+        """
+        ...
+
+    def save_kyber_pre_key(
+        self, kyber_pre_key_id: KyberPreKeyId, record: KyberPreKeyRecord
+    ) -> None:
+        """Saves a Kyber pre-key.
+
+        Args:
+            kyber_pre_key_id (KyberPreKeyId): The Kyber pre-key ID.
+            record (KyberPreKeyRecord): The Kyber pre-key record to save.
+        """
+        ...
+
+    def mark_kyber_pre_key_used(self, kyber_pre_key_id: KyberPreKeyId) -> None:
+        """
+        Mark the entry for kyber_pre_key_id as "used". This would mean different things for one-time and last-resort Kyber keys.
+
+        Args:
+            kyber_pre_key_id (KyberPreKeyId): The Kyber pre-key ID.
         """
         ...

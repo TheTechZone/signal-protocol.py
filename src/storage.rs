@@ -23,21 +23,32 @@ pub struct InMemSignalProtocolStore {
     pub store: libsignal_protocol::InMemSignalProtocolStore,
 }
 
-// todo: deal with iterators
-// #[pymethods]
-// impl InMemSignalProtocolStore {
-//     fn all_pre_key_ids(&self) -> impl Iterator<Item = &PreKeyId>  {
-//         self.store.all_pre_key_ids()
-//     }
+#[pymethods]
+impl InMemSignalProtocolStore {
+    pub fn all_pre_key_ids(&self) -> PyResult<Vec<PreKeyId>> {
+        Ok(self
+            .store
+            .all_pre_key_ids()
+            .map(|f| PreKeyId { value: *f })
+            .collect())
+    }
 
-//     fn all_signed_pre_key_ids(&self) -> impl Iterator<Item = &SignedPreKeyId> {
-//         self.store.all_signed_pre_key_ids()
-//     }
+    pub fn all_signed_pre_key_ids(&self) -> PyResult<Vec<SignedPreKeyId>> {
+        Ok(self
+            .store
+            .all_signed_pre_key_ids()
+            .map(|f| SignedPreKeyId { value: *f })
+            .collect())
+    }
 
-//     fn all_kyber_pre_key_ids(&self) -> impl Iterator<Item = &KyberPreKeyId> {
-//         self.store.all_kyber_pre_key_ids()
-//     }
-// }
+    pub fn all_kyber_pre_key_ids(&self) -> PyResult<Vec<KyberPreKeyId>> {
+        Ok(self
+            .store
+            .all_kyber_pre_key_ids()
+            .map(|f| KyberPreKeyId { value: *f })
+            .collect())
+    }
+}
 
 #[pymethods]
 impl InMemSignalProtocolStore {
@@ -51,7 +62,7 @@ impl InMemSignalProtocolStore {
 }
 
 /// libsignal_protocol::IdentityKeyStore
-/// is_trusted_identity is not implemented (it requries traits::Direction as arg)
+/// is_trusted_identity is not implemented (it requires traits::Direction as arg)
 #[pymethods]
 impl InMemSignalProtocolStore {
     fn get_identity_key_pair(&self) -> Result<IdentityKeyPair> {
@@ -80,6 +91,12 @@ impl InMemSignalProtocolStore {
             Some(key) => Ok(Some(IdentityKey { key })),
             None => Ok(None),
         }
+    }
+
+    /// Resets all identity information in the store.
+    /// WARNING: This is a destructive operation that clears all identity keys.
+    fn reset_identities(&mut self) {
+        self.store.identity_store.reset();
     }
 }
 
@@ -183,6 +200,24 @@ impl InMemSignalProtocolStore {
         let state = block_on(self.store.get_kyber_pre_key(id.value))?;
         Ok(KyberPreKeyRecord { state })
     }
+
+    fn save_kyber_pre_key(
+        &mut self,
+        kyber_pre_key_id: KyberPreKeyId,
+        record: &KyberPreKeyRecord,
+    ) -> Result<()> {
+        Ok(block_on(self.store.save_kyber_pre_key(
+            kyber_pre_key_id.value,
+            &record.state,
+        ))?)
+    }
+
+    /// Mark the entry for kyber_pre_key_id as "used". This would mean different things for one-time and last-resort Kyber keys.
+    fn mark_kyber_pre_key_used(&mut self, kyber_pre_key_id: KyberPreKeyId) -> Result<()> {
+        Ok(block_on(
+            self.store.mark_kyber_pre_key_used(kyber_pre_key_id.value),
+        )?)
+    }
 }
 
 /// The storage traits are not exposed as part of the API (this is not supported by Pyo3)
@@ -190,7 +225,7 @@ impl InMemSignalProtocolStore {
 /// Python classes for InMemSenderKeyStore, InMemSessionStore, InMemIdentityKeyStore, InMemPreKeyStore
 /// or InMemSignedPreKeyStore are not exposed.
 /// One will need to operate on the InMemSignalProtocolStore instead.
-pub fn init_submodule(module: &PyModule) -> PyResult<()> {
+pub fn init_submodule(module: &Bound<'_, PyModule>) -> PyResult<()> {
     module.add_class::<InMemSignalProtocolStore>()?;
     Ok(())
 }

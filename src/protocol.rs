@@ -8,7 +8,8 @@ use rand::rngs::OsRng;
 use crate::curve::{PrivateKey, PublicKey};
 use crate::error::{Result, SignalProtocolError};
 use crate::identity_key::IdentityKey;
-use crate::state::{PreKeyId, SignedPreKeyId};
+use crate::kem::SerializedCiphertext;
+use crate::state::{KyberPreKeyId, PreKeyId, SignedPreKeyId};
 use crate::uuid::UUID;
 
 /// CiphertextMessage is a Rust enum in the upstream crate. Mapping of enums to Python enums
@@ -25,19 +26,28 @@ impl CiphertextMessage {
     }
 }
 
-/// We're using the following mapping of libsignal_protocol::CiphertextMessageType to u8:
-/// CiphertextMessageType::Whisper => 2
-/// CiphertextMessageType::PreKey => 3
-/// CiphertextMessageType::SenderKey => 4
-/// CiphertextMessageType::SenderKeyDistribution => 5
 #[pymethods]
 impl CiphertextMessage {
     pub fn serialize(&self, py: Python) -> PyResult<PyObject> {
         Ok(PyBytes::new(py, self.data.serialize()).into())
     }
 
+    /// We're using the following mapping of libsignal_protocol::CiphertextMessageType to u8:
+    /// - CiphertextMessageType::Whisper => 2
+    /// - CiphertextMessageType::PreKey => 3
+    /// - CiphertextMessageType::SenderKey => 7
+    /// - CiphertextMessageType::Plaintext => 8
     pub fn message_type(&self) -> u8 {
         self.data.message_type() as u8
+    }
+
+    pub fn message_type_str(&self) -> &'static str {
+        match self.data {
+            libsignal_protocol::CiphertextMessage::SignalMessage(_) => "Whisper",
+            libsignal_protocol::CiphertextMessage::PreKeySignalMessage(_) => "PreKey",
+            libsignal_protocol::CiphertextMessage::SenderKeyMessage(_) => "SenderKey",
+            libsignal_protocol::CiphertextMessage::PlaintextContent(_) => "Plaintext",
+        }
     }
 }
 
@@ -47,7 +57,15 @@ pub struct KyberPayload {
     pub data: libsignal_protocol::KyberPayload,
 }
 
-// todo: handle impl
+#[pymethods]
+impl KyberPayload {
+    #[new]
+    pub fn new(pre_key_id: KyberPreKeyId, ciphertext: &[u8]) -> Self {
+        Self {
+            data: libsignal_protocol::KyberPayload::new(pre_key_id.value, ciphertext.into()),
+        }
+    }
+}
 
 /// CiphertextMessageType::PreKey => 3
 #[pyclass(extends=CiphertextMessage)]
@@ -70,7 +88,7 @@ impl PreKeySignalMessage {
         // Workaround to allow two constructors with pyclass inheritence
         // let gil = Python::acquire_gil();
         // let py = gil.python();
-        return Python::with_gil(|py| {
+        Python::with_gil(|py| {
             Py::new(
                 py,
                 (
@@ -80,7 +98,7 @@ impl PreKeySignalMessage {
                     CiphertextMessage { data: ciphertext },
                 ),
             )
-        });
+        })
     }
 
     #[new]
@@ -141,12 +159,10 @@ impl PreKeySignalMessage {
     }
 
     pub fn pre_key_id(&self) -> Option<u32> {
-        // self.data.pre_key_id()
-        // todo:: check this
-        let key_id = u32::from(PreKeyId {
-            value: self.data.pre_key_id()?,
-        });
-        return Some(key_id);
+        match self.data.pre_key_id() {
+            Some(key_id) => Some(u32::from(key_id)),
+            None => None,
+        }
     }
 
     pub fn signed_pre_key_id(&self) -> u32 {
@@ -165,10 +181,38 @@ impl PreKeySignalMessage {
         }
     }
 
+    pub fn kyber_payload(&self) -> Option<KyberPayload> {
+        let pre_key_id = self.data.kyber_pre_key_id();
+        let kyber_ctxt = self.data.kyber_ciphertext();
+
+        match (pre_key_id, kyber_ctxt) {
+            (Some(pki), Some(ctxt)) => {
+                let kyber_id = KyberPreKeyId { value: pki };
+                let sc = SerializedCiphertext::new(&ctxt).ok()?;
+                Some(KyberPayload {
+                    data: libsignal_protocol::KyberPayload::new(kyber_id.value, sc.state),
+                })
+            }
+            _ => None,
+        }
+    }
+
+    pub fn kyber_id(&self) -> Option<KyberPreKeyId> {
+        match self.data.kyber_pre_key_id() {
+            Some(key_id) => Some(KyberPreKeyId { value: key_id }),
+            None => None,
+        }
+    }
+
+    pub fn kyber_ciphertext(&self, py: Python) -> Option<PyObject> {
+        match self.data.kyber_ciphertext() {
+            Some(ctxt) => Some(PyBytes::new(py, &ctxt).into()),
+            None => None,
+        }
+    }
+
     pub fn message(&self) -> PyResult<Py<SignalMessage>> {
-        // let gil = Python::acquire_gil();
-        // let py = gil.python();
-        return Python::with_gil(|py| {
+        Python::with_gil(|py| {
             let upstream_data = self.data.message().clone();
             let ciphertext =
                 libsignal_protocol::CiphertextMessage::SignalMessage(upstream_data.clone());
@@ -181,7 +225,7 @@ impl PreKeySignalMessage {
                     CiphertextMessage { data: ciphertext },
                 ),
             )
-        });
+        })
     }
 }
 
@@ -204,9 +248,7 @@ impl SignalMessage {
             libsignal_protocol::CiphertextMessage::SignalMessage(upstream_data.clone());
 
         // Workaround to allow two constructors with pyclass inheritence
-        // let gil = Python::acquire_gil();
-        // let py = gil.python();
-        return Python::with_gil(|py| {
+        Python::with_gil(|py| {
             Py::new(
                 py,
                 (
@@ -216,7 +258,7 @@ impl SignalMessage {
                     CiphertextMessage { data: ciphertext },
                 ),
             )
-        });
+        })
     }
 
     #[new]
@@ -289,7 +331,7 @@ impl SignalMessage {
     }
 }
 
-/// CiphertextMessageType::SenderKey => 4
+/// CiphertextMessageType::SenderKey => 7
 #[pyclass(extends=CiphertextMessage)]
 pub struct SenderKeyMessage {
     pub data: libsignal_protocol::SenderKeyMessage,
@@ -307,9 +349,7 @@ impl SenderKeyMessage {
             libsignal_protocol::CiphertextMessage::SenderKeyMessage(upstream_data.clone());
 
         // Workaround to allow two constructors with pyclass inheritence
-        // let gil = Python::acquire_gil();
-        // let py = gil.python();
-        return Python::with_gil(|py| {
+        Python::with_gil(|py| {
             Py::new(
                 py,
                 (
@@ -319,7 +359,7 @@ impl SenderKeyMessage {
                     CiphertextMessage { data: ciphertext },
                 ),
             )
-        });
+        })
     }
 
     #[new]
@@ -372,11 +412,6 @@ impl SenderKeyMessage {
         self.data.chain_id()
     }
 
-    // todo: looks deprecated
-    // pub fn key_id(&self) -> u32 {
-    //     self.data.key_id()
-    // }
-
     pub fn iteration(&self) -> u32 {
         self.data.iteration()
     }
@@ -409,14 +444,14 @@ impl SenderKeyDistributionMessage {
         // Workaround to allow two constructors with pyclass inheritence
         // let gil = Python::acquire_gil();
         // let py = gil.python();
-        return Python::with_gil(|py| {
+        Python::with_gil(|py| {
             Py::new(
                 py,
                 SenderKeyDistributionMessage {
                     data: upstream_data,
                 },
             )
-        });
+        })
     }
 
     // todo :: they swapped the api -- CiphertextMessage::SenderKeyDistributionMessage is gone
@@ -444,9 +479,7 @@ impl SenderKeyDistributionMessage {
         let variant_msg = SenderKeyDistributionMessage {
             data: upstream_data.clone(),
         };
-        // let ciphertext_msg = CiphertextMessage::new(
-        //     libsignal_protocol::CiphertextMessage::SenderKeyDistributionMessage(upstream_data),
-        // );
+
         Ok(variant_msg)
     }
 
@@ -457,10 +490,6 @@ impl SenderKeyDistributionMessage {
     pub fn message_version(&self) -> u8 {
         self.data.message_version()
     }
-
-    // pub fn id(&self) -> Result<u32> {
-    //     Ok(self.data.id()?)
-    // }
 
     pub fn iteration(&self) -> Result<u32> {
         Ok(self.data.iteration()?)
@@ -477,39 +506,14 @@ impl SenderKeyDistributionMessage {
     }
 }
 
-#[pyclass]
-#[derive(Clone)]
-pub struct KemKeyPair {
-    pub state: libsignal_protocol::kem::KeyPair,
-}
-
-// todo: kem::KeyPair impl
-
-#[pyclass]
-#[derive(Clone, Debug)]
-pub struct KemSerializedCiphertext {
-    pub state: libsignal_protocol::kem::SerializedCiphertext,
-}
-
-#[pymethods]
-impl KemSerializedCiphertext {
-    // todo: dummy for now
-    #[new]
-    pub fn new(value: &[u8]) -> PyResult<Self> {
-        let kem_ctxt = libsignal_protocol::kem::SerializedCiphertext::from(value);
-        Ok(KemSerializedCiphertext { state: kem_ctxt })
-    }
-}
-
 /// CiphertextMessageType is an Enum that is not exposed as part
 /// of the Python API.
-pub fn init_submodule(module: &PyModule) -> PyResult<()> {
+pub fn init_submodule(module: &Bound<'_, PyModule>) -> PyResult<()> {
     module.add_class::<CiphertextMessage>()?;
     module.add_class::<PreKeySignalMessage>()?;
     module.add_class::<SignalMessage>()?;
     module.add_class::<SenderKeyMessage>()?;
     module.add_class::<SenderKeyDistributionMessage>()?;
-    module.add_class::<KemKeyPair>()?;
-    module.add_class::<KemSerializedCiphertext>()?;
+    module.add_class::<KyberPayload>()?;
     Ok(())
 }

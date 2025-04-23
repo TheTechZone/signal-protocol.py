@@ -61,7 +61,7 @@ impl Fingerprint {
 /// and ScannableFingerprint implemented on the Fingerprint directly.
 ///
 /// ScannableFingerprint::deserialize() is not implemented.
-pub fn init_submodule(module: &PyModule) -> PyResult<()> {
+pub fn init_submodule(module: &Bound<'_, PyModule>) -> PyResult<()> {
     module.add_class::<Fingerprint>()?;
     Ok(())
 }

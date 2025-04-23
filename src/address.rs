@@ -1,27 +1,37 @@
 use pyo3::prelude::*;
-use std::convert;
+use serde::Serialize;
 
 /// The type used in memory to represent a device, i.e. a particular Signal client instance which represents some user.
 ///
 /// Used in ProtocolAddress.
-/// *N.B* the DeviceID ranges from 1 (primary device) to n (the maximum number of devices per user), Any DeviceID > 1 will implictly represent a secondary device.
+///
+/// *N.B* the DeviceID ranges from 1 (primary device) to n (the maximum number of devices per user), Any DeviceID > 1 will implicitly represent a secondary device.
 #[pyclass]
 #[derive(Clone, Debug)]
 pub struct DeviceId {
     pub value: libsignal_protocol::DeviceId,
 }
 
-impl convert::From<DeviceId> for u32 {
+impl From<DeviceId> for u32 {
     fn from(value: DeviceId) -> Self {
         u32::from(value.value)
     }
 }
 
-impl convert::From<u32> for DeviceId {
+impl From<u32> for DeviceId {
     fn from(value: u32) -> Self {
         DeviceId {
             value: libsignal_protocol::DeviceId::from(value),
         }
+    }
+}
+
+impl Serialize for DeviceId {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: serde::Serializer,
+    {
+        serializer.serialize_u32(self.get_id())
     }
 }
 
@@ -32,6 +42,19 @@ impl DeviceId {
         DeviceId {
             value: libsignal_protocol::DeviceId::from(device_id),
         }
+    }
+
+    // TODO: Maybe turn into a getter
+    pub fn get_id(&self) -> u32 {
+        u32::from(self.value)
+    }
+
+    fn __str__(&self) -> PyResult<String> {
+        Ok(self.value.to_string())
+    }
+
+    fn __repr__(&self) -> PyResult<String> {
+        Ok(String::from(format!("DeviceId({})", self.value)))
     }
 }
 
@@ -53,10 +76,12 @@ impl ProtocolAddress {
         }
     }
 
+    // TODO: Maybe turn into a getter
     pub fn name(&self) -> &str {
         self.state.name()
     }
 
+    // TODO: Maybe turn into a getter
     pub fn device_id(&self) -> u32 {
         u32::from(self.state.device_id())
     }
@@ -78,7 +103,7 @@ impl ProtocolAddress {
     }
 }
 
-pub fn init_submodule(module: &PyModule) -> PyResult<()> {
+pub fn init_submodule(module: &Bound<'_, PyModule>) -> PyResult<()> {
     module.add_class::<ProtocolAddress>()?;
     module.add_class::<DeviceId>()?;
     Ok(())
