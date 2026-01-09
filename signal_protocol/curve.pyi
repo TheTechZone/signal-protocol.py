@@ -3,7 +3,7 @@ class KeyPair:
 
     def __init__(self, public_key: PublicKey, private_key: PrivateKey) -> None: ...
     @staticmethod
-    def generate():
+    def generate() -> KeyPair:
         """Generates a new key pair."""
         ...
 
