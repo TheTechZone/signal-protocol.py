@@ -5,9 +5,7 @@ from .protocol import SenderKeyDistributionMessage
 from .uuid import UUID
 
 def create_sender_key_distribution_message(
-    protocol_store: InMemSignalProtocolStore,
-    sender: ProtocolAddress,
-    distribution_id: UUID,
+    protocol_store: InMemSignalProtocolStore, sender: ProtocolAddress, distribution_id: UUID
 ) -> Tuple[UUID, bytes]:
     """
     Creates a sender key distribution message.

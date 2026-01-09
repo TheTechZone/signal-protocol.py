@@ -60,9 +60,7 @@ def message_decrypt_signal(
     ...
 
 def message_encrypt(
-    protocol_store: InMemSignalProtocolStore,
-    remote_address: ProtocolAddress,
-    msg: bytes,
+    protocol_store: InMemSignalProtocolStore, remote_address: ProtocolAddress, msg: bytes
 ) -> CiphertextMessage:
     """
     Encrypts a message.
