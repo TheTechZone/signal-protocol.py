@@ -27,6 +27,7 @@ PRE_KYBER_MESSAGE_VERSION = 3
 KYBER_AWARE_MESSAGE_VERSION = 4
 KYBER_1024_KEY_TYPE = kem.KeyType(8)
 
+
 # test_basic_prekey_v3(): deprecated
 def test_basic_prekey_v4():
     alice_address = address.ProtocolAddress("+14151111111", DEVICE_ID)
@@ -58,11 +59,10 @@ def test_basic_prekey_v4():
 
     bob_kyber_pre_key_pair = kem.KeyPair.generate(KYBER_1024_KEY_TYPE)
     bob_kyber_pre_key_signature = (
-         bob_store.get_identity_key_pair()
+        bob_store.get_identity_key_pair()
         .private_key()
         .calculate_signature(bob_kyber_pre_key_pair.get_public().serialize())
     )
-
 
     bob_pre_key_bundle = state.PreKeyBundle(
         bob_store.get_local_registration_id(),
@@ -111,10 +111,7 @@ def test_basic_prekey_v4():
     )
 
     kyber_prekey = state.KyberPreKeyRecord(
-        kyber_pre_key_id,
-        42,
-        bob_kyber_pre_key_pair,
-        bob_kyber_pre_key_signature
+        kyber_pre_key_id, 42, bob_kyber_pre_key_pair, bob_kyber_pre_key_signature
     )
     bob_store.save_signed_pre_key(signed_pre_key_id, signed_prekey)
     bob_store.save_kyber_pre_key(kyber_pre_key_id, kyber_prekey)
@@ -249,7 +246,9 @@ def test_bad_signed_pre_key_signature():
 
     bob_kyber_key_pair = kem.KeyPair.generate(KYBER_1024_KEY_TYPE)
     bob_kyber_signature = (
-        bob_store.get_identity_key_pair().private_key().calculate_signature(bob_kyber_key_pair.get_public().serialize())
+        bob_store.get_identity_key_pair()
+        .private_key()
+        .calculate_signature(bob_kyber_key_pair.get_public().serialize())
     )
 
     pre_key_id = state.PreKeyId(31337)
@@ -329,7 +328,9 @@ def test_repeat_bundle_message_v4():
 
     bob_kyber_key_pair = kem.KeyPair.generate(KYBER_1024_KEY_TYPE)
     bob_kyber_signature = (
-        bob_store.get_identity_key_pair().private_key().calculate_signature(bob_kyber_key_pair.get_public().serialize())
+        bob_store.get_identity_key_pair()
+        .private_key()
+        .calculate_signature(bob_kyber_key_pair.get_public().serialize())
     )
 
     pre_key_id = state.PreKeyId(31337)
@@ -374,10 +375,7 @@ def test_repeat_bundle_message_v4():
     )
     bob_store.save_signed_pre_key(signed_pre_key_id, signed_prekey)
     kyber_prekey = state.KyberPreKeyRecord(
-        kyber_pre_key_id,
-        42,
-        bob_kyber_key_pair,
-        bob_kyber_signature
+        kyber_pre_key_id, 42, bob_kyber_key_pair, bob_kyber_signature
     )
     bob_store.save_kyber_pre_key(kyber_pre_key_id, kyber_prekey)
 
@@ -427,13 +425,14 @@ def test_bad_message_bundle():
 
     bob_kyber_key_pair = kem.KeyPair.generate(KYBER_1024_KEY_TYPE)
     bob_kyber_signature = (
-        bob_store.get_identity_key_pair().private_key().calculate_signature(bob_kyber_key_pair.get_public().serialize())
+        bob_store.get_identity_key_pair()
+        .private_key()
+        .calculate_signature(bob_kyber_key_pair.get_public().serialize())
     )
 
     pre_key_id = state.PreKeyId(31337)
     signed_pre_key_id = state.SignedPreKeyId(22)
     kyber_pre_key_id = state.KyberPreKeyId(33)
-
 
     bob_pre_key_bundle = state.PreKeyBundle(
         bob_store.get_local_registration_id(),
@@ -529,7 +528,9 @@ def test_optional_one_time_prekey():
 
     bob_kyber_key_pair = kem.KeyPair.generate(KYBER_1024_KEY_TYPE)
     bob_kyber_signature = (
-        bob_store.get_identity_key_pair().private_key().calculate_signature(bob_kyber_key_pair.get_public().serialize())
+        bob_store.get_identity_key_pair()
+        .private_key()
+        .calculate_signature(bob_kyber_key_pair.get_public().serialize())
     )
 
     signed_pre_key_id = state.SignedPreKeyId(22)
@@ -569,10 +570,7 @@ def test_optional_one_time_prekey():
     bob_store.save_signed_pre_key(signed_pre_key_id, signed_prekey)
 
     kyber_prekey = state.KyberPreKeyRecord(
-        kyber_pre_key_id,
-        42,
-        bob_kyber_key_pair,
-        bob_kyber_signature
+        kyber_pre_key_id, 42, bob_kyber_key_pair, bob_kyber_signature
     )
     bob_store.save_kyber_pre_key(kyber_pre_key_id, kyber_prekey)
 
@@ -625,7 +623,7 @@ def test_message_key_limits():  # Note: slow test
     ) == f"It's over {TOO_MANY_MESSAGES - 1}".encode("utf8")
 
     with pytest.raises(SignalProtocolException, match="message with old counter"):
-        session_cipher.message_decrypt(bob_store, alice_address, inflight[5],True)
+        session_cipher.message_decrypt(bob_store, alice_address, inflight[5], True)
 
 
 def test_basic_simultaneous_initiate():
@@ -775,10 +773,7 @@ def test_simultaneous_initiate_with_lossage():
     assert bob_response.message_type() == 2  # CiphertextMessageType::Whisper => 2
 
     response_plaintext = session_cipher.message_decrypt(
-        alice_store,
-        bob_address,
-        protocol.SignalMessage.try_from(bob_response.serialize()),
-        True
+        alice_store, bob_address, protocol.SignalMessage.try_from(bob_response.serialize()), True
     )
     assert response_plaintext == b"you as well"
     assert is_session_id_equal(alice_store, alice_address, bob_store, bob_address)
@@ -910,8 +905,12 @@ def test_simultaneous_initiate_repeated_messages():
         )
         assert bob_plaintext == b"hi bob"
 
-        assert alice_store.load_session(bob_address).session_version() == KYBER_AWARE_MESSAGE_VERSION
-        assert bob_store.load_session(alice_address).session_version() == KYBER_AWARE_MESSAGE_VERSION
+        assert (
+            alice_store.load_session(bob_address).session_version() == KYBER_AWARE_MESSAGE_VERSION
+        )
+        assert (
+            bob_store.load_session(alice_address).session_version() == KYBER_AWARE_MESSAGE_VERSION
+        )
 
         assert not is_session_id_equal(alice_store, alice_address, bob_store, bob_address)
 
@@ -940,8 +939,12 @@ def test_simultaneous_initiate_repeated_messages():
         )
         assert bob_plaintext == b"hi bob"
 
-        assert alice_store.load_session(bob_address).session_version() == KYBER_AWARE_MESSAGE_VERSION
-        assert bob_store.load_session(alice_address).session_version() == KYBER_AWARE_MESSAGE_VERSION
+        assert (
+            alice_store.load_session(bob_address).session_version() == KYBER_AWARE_MESSAGE_VERSION
+        )
+        assert (
+            bob_store.load_session(alice_address).session_version() == KYBER_AWARE_MESSAGE_VERSION
+        )
 
         assert not is_session_id_equal(alice_store, alice_address, bob_store, bob_address)
 
@@ -1029,8 +1032,12 @@ def test_simultaneous_initiate_lost_message_repeated_messages():
         )
         assert bob_plaintext == b"hi bob"
 
-        assert alice_store.load_session(bob_address).session_version() == KYBER_AWARE_MESSAGE_VERSION
-        assert bob_store.load_session(alice_address).session_version() == KYBER_AWARE_MESSAGE_VERSION
+        assert (
+            alice_store.load_session(bob_address).session_version() == KYBER_AWARE_MESSAGE_VERSION
+        )
+        assert (
+            bob_store.load_session(alice_address).session_version() == KYBER_AWARE_MESSAGE_VERSION
+        )
 
         assert not is_session_id_equal(alice_store, alice_address, bob_store, bob_address)
 
@@ -1059,8 +1066,12 @@ def test_simultaneous_initiate_lost_message_repeated_messages():
         )
         assert bob_plaintext == b"hi bob"
 
-        assert alice_store.load_session(bob_address).session_version() == KYBER_AWARE_MESSAGE_VERSION
-        assert bob_store.load_session(alice_address).session_version() == KYBER_AWARE_MESSAGE_VERSION
+        assert (
+            alice_store.load_session(bob_address).session_version() == KYBER_AWARE_MESSAGE_VERSION
+        )
+        assert (
+            bob_store.load_session(alice_address).session_version() == KYBER_AWARE_MESSAGE_VERSION
+        )
 
         assert not is_session_id_equal(alice_store, alice_address, bob_store, bob_address)
 
@@ -1185,10 +1196,7 @@ def test_basic_large_message():
     )
 
     kyber_prekey = state.KyberPreKeyRecord(
-        kyber_pre_key_id,
-        42,
-        bob_kyber_pre_key_pair,
-        bob_kyber_pre_key_signature
+        kyber_pre_key_id, 42, bob_kyber_pre_key_pair, bob_kyber_pre_key_signature
     )
 
     bob_store.save_signed_pre_key(signed_pre_key_id, signed_prekey)

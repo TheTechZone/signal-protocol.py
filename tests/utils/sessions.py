@@ -27,7 +27,9 @@ def run_interaction(
     alice_message = session_cipher.message_encrypt(alice_store, bob_address, alice_ptext)
 
     assert alice_message.message_type() == 2  # CiphertextMessageType::Whisper => 2
-    assert session_cipher.message_decrypt(bob_store, alice_address, alice_message, True) == alice_ptext
+    assert (
+        session_cipher.message_decrypt(bob_store, alice_address, alice_message, True) == alice_ptext
+    )
 
     bob_ptext = b"It's duck season"
     bob_message = session_cipher.message_encrypt(bob_store, alice_address, bob_ptext)
@@ -40,14 +42,17 @@ def run_interaction(
         alice_message = session_cipher.message_encrypt(alice_store, bob_address, alice_ptext)
         assert alice_message.message_type() == 2  # CiphertextMessageType::Whisper => 2
         assert (
-            session_cipher.message_decrypt(bob_store, alice_address, alice_message, True) == alice_ptext
+            session_cipher.message_decrypt(bob_store, alice_address, alice_message, True)
+            == alice_ptext
         )
 
     for i in range(10):
         bob_ptext = f"B->A message {i}".encode("utf8")
         bob_message = session_cipher.message_encrypt(bob_store, alice_address, bob_ptext)
         assert bob_message.message_type() == 2  # CiphertextMessageType::Whisper => 2
-        assert session_cipher.message_decrypt(alice_store, bob_address, bob_message, True) == bob_ptext
+        assert (
+            session_cipher.message_decrypt(alice_store, bob_address, bob_message, True) == bob_ptext
+        )
 
     alice_ooo_messages: list[tuple[bytes, bytes]] = []
 
@@ -61,14 +66,17 @@ def run_interaction(
         alice_message = session_cipher.message_encrypt(alice_store, bob_address, alice_ptext)
         assert alice_message.message_type() == 2  # CiphertextMessageType::Whisper => 2
         assert (
-            session_cipher.message_decrypt(bob_store, alice_address, alice_message, True) == alice_ptext
+            session_cipher.message_decrypt(bob_store, alice_address, alice_message, True)
+            == alice_ptext
         )
 
     for i in range(10):
         bob_ptext = f"B->A message post-OOO {i}".encode("utf8")
         bob_message = session_cipher.message_encrypt(bob_store, alice_address, bob_ptext)
         assert bob_message.message_type() == 2  # CiphertextMessageType::Whisper => 2
-        assert session_cipher.message_decrypt(alice_store, bob_address, bob_message, True) == bob_ptext
+        assert (
+            session_cipher.message_decrypt(alice_store, bob_address, bob_message, True) == bob_ptext
+        )
 
     ## Now we check that messages can be decrypted when delivered out of order
     for ptext, ctext in alice_ooo_messages:
