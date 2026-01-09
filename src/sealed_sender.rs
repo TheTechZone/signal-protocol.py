@@ -5,7 +5,6 @@ use crate::error::{Result, SignalProtocolError};
 use crate::storage::InMemSignalProtocolStore;
 
 use futures::executor::block_on;
-use libsignal_protocol::UsePQRatchet;
 use pyo3::prelude::*;
 use pyo3::types::PyBytes;
 use pyo3::wrap_pyfunction;
@@ -323,7 +322,7 @@ impl SealedSenderDecryptionResult {
 }
 
 #[pyfunction]
-#[pyo3(signature = (ciphertext, trust_root, timestamp, local_e164, local_uuid, local_device_id, protocol_store, use_pq_ratchet))]
+#[pyo3(signature = (ciphertext, trust_root, timestamp, local_e164, local_uuid, local_device_id, protocol_store))]
 pub fn sealed_sender_decrypt(
     ciphertext: &[u8],
     trust_root: &PublicKey,
@@ -332,7 +331,6 @@ pub fn sealed_sender_decrypt(
     local_uuid: String,
     local_device_id: DeviceId,
     protocol_store: &mut InMemSignalProtocolStore,
-    use_pq_ratchet: bool,
 ) -> PyResult<SealedSenderDecryptionResult> {
     match block_on(libsignal_protocol::sealed_sender_decrypt(
         ciphertext,
@@ -346,7 +344,6 @@ pub fn sealed_sender_decrypt(
         &mut protocol_store.store.pre_key_store,
         &mut protocol_store.store.signed_pre_key_store,
         &mut protocol_store.store.kyber_pre_key_store,
-        UsePQRatchet::from(use_pq_ratchet).into(),
     )) {
         Ok(data) => Ok(SealedSenderDecryptionResult { data }),
         Err(err) => Err(SignalProtocolError::new_err(err)),

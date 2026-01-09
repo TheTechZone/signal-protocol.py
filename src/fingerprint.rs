@@ -30,7 +30,11 @@ impl Fingerprint {
             &remote_key.key,
         ) {
             Ok(state) => Ok(Self { state }),
-            Err(err) => Err(SignalProtocolError::new_err(err)),
+            Err(err) => {
+                // Convert FingerprintError to SignalProtocolError, then to PyErr
+                let signal_err: SignalProtocolError = err.into();
+                Err(signal_err.into())
+            }
         }
     }
 

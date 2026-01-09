@@ -60,7 +60,9 @@ class PreKeySignalMessage(CiphertextMessage):
         base_key: PublicKey,
         identity_key: IdentityKey,
         message: SignalMessage,
-    ) -> tuple[PreKeySignalMessage, CiphertextMessage]: ...
+    ) -> tuple[PreKeySignalMessage, CiphertextMessage]:
+        """Create and return a new object.  See help(type) for accurate signature."""
+
     @staticmethod
     def try_from(data: bytes) -> PreKeySignalMessage:
         """
@@ -238,6 +240,8 @@ class SenderKeyMessage(CiphertextMessage):
         ciphertext: bytes,
         signature_key: PrivateKey,
     ) -> tuple[SenderKeyMessage, CiphertextMessage]:
+        """Create and return a new object.  See help(type) for accurate signature."""
+
     @staticmethod
     def try_from(data: bytes) -> SenderKeyMessage:
         """
@@ -337,6 +341,8 @@ class SignalMessage(CiphertextMessage):
         pq_ratchet: bytes,
     ) -> None: ...
     def __new__(cls, *args, **kwargs) -> tuple[Self, CiphertextMessage]:
+        """Create and return a new object.  See help(type) for accurate signature."""
+
     @staticmethod
     def try_from(data: bytes) -> SignalMessage:
         """

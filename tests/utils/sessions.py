@@ -27,32 +27,27 @@ def run_interaction(
     alice_message = session_cipher.message_encrypt(alice_store, bob_address, alice_ptext)
 
     assert alice_message.message_type() == 2  # CiphertextMessageType::Whisper => 2
-    assert (
-        session_cipher.message_decrypt(bob_store, alice_address, alice_message, True) == alice_ptext
-    )
+    assert session_cipher.message_decrypt(bob_store, alice_address, alice_message) == alice_ptext
 
     bob_ptext = b"It's duck season"
     bob_message = session_cipher.message_encrypt(bob_store, alice_address, bob_ptext)
 
     assert bob_message.message_type() == 2  # CiphertextMessageType::Whisper => 2
-    assert session_cipher.message_decrypt(alice_store, bob_address, bob_message, True) == bob_ptext
+    assert session_cipher.message_decrypt(alice_store, bob_address, bob_message) == bob_ptext
 
     for i in range(10):
         alice_ptext = f"A->B message {i}".encode("utf8")
         alice_message = session_cipher.message_encrypt(alice_store, bob_address, alice_ptext)
         assert alice_message.message_type() == 2  # CiphertextMessageType::Whisper => 2
         assert (
-            session_cipher.message_decrypt(bob_store, alice_address, alice_message, True)
-            == alice_ptext
+            session_cipher.message_decrypt(bob_store, alice_address, alice_message) == alice_ptext
         )
 
     for i in range(10):
         bob_ptext = f"B->A message {i}".encode("utf8")
         bob_message = session_cipher.message_encrypt(bob_store, alice_address, bob_ptext)
         assert bob_message.message_type() == 2  # CiphertextMessageType::Whisper => 2
-        assert (
-            session_cipher.message_decrypt(alice_store, bob_address, bob_message, True) == bob_ptext
-        )
+        assert session_cipher.message_decrypt(alice_store, bob_address, bob_message) == bob_ptext
 
     alice_ooo_messages: list[tuple[bytes, bytes]] = []
 
@@ -66,21 +61,18 @@ def run_interaction(
         alice_message = session_cipher.message_encrypt(alice_store, bob_address, alice_ptext)
         assert alice_message.message_type() == 2  # CiphertextMessageType::Whisper => 2
         assert (
-            session_cipher.message_decrypt(bob_store, alice_address, alice_message, True)
-            == alice_ptext
+            session_cipher.message_decrypt(bob_store, alice_address, alice_message) == alice_ptext
         )
 
     for i in range(10):
         bob_ptext = f"B->A message post-OOO {i}".encode("utf8")
         bob_message = session_cipher.message_encrypt(bob_store, alice_address, bob_ptext)
         assert bob_message.message_type() == 2  # CiphertextMessageType::Whisper => 2
-        assert (
-            session_cipher.message_decrypt(alice_store, bob_address, bob_message, True) == bob_ptext
-        )
+        assert session_cipher.message_decrypt(alice_store, bob_address, bob_message) == bob_ptext
 
     ## Now we check that messages can be decrypted when delivered out of order
     for ptext, ctext in alice_ooo_messages:
-        assert session_cipher.message_decrypt(bob_store, alice_address, ctext, True) == ptext
+        assert session_cipher.message_decrypt(bob_store, alice_address, ctext) == ptext
 
 
 def initialize_sessions_v4():
@@ -101,7 +93,6 @@ def initialize_sessions_v4():
         None,
         bob_ephemeral_key.public_key(),
         bob_kyber_key.get_public(),
-        True,
     )
 
     alice_session = ratchet.initialize_alice_session(alice_params)
@@ -119,7 +110,6 @@ def initialize_sessions_v4():
         alice_base_key.public_key(),
         # kem.SerializedCiphertext(ctxt),
         kem.SerializedCiphertext(alice_session.get_kyber_ciphertext()),
-        True,
     )
 
     bob_session = ratchet.initialize_bob_session(bob_params)
@@ -145,13 +135,13 @@ def run_session_interaction(alice_session: state.SessionRecord, bob_session: sta
 
     alice_plaintext = b"This is Alice's message"
     alice_ciphertext = session_cipher.message_encrypt(alice_store, bob_address, alice_plaintext)
-    bob_decrypted = session_cipher.message_decrypt(bob_store, alice_address, alice_ciphertext, True)
+    bob_decrypted = session_cipher.message_decrypt(bob_store, alice_address, alice_ciphertext)
     assert bob_decrypted == alice_plaintext
 
     bob_plaintext = b"This is Bob's reply"
 
     bob_ciphertext = session_cipher.message_encrypt(bob_store, alice_address, bob_plaintext)
-    alice_decrypted = session_cipher.message_decrypt(alice_store, bob_address, bob_ciphertext, True)
+    alice_decrypted = session_cipher.message_decrypt(alice_store, bob_address, bob_ciphertext)
     assert alice_decrypted == bob_plaintext
 
     ALICE_MESSAGE_COUNT = 50
@@ -167,7 +157,7 @@ def run_session_interaction(alice_session: state.SessionRecord, bob_session: sta
     random.shuffle(alice_messages)
 
     for i in range(ALICE_MESSAGE_COUNT // 2):
-        ptext = session_cipher.message_decrypt(bob_store, alice_address, alice_messages[i][1], True)
+        ptext = session_cipher.message_decrypt(bob_store, alice_address, alice_messages[i][1])
         assert ptext.decode("utf8") == alice_messages[i][0]
 
     bob_messages = []
@@ -180,15 +170,15 @@ def run_session_interaction(alice_session: state.SessionRecord, bob_session: sta
     random.shuffle(bob_messages)
 
     for i in range(BOB_MESSAGE_COUNT // 2):
-        ptext = session_cipher.message_decrypt(alice_store, bob_address, bob_messages[i][1], True)
+        ptext = session_cipher.message_decrypt(alice_store, bob_address, bob_messages[i][1])
         assert ptext.decode("utf8") == bob_messages[i][0]
 
     for i in range(ALICE_MESSAGE_COUNT // 2, ALICE_MESSAGE_COUNT):
-        ptext = session_cipher.message_decrypt(bob_store, alice_address, alice_messages[i][1], True)
+        ptext = session_cipher.message_decrypt(bob_store, alice_address, alice_messages[i][1])
         assert ptext.decode("utf8") == alice_messages[i][0]
 
     for i in range(BOB_MESSAGE_COUNT // 2, BOB_MESSAGE_COUNT):
-        ptext = session_cipher.message_decrypt(alice_store, bob_address, bob_messages[i][1], True)
+        ptext = session_cipher.message_decrypt(alice_store, bob_address, bob_messages[i][1])
         assert ptext.decode("utf8") == bob_messages[i][0]
 
 

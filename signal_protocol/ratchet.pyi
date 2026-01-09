@@ -18,7 +18,6 @@ class AliceSignalProtocolParameters:
         their_one_time_pre_key: Optional[PublicKey],
         their_ratchet_key: PublicKey,
         their_kyber_pre_key: KemPublicKey,
-        use_pq_ratchet: bool,
     ) -> None:
         """TODO: revise when their_otpk is used"""
         ...
@@ -94,7 +93,6 @@ class BobSignalProtocolParameters:
         their_identity_key: IdentityKey,
         their_base_key: PublicKey,
         their_kyber_ciphertext: Optional[Any],
-        use_pq_ratchet: bool,
     ) -> None:
         """TODO: adapt when done"""
         ...

@@ -136,7 +136,6 @@ def test_sealed_sender_happy():
         bob_uuid_address,
         alice_store,
         bob_pre_key_bundle,
-        True,
     )
 
     trust_root = KeyPair.generate()
@@ -167,7 +166,6 @@ def test_sealed_sender_happy():
         bob_uuid,
         DeviceId(bob_device_id),
         bob_store,
-        True,
     )
 
     assert bob_plaintext.message() == alice_plaintext
@@ -201,7 +199,6 @@ def test_sealed_sender_expired_cert():
         bob_uuid_address,
         alice_store,
         bob_pre_key_bundle,
-        True,
     )
 
     trust_root = KeyPair.generate()
@@ -233,7 +230,6 @@ def test_sealed_sender_expired_cert():
             bob_uuid,
             DeviceId(bob_device_id),
             bob_store,
-            True,
         )
 
 
@@ -262,7 +258,6 @@ def test_sealed_sender_invalid_trust_root():
         bob_uuid_address,
         alice_store,
         bob_pre_key_bundle,
-        True,
     )
 
     trust_root = KeyPair.generate()
@@ -296,5 +291,4 @@ def test_sealed_sender_invalid_trust_root():
             bob_uuid,
             DeviceId(bob_device_id),
             bob_store,
-            True,
         )

@@ -12,51 +12,6 @@ use crate::kem::SerializedCiphertext;
 use crate::state::SessionRecord;
 
 #[pyclass]
-#[derive(Clone, Copy, PartialEq, Eq, Debug)]
-pub enum UsePQRatchet {
-    No,
-    Yes,
-}
-
-impl From<libsignal_protocol::UsePQRatchet> for UsePQRatchet {
-    fn from(val: libsignal_protocol::UsePQRatchet) -> Self {
-        match val {
-            libsignal_protocol::UsePQRatchet::No => UsePQRatchet::No,
-            libsignal_protocol::UsePQRatchet::Yes => UsePQRatchet::Yes,
-        }
-    }
-}
-
-impl From<UsePQRatchet> for libsignal_protocol::UsePQRatchet {
-    fn from(val: UsePQRatchet) -> Self {
-        match val {
-            UsePQRatchet::No => libsignal_protocol::UsePQRatchet::No,
-            UsePQRatchet::Yes => libsignal_protocol::UsePQRatchet::Yes,
-        }
-    }
-}
-
-#[pymethods]
-impl UsePQRatchet {
-    #[staticmethod]
-    pub fn from_bool(value: bool) -> Self {
-        if value {
-            UsePQRatchet::Yes
-        } else {
-            UsePQRatchet::No
-        }
-    }
-
-    pub fn to_bool(&self) -> bool {
-        matches!(self, UsePQRatchet::Yes)
-    }
-
-    pub fn __repr__(&self) -> String {
-        format!("{:?}", self)
-    }
-}
-
-#[pyclass]
 pub struct AliceSignalProtocolParameters {
     inner: libsignal_protocol::AliceSignalProtocolParameters,
 }
@@ -64,26 +19,20 @@ pub struct AliceSignalProtocolParameters {
 #[pymethods]
 impl AliceSignalProtocolParameters {
     #[new]
-    #[pyo3(signature = (our_identity_key_pair,our_base_key_pair,their_identity_key,their_signed_pre_key,_their_one_time_pre_key,their_ratchet_key,_their_kyber_pre_key, use_pq_ratchet))]
+    #[pyo3(signature = (our_identity_key_pair,our_base_key_pair,their_identity_key,their_signed_pre_key, their_one_time_pre_key,their_ratchet_key,their_kyber_pre_key))]
     pub fn new(
         our_identity_key_pair: IdentityKeyPair,
         our_base_key_pair: KeyPair,
         their_identity_key: IdentityKey,
         their_signed_pre_key: PublicKey,
-        _their_one_time_pre_key: Option<PublicKey>, // TODO: wth libsignal ignores this and kyber? :/
+        their_one_time_pre_key: Option<PublicKey>, // TODO: wth libsignal ignores this and kyber? :/
         their_ratchet_key: PublicKey,
-        _their_kyber_pre_key: Option<crate::kem::PublicKey>, // TODO: wth libsignal ignores this? :/
-        use_pq_ratchet: bool,
+        their_kyber_pre_key: crate::kem::PublicKey,
     ) -> Self {
-        let _upstream_their_one_time_pre_key = match _their_one_time_pre_key {
+        let _upstream_their_one_time_pre_key = match their_one_time_pre_key {
             None => None,
             Some(x) => Some(x.key),
         };
-
-        // let _upstream_their_kyber_pre_key = match _their_kyber_pre_key {
-        //     None => None,
-        //     Some(x) => Some(x.key),
-        // };
 
         let mut inner = libsignal_protocol::AliceSignalProtocolParameters::new(
             our_identity_key_pair.key,
@@ -91,17 +40,12 @@ impl AliceSignalProtocolParameters {
             their_identity_key.key,
             their_signed_pre_key.key,
             their_ratchet_key.key,
-            _their_kyber_pre_key.unwrap().key,
-            UsePQRatchet::from_bool(use_pq_ratchet).into(),
+            their_kyber_pre_key.key,
         );
 
         if _upstream_their_one_time_pre_key.is_some() {
             inner.set_their_one_time_pre_key(_upstream_their_one_time_pre_key.unwrap())
         }
-
-        // if _upstream_their_kyber_pre_key.is_some() {
-        //     inner.set_their_kyber_pre_key(&_upstream_their_kyber_pre_key.unwrap())
-        // }
 
         Self { inner }
     }
@@ -139,15 +83,11 @@ impl AliceSignalProtocolParameters {
         Ok(Some(PublicKey { key: *key }))
     }
 
-    pub fn their_kyber_pre_key(&self) -> Result<Option<KemPublicKey>> {
+    pub fn their_kyber_pre_key(&self) -> Result<KemPublicKey> {
         let key: &libsignal_protocol::kem::Key<libsignal_protocol::kem::Public> =
             self.inner.their_kyber_pre_key();
-        // match self.inner.their_kyber_pre_key() {
-        //     None => return Ok(None),
-        //     Some(key) => key,
-        // };
 
-        Ok(Some(KemPublicKey { key: key.clone() }))
+        Ok(KemPublicKey { key: key.clone() })
     }
 
     pub fn their_ratchet_key(&self) -> Result<PublicKey> {
@@ -175,24 +115,18 @@ pub struct BobSignalProtocolParameters {
 #[pymethods]
 impl BobSignalProtocolParameters {
     #[new]
-    #[pyo3(signature = (our_identity_key_pair,our_signed_pre_key_pair,our_one_time_pre_key_pair,our_ratchet_key_pair,our_kyber_pre_key_pair,their_identity_key,their_base_key,their_kyber_ciphertext,use_pq_ratchet))]
+    #[pyo3(signature = (our_identity_key_pair,our_signed_pre_key_pair,our_one_time_pre_key_pair,our_ratchet_key_pair,our_kyber_pre_key_pair,their_identity_key,their_base_key,their_kyber_ciphertext))]
     pub fn new(
         our_identity_key_pair: IdentityKeyPair,
         our_signed_pre_key_pair: KeyPair,
         our_one_time_pre_key_pair: Option<KeyPair>,
         our_ratchet_key_pair: KeyPair,
-        our_kyber_pre_key_pair: Option<KemKeyPair>,
+        our_kyber_pre_key_pair: KemKeyPair,
         their_identity_key: IdentityKey,
         their_base_key: PublicKey,
         their_kyber_ciphertext: Option<SerializedCiphertext>,
-        use_pq_ratchet: bool, // todo:deal with this
     ) -> Self {
         let upstream_our_one_time_pre_key_pair = match our_one_time_pre_key_pair {
-            None => None,
-            Some(x) => Some(x.key),
-        };
-
-        let upstream_our_kyber_pre_key_pair = match our_kyber_pre_key_pair {
             None => None,
             Some(x) => Some(x.key),
         };
@@ -210,11 +144,10 @@ impl BobSignalProtocolParameters {
                 our_signed_pre_key_pair.key,
                 upstream_our_one_time_pre_key_pair,
                 our_ratchet_key_pair.key,
-                upstream_our_kyber_pre_key_pair.unwrap(),
+                our_kyber_pre_key_pair.key,
                 their_identity_key.key,
                 their_base_key.key,
                 kyberctxt.unwrap(),
-                UsePQRatchet::from_bool(use_pq_ratchet).into(),
             ),
         }
     }
@@ -246,16 +179,12 @@ impl BobSignalProtocolParameters {
         })
     }
 
-    pub fn our_kyber_pre_key_pair(&self) -> Result<Option<KemKeyPair>> {
-        // let keypair = match self.inner.our_kyber_pre_key_pair() {
-        //     None => return Ok(None),
-        //     Some(keypair) => keypair,
-        // };
+    pub fn our_kyber_pre_key_pair(&self) -> Result<KemKeyPair> {
         let keypair = self.inner.our_kyber_pre_key_pair();
 
-        Ok(Some(KemKeyPair {
+        Ok(KemKeyPair {
             key: keypair.clone(),
-        }))
+        })
     }
 
     pub fn their_identity_key(&self) -> Result<IdentityKey> {

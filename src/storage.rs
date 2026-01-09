@@ -12,6 +12,7 @@ use crate::state::{
 use crate::uuid::UUID;
 
 // traits
+use crate::curve::PublicKey;
 use libsignal_protocol::{
     IdentityKeyStore, KyberPreKeyStore, PreKeyStore, SenderKeyStore, SessionStore,
     SignedPreKeyStore,
@@ -273,10 +274,17 @@ impl InMemSignalProtocolStore {
     }
 
     /// Mark the entry for kyber_pre_key_id as "used". This would mean different things for one-time and last-resort Kyber keys.
-    fn mark_kyber_pre_key_used(&mut self, kyber_pre_key_id: KyberPreKeyId) -> Result<()> {
-        Ok(block_on(
-            self.store.mark_kyber_pre_key_used(kyber_pre_key_id.value),
-        )?)
+    fn mark_kyber_pre_key_used(
+        &mut self,
+        kyber_pre_key_id: KyberPreKeyId,
+        signed_pre_key_id: SignedPreKeyId,
+        base_key: PublicKey,
+    ) -> Result<()> {
+        Ok(block_on(self.store.mark_kyber_pre_key_used(
+            kyber_pre_key_id.value,
+            signed_pre_key_id.value,
+            &base_key.key,
+        ))?)
     }
 }
 

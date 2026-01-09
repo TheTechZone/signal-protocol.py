@@ -8,7 +8,6 @@ use rand::TryRngCore as _;
 use crate::address::ProtocolAddress;
 use crate::error::Result;
 use crate::protocol::{CiphertextMessage, PreKeySignalMessage, SignalMessage};
-use crate::ratchet::UsePQRatchet;
 use crate::storage::InMemSignalProtocolStore;
 
 #[pyfunction]
@@ -37,7 +36,6 @@ pub fn message_decrypt(
     protocol_store: &mut InMemSignalProtocolStore,
     remote_address: &ProtocolAddress,
     msg: &CiphertextMessage,
-    use_pq_ratchet: bool,
 ) -> Result<Py<PyAny>> {
     let mut csprng = rand::rngs::OsRng.unwrap_err();
     let plaintext = block_on(libsignal_protocol::message_decrypt(
@@ -49,7 +47,6 @@ pub fn message_decrypt(
         &mut protocol_store.store.signed_pre_key_store,
         &mut protocol_store.store.kyber_pre_key_store,
         &mut csprng,
-        UsePQRatchet::from_bool(use_pq_ratchet).into(),
     ))?;
     Ok(PyBytes::new(py, &plaintext).into())
 }
@@ -60,7 +57,6 @@ pub fn message_decrypt_prekey(
     protocol_store: &mut InMemSignalProtocolStore,
     remote_address: &ProtocolAddress,
     msg: &PreKeySignalMessage,
-    use_pq_ratchet: bool,
 ) -> Result<Py<PyAny>> {
     let mut csprng = rand::rngs::OsRng.unwrap_err();
 
@@ -73,7 +69,6 @@ pub fn message_decrypt_prekey(
         &mut protocol_store.store.signed_pre_key_store,
         &mut protocol_store.store.kyber_pre_key_store,
         &mut csprng,
-        UsePQRatchet::from_bool(use_pq_ratchet).into(),
     ))?;
     Ok(PyBytes::new(py, &plaintext).into())
 }
