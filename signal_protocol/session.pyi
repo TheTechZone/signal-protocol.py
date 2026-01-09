@@ -28,6 +28,7 @@ def process_prekey_bundle(
     remote_address: ProtocolAddress,
     protocol_store: InMemSignalProtocolStore,
     bundle: PreKeyBundle,
+    use_pq_ratchet: bool,
 ) -> None:
     """
     Processes a prekey bundle using a protocol store.
@@ -36,5 +37,6 @@ def process_prekey_bundle(
         remote_address (ProtocolAddress): The remote address.
         protocol_store (InMemSignalProtocolStore): The protocol store.
         bundle (PreKeyBundle): The prekey bundle to process.
+        use_pq_ratchet (bool): If using the post quantum ratchet
     """
     ...

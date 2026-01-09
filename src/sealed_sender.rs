@@ -5,11 +5,12 @@ use crate::error::{Result, SignalProtocolError};
 use crate::storage::InMemSignalProtocolStore;
 
 use futures::executor::block_on;
+use libsignal_protocol::UsePQRatchet;
 use pyo3::prelude::*;
 use pyo3::types::PyBytes;
 use pyo3::wrap_pyfunction;
 
-use rand::rngs::OsRng;
+use rand::TryRngCore as _;
 
 #[pyclass]
 #[derive(Clone, Debug)]
@@ -35,7 +36,7 @@ impl ServerCertificate {
 
     #[new]
     fn new(key_id: u32, key: PublicKey, trust_root: &PrivateKey) -> PyResult<Self> {
-        let mut csprng = OsRng;
+        let mut csprng = rand::rngs::OsRng.unwrap_err();
         match libsignal_protocol::ServerCertificate::new(
             key_id,
             key.key,
@@ -59,17 +60,17 @@ impl ServerCertificate {
         Ok(PublicKey::new(self.data.public_key()?))
     }
 
-    fn certificate(&self, py: Python) -> Result<PyObject> {
+    fn certificate(&self, py: Python) -> Result<Py<PyAny>> {
         let result = self.data.certificate()?;
         Ok(PyBytes::new(py, &result).into())
     }
 
-    fn signature(&self, py: Python) -> Result<PyObject> {
+    fn signature(&self, py: Python) -> Result<Py<PyAny>> {
         let result = self.data.signature()?;
         Ok(PyBytes::new(py, &result).into())
     }
 
-    fn serialized(&self, py: Python) -> Result<PyObject> {
+    fn serialized(&self, py: Python) -> Result<Py<PyAny>> {
         let result = self.data.serialized()?;
         Ok(PyBytes::new(py, &result).into())
     }
@@ -101,7 +102,8 @@ impl SenderCertificate {
         signer: ServerCertificate,
         signer_key: &PrivateKey,
     ) -> PyResult<Self> {
-        let mut csprng = OsRng;
+        let mut csprng = rand::rngs::OsRng.unwrap_err();
+
         match libsignal_protocol::SenderCertificate::new(
             sender_uuid,
             sender_e164,
@@ -148,17 +150,17 @@ impl SenderCertificate {
         Ok(self.data.expiration()?.epoch_millis())
     }
 
-    fn certificate(&self, py: Python) -> Result<PyObject> {
+    fn certificate(&self, py: Python) -> Result<Py<PyAny>> {
         let result = self.data.certificate()?;
         Ok(PyBytes::new(py, &result).into())
     }
 
-    fn signature(&self, py: Python) -> Result<PyObject> {
+    fn signature(&self, py: Python) -> Result<Py<PyAny>> {
         let result = self.data.signature()?;
         Ok(PyBytes::new(py, &result).into())
     }
 
-    fn serialized(&self, py: Python) -> Result<PyObject> {
+    fn serialized(&self, py: Python) -> Result<Py<PyAny>> {
         let result = self.data.serialized()?;
         Ok(PyBytes::new(py, &result).into())
     }
@@ -231,12 +233,12 @@ impl UnidentifiedSenderMessageContent {
         })
     }
 
-    fn contents(&self, py: Python) -> Result<PyObject> {
+    fn contents(&self, py: Python) -> Result<Py<PyAny>> {
         let result = self.data.contents()?;
         Ok(PyBytes::new(py, &result).into())
     }
 
-    fn serialized(&self, py: Python) -> Result<PyObject> {
+    fn serialized(&self, py: Python) -> Result<Py<PyAny>> {
         let result = self.data.serialized()?;
         Ok(PyBytes::new(py, &result).into())
     }
@@ -280,17 +282,17 @@ impl UnidentifiedSenderMessageContent {
 //         Ok(PublicKey::new(self.data.ephemeral_public()?))
 //     }
 
-//     fn encrypted_static(&self, py: Python) -> Result<PyObject> {
+//     fn encrypted_static(&self, py: Python) -> Result<Py<PyAny>> {
 //         let result = self.data.encrypted_static()?;
 //         Ok(PyBytes::new(py, &result).into())
 //     }
 
-//     fn encrypted_message(&self, py: Python) -> Result<PyObject> {
+//     fn encrypted_message(&self, py: Python) -> Result<Py<PyAny>> {
 //         let result = self.data.encrypted_message()?;
 //         Ok(PyBytes::new(py, &result).into())
 //     }
 
-//     fn serialized(&self, py: Python) -> Result<PyObject> {
+//     fn serialized(&self, py: Python) -> Result<Py<PyAny>> {
 //         let result = self.data.serialized()?;
 //         Ok(PyBytes::new(py, &result).into())
 //     }
@@ -315,13 +317,13 @@ impl SealedSenderDecryptionResult {
         u32::from(self.data.device_id)
     }
 
-    fn message(&self, py: Python) -> Result<PyObject> {
+    fn message(&self, py: Python) -> Result<Py<PyAny>> {
         Ok(PyBytes::new(py, &self.data.message).into())
     }
 }
 
 #[pyfunction]
-#[pyo3(signature = (ciphertext, trust_root, timestamp, local_e164, local_uuid, local_device_id, protocol_store))]
+#[pyo3(signature = (ciphertext, trust_root, timestamp, local_e164, local_uuid, local_device_id, protocol_store, use_pq_ratchet))]
 pub fn sealed_sender_decrypt(
     ciphertext: &[u8],
     trust_root: &PublicKey,
@@ -330,6 +332,7 @@ pub fn sealed_sender_decrypt(
     local_uuid: String,
     local_device_id: DeviceId,
     protocol_store: &mut InMemSignalProtocolStore,
+    use_pq_ratchet: bool,
 ) -> PyResult<SealedSenderDecryptionResult> {
     match block_on(libsignal_protocol::sealed_sender_decrypt(
         ciphertext,
@@ -343,6 +346,7 @@ pub fn sealed_sender_decrypt(
         &mut protocol_store.store.pre_key_store,
         &mut protocol_store.store.signed_pre_key_store,
         &mut protocol_store.store.kyber_pre_key_store,
+        UsePQRatchet::from(use_pq_ratchet).into(),
     )) {
         Ok(data) => Ok(SealedSenderDecryptionResult { data }),
         Err(err) => Err(SignalProtocolError::new_err(err)),
@@ -357,8 +361,9 @@ pub fn sealed_sender_encrypt(
     protocol_store: &mut InMemSignalProtocolStore,
     // now: SystemTime, // TODO: should SystemTime be exposed?
     py: Python,
-) -> Result<PyObject> {
-    let mut csprng = OsRng;
+) -> Result<Py<PyAny>> {
+    let mut csprng = rand::rngs::OsRng.unwrap_err();
+
     let now2 = std::time::SystemTime::now();
     let result = block_on(libsignal_protocol::sealed_sender_encrypt(
         &destination.state,

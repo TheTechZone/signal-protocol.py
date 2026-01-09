@@ -4,9 +4,7 @@ import json, base64
 alice_identity_key_pair = identity_key.IdentityKeyPair.generate()
 alice_registration_id = 1
 
-alice_store = storage.InMemSignalProtocolStore(
-    alice_identity_key_pair, alice_registration_id
-)
+alice_store = storage.InMemSignalProtocolStore(alice_identity_key_pair, alice_registration_id)
 
 alice_signed_pre_key_pair = curve.KeyPair.generate()
 alice_signed_pre_key_signature = (
@@ -16,6 +14,13 @@ alice_signed_pre_key_signature = (
 )
 
 signed_pre_key_id = state.SignedPreKeyId(22)
+
+kyber_pre_key_id = state.KyberPreKeyId(22)
+kyber_pre_key_pair = kem.KeyPair.generate(kem.KeyType(8))
+kyber_pre_key_signature = alice_identity_key_pair.private_key().calculate_signature(
+    kyber_pre_key_pair.get_public().serialize()
+)
+
 alice_pre_key_bundle = state.PreKeyBundle(
     alice_store.get_local_registration_id(),
     address.DeviceId(1),
@@ -23,9 +28,15 @@ alice_pre_key_bundle = state.PreKeyBundle(
     signed_pre_key_id,
     alice_signed_pre_key_pair.public_key(),
     alice_signed_pre_key_signature,
+    kyber_pre_key_id,
+    kyber_pre_key_pair.get_public(),
+    kyber_pre_key_signature,
     alice_store.get_identity_key_pair().identity_key(),
 )
 
+"""
+# Deprecated API 
+# TODO: remove
 print(alice_pre_key_bundle.has_kyber_pre_key())
 print(alice_pre_key_bundle.to_dict())
 
@@ -43,6 +54,7 @@ alice_pre_key_bundle = alice_pre_key_bundle.with_kyber_pre_key(
 )
 print(alice_pre_key_bundle.has_kyber_pre_key())
 print(alice_pre_key_bundle.to_dict())
+"""
 
 test = signed_pre_key_id
 
@@ -77,6 +89,6 @@ print(json.dumps(registration_data, indent=4))
 # print(reg_secrets)
 
 print("\n\nEXAMPLE key")
-data, secrets = helpers.create_keys_data(100, alice_identity_key_pair)
+data, secrets = helpers.create_keys_data(1, alice_identity_key_pair)
 print(data, type(data))
 print("\n\nSecrets are hidden ...")

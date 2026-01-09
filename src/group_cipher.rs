@@ -3,7 +3,7 @@ use pyo3::types::PyBytes;
 use pyo3::wrap_pyfunction;
 
 use futures::executor::block_on;
-use rand::rngs::OsRng;
+use rand::TryRngCore as _;
 
 use crate::address::ProtocolAddress;
 use crate::error::{Result, SignalProtocolError};
@@ -18,8 +18,8 @@ pub fn group_encrypt(
     sender: &ProtocolAddress,
     distribution_id: UUID,
     plaintext: &[u8],
-) -> Result<PyObject> {
-    let mut csprng = OsRng;
+) -> Result<Py<PyAny>> {
+    let mut csprng = rand::rngs::OsRng.unwrap_err();
     let ciphertext = block_on(libsignal_protocol::group_encrypt(
         &mut protocol_store.store.sender_key_store,
         &sender.state,
@@ -36,7 +36,7 @@ pub fn group_decrypt(
     skm_bytes: &[u8],
     protocol_store: &mut InMemSignalProtocolStore,
     sender: &ProtocolAddress,
-) -> Result<PyObject> {
+) -> Result<Py<PyAny>> {
     let plaintext = block_on(libsignal_protocol::group_decrypt(
         skm_bytes,
         &mut protocol_store.store.sender_key_store,
@@ -66,7 +66,7 @@ pub fn create_sender_key_distribution_message(
     distribution_id: UUID,
     protocol_store: &mut InMemSignalProtocolStore,
 ) -> PyResult<Py<SenderKeyDistributionMessage>> {
-    let mut csprng = OsRng;
+    let mut csprng = rand::rngs::OsRng.unwrap_err();
     let upstream_data = match block_on(libsignal_protocol::create_sender_key_distribution_message(
         &sender.state,
         distribution_id.handle,
@@ -88,7 +88,7 @@ pub fn create_sender_key_distribution_message(
 
     // let gil = Python::acquire_gil();
     // let py = gil.python();
-    Python::with_gil(|py| {
+    Python::attach(|py| {
         Py::new(
             py,
             SenderKeyDistributionMessage {

@@ -14,9 +14,7 @@ def test_pre_key_signal_message_serialize_deserialize():
     base_key_pair = curve.KeyPair.generate()
 
     message = create_signal_message()
-    identity_key_pair = identity_key.IdentityKey(
-        curve.KeyPair.generate().public_key().serialize()
-    )
+    identity_key_pair = identity_key.IdentityKey(curve.KeyPair.generate().public_key().serialize())
 
     pre_key_signal_message = protocol.PreKeySignalMessage(
         3,
@@ -33,17 +31,9 @@ def test_pre_key_signal_message_serialize_deserialize():
         pre_key_signal_message.serialized()
     )
 
-    assert (
-        pre_key_signal_message.message_version()
-        == deserialized_prekey_message.message_version()
-    )
-    assert (
-        pre_key_signal_message.registration_id()
-        == deserialized_prekey_message.registration_id()
-    )
-    assert (
-        pre_key_signal_message.pre_key_id() == deserialized_prekey_message.pre_key_id()
-    )
+    assert pre_key_signal_message.message_version() == deserialized_prekey_message.message_version()
+    assert pre_key_signal_message.registration_id() == deserialized_prekey_message.registration_id()
+    assert pre_key_signal_message.pre_key_id() == deserialized_prekey_message.pre_key_id()
     assert (
         pre_key_signal_message.signed_pre_key_id()
         == deserialized_prekey_message.signed_pre_key_id()
@@ -56,6 +46,4 @@ def test_pre_key_signal_message_serialize_deserialize():
     assert_signal_message_equals(
         deserialized_prekey_message.message(), pre_key_signal_message.message()
     )
-    assert (
-        pre_key_signal_message.serialized() == deserialized_prekey_message.serialized()
-    )
+    assert pre_key_signal_message.serialized() == deserialized_prekey_message.serialized()

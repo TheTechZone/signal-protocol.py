@@ -3,11 +3,12 @@ use pyo3::types::PyBytes;
 use pyo3::wrap_pyfunction;
 
 use futures::executor::block_on;
-use rand::rngs::OsRng;
+use rand::TryRngCore as _;
 
 use crate::address::ProtocolAddress;
 use crate::error::Result;
 use crate::protocol::{CiphertextMessage, PreKeySignalMessage, SignalMessage};
+use crate::ratchet::UsePQRatchet;
 use crate::storage::InMemSignalProtocolStore;
 
 #[pyfunction]
@@ -18,13 +19,14 @@ pub fn message_encrypt(
     // now: SystemTime, // TODO: should SystemTime be exposed?
 ) -> Result<CiphertextMessage> {
     let now2 = std::time::SystemTime::now();
-
+    let mut csprng = rand::rngs::OsRng.unwrap_err();
     let ciphertext = block_on(libsignal_protocol::message_encrypt(
         msg,
         &remote_address.state,
         &mut protocol_store.store.session_store,
         &mut protocol_store.store.identity_store,
         now2,
+        &mut csprng,
     ))?;
     Ok(CiphertextMessage::new(ciphertext))
 }
@@ -35,8 +37,9 @@ pub fn message_decrypt(
     protocol_store: &mut InMemSignalProtocolStore,
     remote_address: &ProtocolAddress,
     msg: &CiphertextMessage,
-) -> Result<PyObject> {
-    let mut csprng = OsRng;
+    use_pq_ratchet: bool,
+) -> Result<Py<PyAny>> {
+    let mut csprng = rand::rngs::OsRng.unwrap_err();
     let plaintext = block_on(libsignal_protocol::message_decrypt(
         &msg.data,
         &remote_address.state,
@@ -46,6 +49,7 @@ pub fn message_decrypt(
         &mut protocol_store.store.signed_pre_key_store,
         &mut protocol_store.store.kyber_pre_key_store,
         &mut csprng,
+        UsePQRatchet::from_bool(use_pq_ratchet).into(),
     ))?;
     Ok(PyBytes::new(py, &plaintext).into())
 }
@@ -56,8 +60,10 @@ pub fn message_decrypt_prekey(
     protocol_store: &mut InMemSignalProtocolStore,
     remote_address: &ProtocolAddress,
     msg: &PreKeySignalMessage,
-) -> Result<PyObject> {
-    let mut csprng = OsRng;
+    use_pq_ratchet: bool,
+) -> Result<Py<PyAny>> {
+    let mut csprng = rand::rngs::OsRng.unwrap_err();
+
     let plaintext = block_on(libsignal_protocol::message_decrypt_prekey(
         &msg.data,
         &remote_address.state,
@@ -67,6 +73,7 @@ pub fn message_decrypt_prekey(
         &mut protocol_store.store.signed_pre_key_store,
         &mut protocol_store.store.kyber_pre_key_store,
         &mut csprng,
+        UsePQRatchet::from_bool(use_pq_ratchet).into(),
     ))?;
     Ok(PyBytes::new(py, &plaintext).into())
 }
@@ -77,8 +84,8 @@ pub fn message_decrypt_signal(
     protocol_store: &mut InMemSignalProtocolStore,
     remote_address: &ProtocolAddress,
     msg: &SignalMessage,
-) -> Result<PyObject> {
-    let mut csprng = OsRng;
+) -> Result<Py<PyAny>> {
+    let mut csprng = rand::rngs::OsRng.unwrap_err();
     let plaintext = block_on(libsignal_protocol::message_decrypt_signal(
         &msg.data,
         &remote_address.state,

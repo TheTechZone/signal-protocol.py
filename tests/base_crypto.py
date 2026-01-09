@@ -3,9 +3,7 @@ from signal_protocol.crypto import Aes256Ctr32, aes_256_gcm_encrypt, aes_256_gcm
 
 
 def test_aes_ctr_smoke():
-    key = bytes.fromhex(
-        "603DEB1015CA71BE2B73AEF0857D77811F352C073B6108D72D9810A30914DFF4"
-    )
+    key = bytes.fromhex("603DEB1015CA71BE2B73AEF0857D77811F352C073B6108D72D9810A30914DFF4")
     nonce = bytes.fromhex("F0F1F2F3F4F5F6F7F8F9FAFB")
     init_ctr = 0xFCFDFEFF
     ptxt = bytes.fromhex(
@@ -25,9 +23,7 @@ def test_aes_ctr_smoke():
 
 
 def test_aes_ctr_long():
-    key = bytes.fromhex(
-        "603DEB1015CA71BE2B73AEF0857D77811F352C073B6108D72D9810A30914DFF4"
-    )
+    key = bytes.fromhex("603DEB1015CA71BE2B73AEF0857D77811F352C073B6108D72D9810A30914DFF4")
     nonce = bytes.fromhex("FFFFFFFFFFFFFFFFFFFFFFFF")
     init_ctr = 0x00000000
     output = bytes.fromhex(
@@ -54,9 +50,7 @@ def test_aes_ctr_long():
 
 
 def test_aes_gcm_smoke():
-    key = bytes.fromhex(
-        "feffe9928665731c6d6a8f9467308308feffe9928665731c6d6a8f9467308308"
-    )
+    key = bytes.fromhex("feffe9928665731c6d6a8f9467308308feffe9928665731c6d6a8f9467308308")
     nonce = bytes.fromhex("cafebabefacedbaddecaf888")
     ptxt = bytes.fromhex(
         "d9313225f88406e5a55909c5aff5269a86a7a9531534f7da2e4c303d8a318a721c3c0c95956809532fcf0e2449a6b525b16aedf5aa0de657ba637b39"

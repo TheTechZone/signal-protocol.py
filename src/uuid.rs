@@ -151,7 +151,7 @@ impl UUID {
     }
 
     #[allow(unused_variables)]
-    fn __setattr__(&self, name: &str, value: PyObject) -> PyResult<()> {
+    fn __setattr__(&self, name: &str, value: Py<PyAny>) -> PyResult<()> {
         Err(PyTypeError::new_err("UUID objects are immutable"))
     }
 
@@ -494,7 +494,7 @@ fn _getnode() -> u64 {
         Ok(Some(mac_address)) => mac_address.bytes(),
         _ => {
             let mut bytes = [0u8; 6];
-            rand::thread_rng().fill_bytes(&mut bytes);
+            rand::rng().fill_bytes(&mut bytes);
             bytes[0] = bytes[0] | 0x01;
             bytes
         }
@@ -544,7 +544,7 @@ pub fn uuid_from_u128(value: u128) -> UUID {
 
 #[pyfunction(name = "uuid4_bulk")]
 fn uuid4_bulk(py: Python, n: usize) -> Vec<UUID> {
-    py.allow_threads(|| {
+    py.detach(|| {
         iter::repeat_with(|| UUID {
             handle: Uuid::new_v4(),
         })
@@ -555,7 +555,7 @@ fn uuid4_bulk(py: Python, n: usize) -> Vec<UUID> {
 
 #[pyfunction(name = "uuid4_as_strings_bulk")]
 fn uuid4_as_strings_bulk(py: Python, n: usize) -> Vec<String> {
-    py.allow_threads(|| {
+    py.detach(|| {
         iter::repeat_with(|| {
             (*Uuid::new_v4()
                 .simple()

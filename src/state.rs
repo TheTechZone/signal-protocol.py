@@ -17,6 +17,7 @@ use crate::kem::KeyPair as KemKeyPair;
 use crate::kem::PublicKey as KemPublicKey;
 use crate::kem::SecretKey as KemSecretKey;
 use crate::kem::{self};
+use crate::protocol::SessionUsabilityRequirements;
 
 // New types from upstream crate not exposed as part of the public API
 #[pyclass]
@@ -180,7 +181,7 @@ pub struct PreKeyBundle {
 impl PreKeyBundle {
     //TODO: this constructor will *likely* have to change once kyber rolls out (and it is updated upstream)
     #[new]
-    #[pyo3(signature = (registration_id, device_id, pre_key_public,signed_pre_key_id,signed_pre_key_public,signed_pre_key_signature,identity_key)
+    #[pyo3(signature = (registration_id, device_id, pre_key_public,signed_pre_key_id,signed_pre_key_public,signed_pre_key_signature,kyber_pre_key_id,kyber_pre_key_public,kyber_pre_key_signature,identity_key)
     )]
     fn new(
         registration_id: u32,
@@ -189,6 +190,9 @@ impl PreKeyBundle {
         signed_pre_key_id: SignedPreKeyId,
         signed_pre_key_public: PublicKey,
         signed_pre_key_signature: Vec<u8>,
+        kyber_pre_key_id: KyberPreKeyId,
+        kyber_pre_key_public: KemPublicKey,
+        kyber_pre_key_signature: Vec<u8>,
         identity_key: IdentityKey,
     ) -> PyResult<Self> {
         let pre_key: Option<(libsignal_protocol::PreKeyId, libsignal_protocol::PublicKey)> =
@@ -207,6 +211,9 @@ impl PreKeyBundle {
             signed_pre_key_id.value,
             signed_pre_key,
             signed_pre_key_signature,
+            kyber_pre_key_id.value,
+            kyber_pre_key_public.key,
+            kyber_pre_key_signature,
             identity_key_direct,
         ) {
             Ok(state) => Ok(PreKeyBundle { state }),
@@ -252,7 +259,7 @@ impl PreKeyBundle {
         })
     }
 
-    fn signed_pre_key_signature(&self, py: Python) -> Result<PyObject> {
+    fn signed_pre_key_signature(&self, py: Python) -> Result<Py<PyAny>> {
         let result = self.state.signed_pre_key_signature()?;
         Ok(PyBytes::new(py, result).into())
     }
@@ -264,16 +271,19 @@ impl PreKeyBundle {
     }
 
     fn has_kyber_pre_key(&self) -> bool {
-        self.state.has_kyber_pre_key()
+        // TODO: kyber is now mandatory, function kept around for backwards comp
+        // self.state.has_kyber_pre_key()
+        true
     }
 
     fn kyber_pre_key_id(&self) -> Result<Option<KyberPreKeyId>> {
         let val = match self.state.kyber_pre_key_id() {
             Err(_) => return Ok(None),
-            Ok(val) => match val {
-                None => return Ok(None),
-                Some(val) => Some(KyberPreKeyId { value: val }),
-            },
+            // Ok(val) => match val {
+            //     None => return Ok(None),
+            //     Some(val) => Some(KyberPreKeyId { value: val }),
+            // },
+            Ok(val) => Some(KyberPreKeyId { value: val.clone() }),
         };
         Ok(val)
     }
@@ -282,37 +292,40 @@ impl PreKeyBundle {
         // TODO: for now suppress errors as they kyber part is not initialized
         let upstream_key = match self.state.kyber_pre_key_public() {
             Err(_) => return Ok(None),
-            Ok(val) => match val {
-                None => return Ok(None),
-                Some(val) => Some(KemPublicKey { key: val.clone() }),
-            },
+            // Ok(val) => match val {
+            //     None => return Ok(None),
+            //     Some(val) => Some(KemPublicKey { key: val.clone() }),
+            // },
+            Ok(val) => Some(KemPublicKey { key: val.clone() }),
         };
         Ok(upstream_key)
     }
 
-    fn kyber_pre_key_signature(&self) -> Result<Option<&[u8]>> {
-        // TODO: for now suppress errors as they kyber part is not initilized
-        let sig = match self.state.kyber_pre_key_signature() {
-            Err(_) => return Ok(None),
-            Ok(val) => val,
-        };
-        Ok(sig)
+    fn kyber_pre_key_signature(&self, py: Python) -> Result<Py<PyAny>> {
+        // // TODO: for now suppress errors as they kyber part is not initialized
+        // let sig = match self.state.kyber_pre_key_signature() {
+        //     Err(_) => return Ok(None),
+        //     Ok(val) => val,
+        // };
+        // Ok(sig)
+        let result = self.state.signed_pre_key_signature()?;
+        Ok(PyBytes::new(py, result).into())
     }
 
-    fn with_kyber_pre_key(
-        &self,
-        pre_key_id: KyberPreKeyId,
-        public_key: KemPublicKey,
-        signature: &[u8],
-    ) -> Self {
-        PreKeyBundle {
-            state: self.state.clone().with_kyber_pre_key(
-                pre_key_id.value,
-                public_key.key,
-                signature.to_vec(),
-            ),
-        }
-    }
+    // fn with_kyber_pre_key(
+    //     &self,
+    //     pre_key_id: KyberPreKeyId,
+    //     public_key: KemPublicKey,
+    //     signature: &[u8],
+    // ) -> Self {
+    //     PreKeyBundle {
+    //         state: self.state.clone().with_kyber_pre_key(
+    //             pre_key_id.value,
+    //             public_key.key,
+    //             signature.to_vec(),
+    //         ),
+    //     }
+    // }
 
     // fn to_json(&self) -> PyResult<String> {
     //     match serde_json::to_string(&self) {
@@ -329,7 +342,7 @@ impl PreKeyBundle {
         Ok(json_str)
     }
 
-    fn to_dict(&self, py: Python) -> PyResult<PyObject> {
+    fn to_dict(&self, py: Python) -> PyResult<Py<PyAny>> {
         let dict = PyDict::new(py);
 
         // Helper function to set an item in the dictionary if the result is Ok and Some
@@ -394,8 +407,8 @@ impl PreKeyBundle {
         set_if_ok(
             &dict,
             "kyber_pre_key_sign",
-            self.kyber_pre_key_signature(),
-            |sign| general_purpose::STANDARD.encode(sign),
+            self.kyber_pre_key_signature(py).map(Some),
+            |_| general_purpose::STANDARD.encode(self.state.kyber_pre_key_signature().unwrap()),
         );
         set_if_ok(
             &dict,
@@ -503,7 +516,7 @@ impl PreKeyRecord {
         Ok(PrivateKey::new(self.state.private_key()?))
     }
 
-    fn serialize(&self, py: Python) -> Result<PyObject> {
+    fn serialize(&self, py: Python) -> Result<Py<PyAny>> {
         let result = self.state.serialize()?;
         Ok(PyBytes::new(py, &result).into())
     }
@@ -607,7 +620,7 @@ impl SignedPreKeyRecord {
         Ok(self.state.timestamp()?.epoch_millis())
     }
 
-    pub fn signature(&self, py: Python) -> Result<PyObject> {
+    pub fn signature(&self, py: Python) -> Result<Py<PyAny>> {
         let sig = self.state.signature()?;
         Ok(PyBytes::new(py, &sig).into())
     }
@@ -630,7 +643,7 @@ impl SignedPreKeyRecord {
         })
     }
 
-    fn serialize(&self, py: Python) -> Result<PyObject> {
+    fn serialize(&self, py: Python) -> Result<Py<PyAny>> {
         let result = self.state.serialize()?;
         Ok(PyBytes::new(py, &result).into())
     }
@@ -665,7 +678,7 @@ impl SessionRecord {
         Ok(())
     }
 
-    fn serialize(&self, py: Python) -> Result<PyObject> {
+    fn serialize(&self, py: Python) -> Result<Py<PyAny>> {
         let result = self.state.serialize()?;
         Ok(PyBytes::new(py, &result).into())
     }
@@ -697,12 +710,12 @@ impl SessionRecord {
         Ok(self.state.local_registration_id()?)
     }
 
-    fn local_identity_key_bytes(&self, py: Python) -> Result<PyObject> {
+    fn local_identity_key_bytes(&self, py: Python) -> Result<Py<PyAny>> {
         let result = self.state.local_identity_key_bytes()?;
         Ok(PyBytes::new(py, &result).into())
     }
 
-    fn remote_identity_key_bytes(&self, py: Python) -> Result<Option<PyObject>> {
+    fn remote_identity_key_bytes(&self, py: Python) -> Result<Option<Py<PyAny>>> {
         match self.state.remote_identity_key_bytes()? {
             Some(result) => Ok(Some(PyBytes::new(py, &result).into())),
             None => Ok(None),
@@ -714,7 +727,7 @@ impl SessionRecord {
         &self,
         sender: &PublicKey,
         py: Python,
-    ) -> Result<Option<PyObject>> {
+    ) -> Result<Option<Py<PyAny>>> {
         match self.state.get_receiver_chain_key_bytes(&sender.key)? {
             Some(result) => Ok(Some(PyBytes::new(py, &result[..]).into())),
             None => Ok(None),
@@ -724,21 +737,24 @@ impl SessionRecord {
     // TODO: should SystemTime be exposed?
     fn has_usable_sender_chain(&self) -> Result<bool> {
         let now = std::time::SystemTime::now();
-        Ok(self.state.has_usable_sender_chain(now)?)
+        let session_usability = SessionUsabilityRequirements::new();
+        Ok(self
+            .state
+            .has_usable_sender_chain(now, session_usability.inner)?)
     }
 
-    fn alice_base_key(&self, py: Python) -> Result<PyObject> {
+    fn alice_base_key(&self, py: Python) -> Result<Py<PyAny>> {
         let result = self.state.alice_base_key()?;
         Ok(PyBytes::new(py, &result).into())
     }
 
-    fn get_sender_chain_key_bytes(&self, py: Python) -> Result<PyObject> {
+    fn get_sender_chain_key_bytes(&self, py: Python) -> Result<Py<PyAny>> {
         let result = self.state.get_sender_chain_key_bytes()?;
         Ok(PyBytes::new(py, &result).into())
     }
 
     // TODO: check other missing functions on the struct
-    fn get_kyber_ciphertext(&self, py: Python) -> Result<Option<PyObject>> {
+    fn get_kyber_ciphertext(&self, py: Python) -> Result<Option<Py<PyAny>>> {
         match self.state.get_kyber_ciphertext()? {
             Some(result) => Ok(Some(PyBytes::new(py, &result).into())),
             None => Ok(None),
@@ -812,7 +828,7 @@ impl KyberPreKeyRecord {
         Ok(KemKeyPair { key: key_pair })
     }
 
-    fn signature(&self, py: Python) -> Result<PyObject> {
+    fn signature(&self, py: Python) -> Result<Py<PyAny>> {
         let result = self.state.signature()?;
         Ok(PyBytes::new(py, &result).into())
     }
@@ -852,7 +868,7 @@ impl KyberPreKeyRecord {
         }
     }
 
-    fn serialize(&self, py: Python) -> Result<PyObject> {
+    fn serialize(&self, py: Python) -> Result<Py<PyAny>> {
         let result = self.state.serialize()?;
         Ok(PyBytes::new(py, &result).into())
     }

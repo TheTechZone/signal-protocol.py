@@ -42,7 +42,7 @@ impl Fingerprint {
         Ok(self.state.scannable.compare(combined)?)
     }
 
-    pub fn serialize(&self, py: Python) -> Result<PyObject> {
+    pub fn serialize(&self, py: Python) -> Result<Py<PyAny>> {
         let fingerprint = self.state.scannable.serialize()?;
         Ok(PyBytes::new(py, &fingerprint).into())
     }

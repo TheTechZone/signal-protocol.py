@@ -4,7 +4,8 @@ use pyo3::types::PyBytes;
 use std::fmt::Debug;
 
 use crate::error::SignalProtocolError;
-use rand::rngs::OsRng;
+use rand::TryRngCore as _;
+// use rand::rngs::OsRng;
 
 /// This library provides two pin hashing mechanisms:
 ///   1. Transforming a pin to be suitable for use with a Secure Value Recovery service. The pin
@@ -57,7 +58,7 @@ impl PinHash {
     /// * `username` - The Basic Auth username credential retrieved from the chat service and used to authenticate with the SVR service
     /// * `group_id` - The attested group id returned by the SVR service
     #[staticmethod]
-    pub fn make_salt(py: Python, username: &str, group_id: u64) -> PyObject {
+    pub fn make_salt(py: Python, username: &str, group_id: u64) -> Py<PyAny> {
         PyBytes::new(
             py,
             &libsignal_account_keys::PinHash::make_salt(username, group_id),
@@ -68,13 +69,13 @@ impl PinHash {
     /// Returns a key that can be used to encrypt or decrypt values before uploading
     /// them to a secure store.
     /// The 32 byte prefix of the 64 byte hashed pin.
-    pub fn encryption_key(&self, py: Python) -> PyObject {
+    pub fn encryption_key(&self, py: Python) -> Py<PyAny> {
         PyBytes::new(py, &self.inner.encryption_key).into()
     }
 
     /// Returns a secret that can be used to access a value in a secure store. The 32 byte suffix of
     /// the 64 byte hashed pin.
-    pub fn access_key(&self, py: Python) -> PyObject {
+    pub fn access_key(&self, py: Python) -> Py<PyAny> {
         PyBytes::new(py, &self.inner.access_key).into()
     }
 }
@@ -114,7 +115,7 @@ pub struct AccountEntropyPool {
 impl AccountEntropyPool {
     #[staticmethod]
     fn generate() -> Self {
-        let mut csprng = OsRng;
+        let mut csprng = rand::rngs::OsRng.unwrap_err();
 
         AccountEntropyPool {
             inner: libsignal_account_keys::AccountEntropyPool::generate(&mut csprng),
@@ -150,21 +151,22 @@ impl BackupKey {
         })
     }
 
-    #[staticmethod]
-    #[allow(deprecated)] // for now, it's okay as th API is WIP
-    fn derive_from_master_key(master_key: &[u8]) -> PyResult<Self> {
-        if master_key.len() != libsignal_account_keys::BackupKey::MASTER_KEY_LEN {
-            return Err(SignalProtocolError::err_from_str(String::from(
-                "master_key length must be 32 bytes",
-            )));
-        }
-        let mut master_key_array: [u8; libsignal_account_keys::BackupKey::MASTER_KEY_LEN] =
-            [0; libsignal_account_keys::BackupKey::MASTER_KEY_LEN];
-        master_key_array.copy_from_slice(master_key);
-        Ok(BackupKey {
-            inner: libsignal_account_keys::BackupKeyV0::derive_from_master_key(&master_key_array),
-        })
-    }
+    // TODO: fixme
+    // #[staticmethod]
+    // #[allow(deprecated)] // for now, it's okay as th API is WIP
+    // fn derive_from_master_key(master_key: &[u8]) -> PyResult<Self> {
+    //     if master_key.len() != libsignal_account_keys::BACKUP_KEY_LEN {
+    //         return Err(SignalProtocolError::err_from_str(String::from(
+    //             "master_key length must be 32 bytes",
+    //         )));
+    //     }
+    //     let mut master_key_array: [u8; libsignal_account_keys::BACKUP_KEY_LEN] =
+    //         [0; libsignal_account_keys::BACKUP_KEY_LEN];
+    //     master_key_array.copy_from_slice(master_key);
+    //     Ok(BackupKey {
+    //         inner: libsignal_account_keys::BackupKey::derive_from_master_key(&master_key_array),
+    //     })
+    // }
 
     fn derive_backup_id(&self, aci: &[u8]) -> PyResult<BackupId> {
         if aci.len() != 16 {

@@ -311,6 +311,7 @@ def sealed_sender_decrypt(
     local_uuid: str,
     local_device_id: DeviceId,
     protocol_store: InMemSignalProtocolStore,
+    use_pq_ratchet: bool,
 ) -> SealedSenderDecryptionResult:
     """
     Decrypts a sealed sender message.
@@ -323,7 +324,7 @@ def sealed_sender_decrypt(
         local_uuid (str): The local UUID.
         local_device_id (int): The local device ID.
         protocol_store (InMemSignalProtocolStore): The protocol store.
-
+        use_pq_ratchet (bool): if using the post quantum ratchet
     Returns:
         SealedSenderDecryptionResult: The result of the decryption operation.
     """

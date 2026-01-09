@@ -334,6 +334,7 @@ class SignalMessage(CiphertextMessage):
         ciphertext: bytes,
         sender_identity_key: IdentityKey,
         receiver_identity_key: IdentityKey,
+        pq_ratchet: bytes,
     ) -> None: ...
     def __new__(cls, *args, **kwargs) -> tuple[Self, CiphertextMessage]: ...
     @staticmethod

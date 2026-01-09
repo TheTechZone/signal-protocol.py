@@ -15,31 +15,21 @@ class KYBER_PARAMS:
 KYBER1024_PARAMS = KYBER_PARAMS(
     PK_LENGTH=1568, SK_LENGTH=3168, CTXT_LENGTH=1568, SHARED_SECRET_LENGTH=32
 )
-KEY_TYPE = kem.KeyType(8)
+KYBER_1024_KEY_TYPE = kem.KeyType(8)
 
 
 def test_sanity():
-    keypair = kem.KeyPair.generate(KEY_TYPE)
+    keypair = kem.KeyPair.generate(KYBER_1024_KEY_TYPE)
     pub, priv = keypair.get_public(), keypair.get_private()
 
     len_pub, len_priv = len(pub.serialize()), len(priv.serialize())
-    assert (
-        len_pub == keypair.public_key_length()
-    ), "Key does not have the reported size."
-    assert (
-        len_priv == keypair.secret_key_length()
-    ), "Key does not have the reported size."
-    assert (
-        len_pub == KYBER1024_PARAMS.PK_LENGTH + 1
-    ), "Key does not have the reported size."
-    assert (
-        len_priv == KYBER1024_PARAMS.SK_LENGTH + 1
-    ), "Key does not have the reported size."
+    assert len_pub == keypair.public_key_length(), "Key does not have the reported size."
+    assert len_priv == keypair.secret_key_length(), "Key does not have the reported size."
+    assert len_pub == KYBER1024_PARAMS.PK_LENGTH + 1, "Key does not have the reported size."
+    assert len_priv == KYBER1024_PARAMS.SK_LENGTH + 1, "Key does not have the reported size."
 
     ss, ctxt = keypair.encapsulate()
-    assert (
-        len(ss) == KYBER1024_PARAMS.SHARED_SECRET_LENGTH
-    ), "Shared Secret: bad length."
+    assert len(ss) == KYBER1024_PARAMS.SHARED_SECRET_LENGTH, "Shared Secret: bad length."
     assert len(ctxt) == KYBER1024_PARAMS.CTXT_LENGTH + 1, "Ciphertext: bad length."
 
     # todo: might make more sense to expose kp.get_private().decapsulate(ctxt)
@@ -64,9 +54,7 @@ def test_serialize():
     assert serialized_pk == pk_bytes
     assert serialized_sk == sk_bytes
 
-    pk, sk = kem.PublicKey.deserialize(serialized_pk), kem.SecretKey.deserialize(
-        serialized_sk
-    )
+    pk, sk = kem.PublicKey.deserialize(serialized_pk), kem.SecretKey.deserialize(serialized_sk)
     reserialized_pk, reserialized_sk = pk.serialize(), sk.serialize()
 
     assert serialized_pk == reserialized_pk
@@ -85,6 +73,4 @@ def test_kyber_1024():
     # todo: might make more sense to expose kp.get_public().decapsulate(ctxt)
     ss_for_sender, ct = kp.encapsulate()
     ss_for_recipient = kp.decapsulate(ct)
-    assert (
-        ss_for_sender == ss_for_recipient
-    ), "The two parties don't share the same secret"
+    assert ss_for_sender == ss_for_recipient, "The two parties don't share the same secret"

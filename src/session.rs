@@ -1,12 +1,12 @@
 use pyo3::prelude::*;
 use pyo3::wrap_pyfunction;
 
-use futures::executor::block_on;
-use rand::rngs::OsRng;
-
 use crate::address::ProtocolAddress;
 use crate::error::Result;
 use crate::protocol::PreKeySignalMessage;
+use crate::ratchet::UsePQRatchet;
+use futures::executor::block_on;
+use rand::TryRngCore as _;
 // use crate::state::SystemTime;
 use crate::state::{KyberPreKeyId, PreKeyBundle, PreKeyId, PreKeysUsed, SessionRecord};
 use crate::storage::InMemSignalProtocolStore;
@@ -17,8 +17,9 @@ pub fn process_prekey(
     remote_address: &ProtocolAddress,
     session_record: &mut SessionRecord,
     protocol_store: &mut InMemSignalProtocolStore,
+    use_pq_ratchet: bool,
 ) -> Result<Option<PreKeysUsed>> {
-    let result = block_on(libsignal_protocol::process_prekey(
+    let (result, _identity_to_save) = block_on(libsignal_protocol::process_prekey(
         &message.data,
         &remote_address.state,
         &mut session_record.state,
@@ -26,6 +27,7 @@ pub fn process_prekey(
         &mut protocol_store.store.pre_key_store,
         &mut protocol_store.store.signed_pre_key_store,
         &mut protocol_store.store.kyber_pre_key_store,
+        UsePQRatchet::from_bool(use_pq_ratchet).into(),
     ))?;
 
     let pre_key_id = result.pre_key_id;
@@ -56,8 +58,10 @@ pub fn process_prekey_bundle(
     protocol_store: &mut InMemSignalProtocolStore,
     bundle: PreKeyBundle,
     // now: SystemTime, // TODO: should SystemTime be exposed?
+    use_pq_ratchet: bool,
 ) -> Result<()> {
-    let mut csprng = OsRng;
+    let mut csprng = rand::rngs::OsRng.unwrap_err();
+
     let now2 = std::time::SystemTime::now();
     block_on(libsignal_protocol::process_prekey_bundle(
         &remote_address.state,
@@ -66,6 +70,7 @@ pub fn process_prekey_bundle(
         &bundle.state,
         now2,
         &mut csprng,
+        UsePQRatchet::from_bool(use_pq_ratchet).into(),
     ))?;
     Ok(())
 }
