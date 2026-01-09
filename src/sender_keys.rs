@@ -22,7 +22,7 @@ impl SenderKeyRecord {
 
     // TODO:: look into their api -- they broke most stuff here
 
-    pub fn serialize(&self, py: Python) -> Result<PyObject> {
+    pub fn serialize(&self, py: Python) -> Result<Py<PyAny>> {
         let bytes = self.state.serialize()?;
         Ok(PyBytes::new(py, &bytes).into())
     }

@@ -24,7 +24,7 @@ impl Aes256GcmEncryption {
         }
     }
 
-    pub fn encrypt_and_tag(&self, py: Python, data: &[u8]) -> PyResult<(PyObject, PyObject)> {
+    pub fn encrypt_and_tag(&self, py: Python, data: &[u8]) -> PyResult<(Py<PyAny>, Py<PyAny>)> {
         let upstream =
             signal_crypto::Aes256GcmEncryption::new(&self.key, &self.nonce, &self.associated_data);
         let mut gcm_enc = match upstream {
@@ -57,7 +57,7 @@ impl Aes256GcmDecryption {
         }
     }
 
-    pub fn decrypt_and_verify(&self, py: Python, data: &[u8], tag: &[u8]) -> PyResult<PyObject> {
+    pub fn decrypt_and_verify(&self, py: Python, data: &[u8], tag: &[u8]) -> PyResult<Py<PyAny>> {
         let upstream =
             signal_crypto::Aes256GcmDecryption::new(&self.key, &self.nonce, &self.associated_data);
 
@@ -90,7 +90,7 @@ impl Aes256Ctr32 {
         }
     }
 
-    fn process(&mut self, py: Python, data: &[u8]) -> PyResult<PyObject> {
+    fn process(&mut self, py: Python, data: &[u8]) -> PyResult<Py<PyAny>> {
         let mut buf: Vec<u8> = Vec::from(data).clone();
         self.inner.process(&mut buf);
         Ok(PyBytes::new(py, &buf).into())
@@ -104,7 +104,7 @@ pub fn aes_256_gcm_encrypt(
     key: &[u8],
     iv: &[u8],
     associated_data: &[u8],
-) -> PyResult<(PyObject, PyObject)> {
+) -> PyResult<(Py<PyAny>, Py<PyAny>)> {
     let instance = Aes256GcmEncryption::new(key, iv, associated_data);
     instance.encrypt_and_tag(py, ptext)
 }
@@ -117,13 +117,13 @@ pub fn aes_256_gcm_decrypt(
     key: &[u8],
     iv: &[u8],
     associated_data: &[u8],
-) -> PyResult<PyObject> {
+) -> PyResult<Py<PyAny>> {
     let instance = Aes256GcmDecryption::new(key, iv, associated_data);
     instance.decrypt_and_verify(py, ctext, tag)
 }
 
 #[pyfunction]
-pub fn aes_256_cbc_encrypt(py: Python, ptext: &[u8], key: &[u8], iv: &[u8]) -> PyResult<PyObject> {
+pub fn aes_256_cbc_encrypt(py: Python, ptext: &[u8], key: &[u8], iv: &[u8]) -> PyResult<Py<PyAny>> {
     match signal_crypto::aes_256_cbc_encrypt(ptext, key, iv) {
         Err(err) => Err(SignalProtocolError::err_from_str(err.to_string())),
         Ok(ctxt) => Ok(PyBytes::new(py, &ctxt).into()),
@@ -131,7 +131,7 @@ pub fn aes_256_cbc_encrypt(py: Python, ptext: &[u8], key: &[u8], iv: &[u8]) -> P
 }
 
 #[pyfunction]
-pub fn aes_256_cbc_decrypt(py: Python, ctext: &[u8], key: &[u8], iv: &[u8]) -> PyResult<PyObject> {
+pub fn aes_256_cbc_decrypt(py: Python, ctext: &[u8], key: &[u8], iv: &[u8]) -> PyResult<Py<PyAny>> {
     match signal_crypto::aes_256_cbc_decrypt(ctext, key, iv) {
         Err(err) => Err(SignalProtocolError::err_from_str(err.to_string())),
         Ok(ctxt) => Ok(PyBytes::new(py, &ctxt).into()),
@@ -157,7 +157,7 @@ impl CryptographicHash {
         self.inner.update(input)
     }
 
-    pub fn finalize(&mut self, py: Python) -> PyObject {
+    pub fn finalize(&mut self, py: Python) -> Py<PyAny> {
         let result = self.inner.finalize();
         PyBytes::new(py, &result).into()
     }
@@ -188,7 +188,7 @@ impl CryptographicMac {
         }
     }
 
-    pub fn finalize(&mut self, py: Python) -> PyObject {
+    pub fn finalize(&mut self, py: Python) -> Py<PyAny> {
         let result = self.inner.finalize();
         PyBytes::new(py, &result).into()
     }

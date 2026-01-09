@@ -13,6 +13,8 @@ from signal_protocol import (
     storage,
 )
 
+KYBER_1024_KEY_TYPE = kem.KeyType(8)
+
 
 def run_interaction(
     alice_store: storage.InMemSignalProtocolStore,
@@ -22,84 +24,58 @@ def run_interaction(
 ):
 
     alice_ptext = b"It's rabbit season"
-    alice_message = session_cipher.message_encrypt(
-        alice_store, bob_address, alice_ptext
-    )
+    alice_message = session_cipher.message_encrypt(alice_store, bob_address, alice_ptext)
 
     assert alice_message.message_type() == 2  # CiphertextMessageType::Whisper => 2
-    assert (
-        session_cipher.message_decrypt(bob_store, alice_address, alice_message)
-        == alice_ptext
-    )
+    assert session_cipher.message_decrypt(bob_store, alice_address, alice_message) == alice_ptext
 
     bob_ptext = b"It's duck season"
     bob_message = session_cipher.message_encrypt(bob_store, alice_address, bob_ptext)
 
     assert bob_message.message_type() == 2  # CiphertextMessageType::Whisper => 2
-    assert (
-        session_cipher.message_decrypt(alice_store, bob_address, bob_message)
-        == bob_ptext
-    )
+    assert session_cipher.message_decrypt(alice_store, bob_address, bob_message) == bob_ptext
 
     for i in range(10):
         alice_ptext = f"A->B message {i}".encode("utf8")
-        alice_message = session_cipher.message_encrypt(
-            alice_store, bob_address, alice_ptext
-        )
+        alice_message = session_cipher.message_encrypt(alice_store, bob_address, alice_ptext)
         assert alice_message.message_type() == 2  # CiphertextMessageType::Whisper => 2
         assert (
-            session_cipher.message_decrypt(bob_store, alice_address, alice_message)
-            == alice_ptext
+            session_cipher.message_decrypt(bob_store, alice_address, alice_message) == alice_ptext
         )
 
     for i in range(10):
         bob_ptext = f"B->A message {i}".encode("utf8")
-        bob_message = session_cipher.message_encrypt(
-            bob_store, alice_address, bob_ptext
-        )
+        bob_message = session_cipher.message_encrypt(bob_store, alice_address, bob_ptext)
         assert bob_message.message_type() == 2  # CiphertextMessageType::Whisper => 2
-        assert (
-            session_cipher.message_decrypt(alice_store, bob_address, bob_message)
-            == bob_ptext
-        )
+        assert session_cipher.message_decrypt(alice_store, bob_address, bob_message) == bob_ptext
 
     alice_ooo_messages: list[tuple[bytes, bytes]] = []
 
     for i in range(10):
         alice_ptext = f"A->B OOO message {i}".encode("utf8")
-        alice_message = session_cipher.message_encrypt(
-            alice_store, bob_address, alice_ptext
-        )
+        alice_message = session_cipher.message_encrypt(alice_store, bob_address, alice_ptext)
         alice_ooo_messages.append((alice_ptext, alice_message))
 
     for i in range(10):
         alice_ptext = f"A->B post-OOO message {i}".encode("utf8")
-        alice_message = session_cipher.message_encrypt(
-            alice_store, bob_address, alice_ptext
-        )
+        alice_message = session_cipher.message_encrypt(alice_store, bob_address, alice_ptext)
         assert alice_message.message_type() == 2  # CiphertextMessageType::Whisper => 2
         assert (
-            session_cipher.message_decrypt(bob_store, alice_address, alice_message)
-            == alice_ptext
+            session_cipher.message_decrypt(bob_store, alice_address, alice_message) == alice_ptext
         )
 
     for i in range(10):
         bob_ptext = f"B->A message post-OOO {i}".encode("utf8")
-        bob_message = session_cipher.message_encrypt(
-            bob_store, alice_address, bob_ptext
-        )
+        bob_message = session_cipher.message_encrypt(bob_store, alice_address, bob_ptext)
         assert bob_message.message_type() == 2  # CiphertextMessageType::Whisper => 2
-        assert (
-            session_cipher.message_decrypt(alice_store, bob_address, bob_message)
-            == bob_ptext
-        )
+        assert session_cipher.message_decrypt(alice_store, bob_address, bob_message) == bob_ptext
 
     ## Now we check that messages can be decrypted when delivered out of order
     for ptext, ctext in alice_ooo_messages:
         assert session_cipher.message_decrypt(bob_store, alice_address, ctext) == ptext
 
 
-def initialize_sessions_v3():
+def initialize_sessions_v4():
     alice_identity = identity_key.IdentityKeyPair.generate()
     bob_identity = identity_key.IdentityKeyPair.generate()
 
@@ -107,6 +83,7 @@ def initialize_sessions_v3():
 
     bob_base_key = curve.KeyPair.generate()
     bob_ephemeral_key = bob_base_key
+    bob_kyber_key = kem.KeyPair.generate(KYBER_1024_KEY_TYPE)
 
     alice_params = ratchet.AliceSignalProtocolParameters(
         alice_identity,
@@ -115,24 +92,24 @@ def initialize_sessions_v3():
         bob_base_key.public_key(),
         None,
         bob_ephemeral_key.public_key(),
-        None,
+        bob_kyber_key.get_public(),
     )
 
     alice_session = ratchet.initialize_alice_session(alice_params)
 
-    _keypair = kem.KeyPair.generate(kem.KeyType(8))
-    _, _kyber_ctxt = _keypair.encapsulate()
-    _kyber_ctxt = kem.SerializedCiphertext(_kyber_ctxt)
+    alice_kyber_key = kem.KeyPair.generate(KYBER_1024_KEY_TYPE)
+    _, ctxt = alice_kyber_key.encapsulate()
 
     bob_params = ratchet.BobSignalProtocolParameters(
         bob_identity,
         bob_base_key,
         None,
         bob_ephemeral_key,
-        None,  # TODO: kyber
+        bob_kyber_key,  # TODO: kyber
         alice_identity.identity_key(),
         alice_base_key.public_key(),
-        None,
+        # kem.SerializedCiphertext(ctxt),
+        kem.SerializedCiphertext(alice_session.get_kyber_ciphertext()),
     )
 
     bob_session = ratchet.initialize_bob_session(bob_params)
@@ -140,7 +117,7 @@ def initialize_sessions_v3():
     return alice_session, bob_session
 
 
-def run_session_interaction(alice_session, bob_session):
+def run_session_interaction(alice_session: state.SessionRecord, bob_session: state.SessionRecord):
     alice_address = address.ProtocolAddress("+14159999999", 1)
     bob_address = address.ProtocolAddress("+14158888888", 1)
 
@@ -150,33 +127,21 @@ def run_session_interaction(alice_session, bob_session):
     alice_registration_id = 1  # TODO: generate these
     bob_registration_id = 2
 
-    alice_store = storage.InMemSignalProtocolStore(
-        alice_identity_key_pair, alice_registration_id
-    )
-    bob_store = storage.InMemSignalProtocolStore(
-        bob_identity_key_pair, bob_registration_id
-    )
+    alice_store = storage.InMemSignalProtocolStore(alice_identity_key_pair, alice_registration_id)
+    bob_store = storage.InMemSignalProtocolStore(bob_identity_key_pair, bob_registration_id)
 
     alice_store.store_session(bob_address, alice_session)
     bob_store.store_session(alice_address, bob_session)
 
     alice_plaintext = b"This is Alice's message"
-    alice_ciphertext = session_cipher.message_encrypt(
-        alice_store, bob_address, alice_plaintext
-    )
-    bob_decrypted = session_cipher.message_decrypt(
-        bob_store, alice_address, alice_ciphertext
-    )
+    alice_ciphertext = session_cipher.message_encrypt(alice_store, bob_address, alice_plaintext)
+    bob_decrypted = session_cipher.message_decrypt(bob_store, alice_address, alice_ciphertext)
     assert bob_decrypted == alice_plaintext
 
     bob_plaintext = b"This is Bob's reply"
 
-    bob_ciphertext = session_cipher.message_encrypt(
-        bob_store, alice_address, bob_plaintext
-    )
-    alice_decrypted = session_cipher.message_decrypt(
-        alice_store, bob_address, bob_ciphertext
-    )
+    bob_ciphertext = session_cipher.message_encrypt(bob_store, alice_address, bob_plaintext)
+    alice_decrypted = session_cipher.message_decrypt(alice_store, bob_address, bob_ciphertext)
     assert alice_decrypted == bob_plaintext
 
     ALICE_MESSAGE_COUNT = 50
@@ -186,46 +151,34 @@ def run_session_interaction(alice_session, bob_session):
 
     for i in range(ALICE_MESSAGE_COUNT):
         ptext = f"смерть за смерть {i}"
-        ctext = session_cipher.message_encrypt(
-            alice_store, bob_address, ptext.encode("utf8")
-        )
+        ctext = session_cipher.message_encrypt(alice_store, bob_address, ptext.encode("utf8"))
         alice_messages.append((ptext, ctext))
 
     random.shuffle(alice_messages)
 
     for i in range(ALICE_MESSAGE_COUNT // 2):
-        ptext = session_cipher.message_decrypt(
-            bob_store, alice_address, alice_messages[i][1]
-        )
+        ptext = session_cipher.message_decrypt(bob_store, alice_address, alice_messages[i][1])
         assert ptext.decode("utf8") == alice_messages[i][0]
 
     bob_messages = []
 
     for i in range(BOB_MESSAGE_COUNT):
         ptext = f"Relax in the safety of your own delusions. {i}"
-        ctext = session_cipher.message_encrypt(
-            bob_store, alice_address, ptext.encode("utf8")
-        )
+        ctext = session_cipher.message_encrypt(bob_store, alice_address, ptext.encode("utf8"))
         bob_messages.append((ptext, ctext))
 
     random.shuffle(bob_messages)
 
     for i in range(BOB_MESSAGE_COUNT // 2):
-        ptext = session_cipher.message_decrypt(
-            alice_store, bob_address, bob_messages[i][1]
-        )
+        ptext = session_cipher.message_decrypt(alice_store, bob_address, bob_messages[i][1])
         assert ptext.decode("utf8") == bob_messages[i][0]
 
     for i in range(ALICE_MESSAGE_COUNT // 2, ALICE_MESSAGE_COUNT):
-        ptext = session_cipher.message_decrypt(
-            bob_store, alice_address, alice_messages[i][1]
-        )
+        ptext = session_cipher.message_decrypt(bob_store, alice_address, alice_messages[i][1])
         assert ptext.decode("utf8") == alice_messages[i][0]
 
     for i in range(BOB_MESSAGE_COUNT // 2, BOB_MESSAGE_COUNT):
-        ptext = session_cipher.message_decrypt(
-            alice_store, bob_address, bob_messages[i][1]
-        )
+        ptext = session_cipher.message_decrypt(alice_store, bob_address, bob_messages[i][1])
         assert ptext.decode("utf8") == bob_messages[i][0]
 
 
@@ -242,23 +195,30 @@ def create_pre_key_bundle(store):
 
     signed_pre_key_public = signed_pre_key_pair.public_key().serialize()
     signed_pre_key_signature = (
-        store.get_identity_key_pair()
-        .private_key()
-        .calculate_signature(signed_pre_key_public)
+        store.get_identity_key_pair().private_key().calculate_signature(signed_pre_key_public)
     )
 
-    device_id = address.DeviceId(random.randint(1, 10000))
+    device_id = address.DeviceId(random.randint(1, 127))
     pre_key_id = state.PreKeyId(random.randint(1, 10000))
     signed_pre_key_id = state.SignedPreKeyId(random.randint(1, 10000))
+    kyber_pre_key_id = state.KyberPreKeyId(random.randint(1, 10000))
+    kyber_pre_key_pair = kem.KeyPair.generate(KYBER_1024_KEY_TYPE)
+    kyber_pre_key_signature = (
+        store.get_identity_key_pair()
+        .private_key()
+        .calculate_signature(kyber_pre_key_pair.get_public().serialize())
+    )
 
     pre_key_bundle = state.PreKeyBundle(
         store.get_local_registration_id(),
         device_id,
-        # pre_key_id,
         (pre_key_id, pre_key_pair.public_key()),
         signed_pre_key_id,
         signed_pre_key_pair.public_key(),
         signed_pre_key_signature,
+        kyber_pre_key_id,
+        kyber_pre_key_pair.get_public(),
+        kyber_pre_key_signature,
         store.get_identity_key_pair().identity_key(),
     )
 
@@ -274,4 +234,11 @@ def create_pre_key_bundle(store):
     )
     store.save_signed_pre_key(signed_pre_key_id, signed_prekey)
 
+    kyber_pre_key = state.KyberPreKeyRecord(
+        kyber_pre_key_id,
+        timestamp,
+        kyber_pre_key_pair,
+        kyber_pre_key_signature,
+    )
+    store.save_kyber_pre_key(kyber_pre_key_id, kyber_pre_key)
     return pre_key_bundle

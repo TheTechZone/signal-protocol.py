@@ -36,6 +36,16 @@ impl From<libsignal_protocol::SignalProtocolError> for SignalProtocolError {
     }
 }
 
+impl From<libsignal_protocol::FingerprintError> for SignalProtocolError {
+    fn from(err: libsignal_protocol::FingerprintError) -> Self {
+        // Convert FingerprintError to SignalProtocolError
+        let error_msg = err.to_string();
+        SignalProtocolError {
+            err: libsignal_protocol::SignalProtocolError::InvalidArgument(error_msg),
+        }
+    }
+}
+
 impl SignalProtocolError {
     pub fn new(err: libsignal_protocol::SignalProtocolError) -> Self {
         Self { err }

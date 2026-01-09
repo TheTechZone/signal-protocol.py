@@ -14,7 +14,6 @@ def message_decrypt(
         protocol_store (InMemSignalProtocolStore): The protocol store.
         remote_address (ProtocolAddress): The remote address.
         msg (CiphertextMessage): The ciphertext message.
-
     Returns:
         bytes: The decrypted message.
     """
@@ -24,6 +23,7 @@ def message_decrypt_prekey(
     protocol_store: InMemSignalProtocolStore,
     remote_address: ProtocolAddress,
     msg: PreKeySignalMessage,
+    use_pq_ratchet: bool,
 ) -> bytes:
     """
     Decrypts a pre-key message.
@@ -42,6 +42,7 @@ def message_decrypt_signal(
     protocol_store: InMemSignalProtocolStore,
     remote_address: ProtocolAddress,
     msg: SignalMessage,
+    use_pq_ratchet: bool,
 ) -> bytes:
     """
     Decrypts a signal message.
@@ -57,9 +58,7 @@ def message_decrypt_signal(
     ...
 
 def message_encrypt(
-    protocol_store: InMemSignalProtocolStore,
-    remote_address: ProtocolAddress,
-    msg: bytes,
+    protocol_store: InMemSignalProtocolStore, remote_address: ProtocolAddress, msg: bytes
 ) -> CiphertextMessage:
     """
     Encrypts a message.

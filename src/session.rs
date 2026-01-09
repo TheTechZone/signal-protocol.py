@@ -1,12 +1,11 @@
 use pyo3::prelude::*;
 use pyo3::wrap_pyfunction;
 
-use futures::executor::block_on;
-use rand::rngs::OsRng;
-
 use crate::address::ProtocolAddress;
 use crate::error::Result;
 use crate::protocol::PreKeySignalMessage;
+use futures::executor::block_on;
+use rand::TryRngCore as _;
 // use crate::state::SystemTime;
 use crate::state::{KyberPreKeyId, PreKeyBundle, PreKeyId, PreKeysUsed, SessionRecord};
 use crate::storage::InMemSignalProtocolStore;
@@ -18,7 +17,7 @@ pub fn process_prekey(
     session_record: &mut SessionRecord,
     protocol_store: &mut InMemSignalProtocolStore,
 ) -> Result<Option<PreKeysUsed>> {
-    let result = block_on(libsignal_protocol::process_prekey(
+    let (result, _identity_to_save) = match block_on(libsignal_protocol::process_prekey(
         &message.data,
         &remote_address.state,
         &mut session_record.state,
@@ -26,9 +25,16 @@ pub fn process_prekey(
         &mut protocol_store.store.pre_key_store,
         &mut protocol_store.store.signed_pre_key_store,
         &mut protocol_store.store.kyber_pre_key_store,
-    ))?;
+    )) {
+        Ok((result, identity)) => match result {
+            Some(result) => (result, identity),
+            None => return Ok(None),
+        },
+        Err(_err) => return Ok(None),
+    };
 
-    let pre_key_id = result.pre_key_id;
+    let pre_key_id = result.one_time_ec_pre_key_id;
+    let signed_pre_key_id = result.signed_ec_pre_key_id;
     let kyber_key_id = result.kyber_pre_key_id;
 
     let pk_id = match pre_key_id {
@@ -57,7 +63,8 @@ pub fn process_prekey_bundle(
     bundle: PreKeyBundle,
     // now: SystemTime, // TODO: should SystemTime be exposed?
 ) -> Result<()> {
-    let mut csprng = OsRng;
+    let mut csprng = rand::rngs::OsRng.unwrap_err();
+
     let now2 = std::time::SystemTime::now();
     block_on(libsignal_protocol::process_prekey_bundle(
         &remote_address.state,

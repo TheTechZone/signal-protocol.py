@@ -26,18 +26,10 @@ class CryptographicHash:
     def __init__(
         self,
         algo: Literal[
-            "SHA-1",
-            "SHA1",
-            "Sha1",
-            "SHA-256",
-            "SHA256",
-            "Sha256",
-            "SHA-512",
-            "SHA512",
-            "Sha512",
+            "SHA-1", "SHA1", "Sha1", "SHA-256", "SHA256", "Sha256", "SHA-512", "SHA512", "Sha512"
         ],
     ) -> None: ...
-    def update(self, data: bytes): ...
+    def update(self, data: bytes) -> None: ...
     def finalize(self) -> bytes: ...
 
 class CryptographicMac:

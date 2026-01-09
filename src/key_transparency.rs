@@ -31,11 +31,11 @@ impl VerifyingKey {
         }
     }
 
-    // fn to_bytes(&self) -> PyObject {
+    // fn to_bytes(&self) -> Py<PyAny> {
     //     PyBytes::into(self.inner.to_bytes().into())
     // }
     //
-    // fn as_bytes(&self) -> PyObject {
+    // fn as_bytes(&self) -> Py<PyAny> {
     //     PyBytes::into(self.inner.as_bytes().into())
     // }
 
@@ -82,13 +82,13 @@ impl VrfPublicKey {
         }
     }
 
-    fn as_bytes(&self, py: Python) -> PyObject {
+    fn as_bytes(&self, py: Python) -> Py<PyAny> {
         // self.inner.as_bytes().to_vec()
         let data = self.inner.as_bytes().to_vec();
         PyBytes::new(py, &data).into()
     }
 
-    fn proof_to_hash(&self, m: &[u8], proof: &[u8], py: Python) -> PyResult<PyObject> {
+    fn proof_to_hash(&self, m: &[u8], proof: &[u8], py: Python) -> PyResult<Py<PyAny>> {
         match self.inner.proof_to_hash(m, <&[u8; 80]>::try_from(proof)?) {
             Ok(hash) => Ok(PyBytes::new(py, &hash).into()),
             Err(err) => Err(SignalProtocolError::err_from_str(format!(
@@ -236,6 +236,32 @@ impl VrfPublicKey {
 
 #[derive(Clone, PartialEq)]
 #[pyclass]
+pub struct Signature {
+    pub inner: libsignal_keytrans::Signature,
+}
+
+#[pymethods]
+impl Signature {
+    #[new]
+    pub fn new(auditor_public_key: &[u8], signature: &[u8]) -> Self {
+        Signature {
+            inner: libsignal_keytrans::Signature {
+                auditor_public_key: auditor_public_key.into(),
+                signature: signature.into(),
+            },
+        }
+    }
+    fn auditor_public_key(&self, py: Python) -> Py<PyAny> {
+        PyBytes::new(py, self.inner.auditor_public_key.as_ref()).into()
+    }
+
+    fn signature(&self, py: Python) -> Py<PyAny> {
+        PyBytes::new(py, self.inner.signature.as_ref()).into()
+    }
+}
+
+#[derive(Clone, PartialEq)]
+#[pyclass]
 pub struct TreeHead {
     pub inner: libsignal_keytrans::TreeHead,
 }
@@ -243,12 +269,12 @@ pub struct TreeHead {
 #[pymethods]
 impl TreeHead {
     #[new]
-    fn new(tree_size: u64, timestamp: i64, signature: &[u8]) -> Self {
+    fn new(tree_size: u64, timestamp: i64, signatures: Vec<Signature>) -> Self {
         TreeHead {
             inner: libsignal_keytrans::TreeHead {
                 tree_size,
                 timestamp,
-                signature: signature.to_vec(),
+                signatures: signatures.iter().map(|s| s.inner.clone()).collect(),
             },
         }
     }
@@ -261,8 +287,13 @@ impl TreeHead {
         self.inner.timestamp
     }
 
-    fn signature(&self) -> Vec<u8> {
-        self.inner.signature.to_vec()
+    fn signatures(&self) -> Vec<Signature> {
+        // self.inner.signatures.to_vec()
+        self.inner
+            .signatures
+            .iter()
+            .map(|v| Signature::new(&*v.auditor_public_key, &*v.signature))
+            .collect()
     }
 }
 

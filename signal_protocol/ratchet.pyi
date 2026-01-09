@@ -15,9 +15,9 @@ class AliceSignalProtocolParameters:
         our_base_key_pair: KeyPair,
         their_identity_key: IdentityKey,
         their_signed_pre_key: PublicKey,
-        _their_one_time_pre_key: Optional[PublicKey],
+        their_one_time_pre_key: Optional[PublicKey],
         their_ratchet_key: PublicKey,
-        _their_kyber_pre_key: KemPublicKey,
+        their_kyber_pre_key: KemPublicKey,
     ) -> None:
         """TODO: revise when their_otpk is used"""
         ...
@@ -89,7 +89,7 @@ class BobSignalProtocolParameters:
         our_signed_pre_key_pair: KeyPair,
         our_one_time_pre_key_pair: Optional[KeyPair],
         our_ratchet_key_pair: KeyPair,
-        our_kyber_pre_key_pair: Optional[Any],
+        our_kyber_pre_key_pair: KemKeyPair,
         their_identity_key: IdentityKey,
         their_base_key: PublicKey,
         their_kyber_ciphertext: Optional[Any],
@@ -154,7 +154,7 @@ class BobSignalProtocolParameters:
 
     def their_kyber_ciphertext(self) -> Optional[bytes]: ...
 
-def initialize_alice_session() -> SessionRecord:
+def initialize_alice_session(parameters: AliceSignalProtocolParameters) -> SessionRecord:
     """
     Initializes a new session for Alice.
 
@@ -163,7 +163,7 @@ def initialize_alice_session() -> SessionRecord:
     """
     ...
 
-def initialize_bob_session() -> SessionRecord:
+def initialize_bob_session(parameters: BobSignalProtocolParameters) -> SessionRecord:
     """
     Initializes a new session for Bob.
 

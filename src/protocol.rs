@@ -3,14 +3,13 @@ use std::convert::TryFrom;
 use pyo3::prelude::*;
 use pyo3::types::PyBytes;
 
-use rand::rngs::OsRng;
-
 use crate::curve::{PrivateKey, PublicKey};
 use crate::error::{Result, SignalProtocolError};
 use crate::identity_key::IdentityKey;
 use crate::kem::SerializedCiphertext;
 use crate::state::{KyberPreKeyId, PreKeyId, SignedPreKeyId};
 use crate::uuid::UUID;
+use rand::TryRngCore as _;
 
 /// CiphertextMessage is a Rust enum in the upstream crate. Mapping of enums to Python enums
 /// is not supported in pyo3. We map the Rust enum and its variants to Python as a superclass
@@ -28,7 +27,7 @@ impl CiphertextMessage {
 
 #[pymethods]
 impl CiphertextMessage {
-    pub fn serialize(&self, py: Python) -> PyResult<PyObject> {
+    pub fn serialize(&self, py: Python) -> PyResult<Py<PyAny>> {
         Ok(PyBytes::new(py, self.data.serialize()).into())
     }
 
@@ -88,7 +87,7 @@ impl PreKeySignalMessage {
         // Workaround to allow two constructors with pyclass inheritence
         // let gil = Python::acquire_gil();
         // let py = gil.python();
-        Python::with_gil(|py| {
+        Python::attach(|py| {
             Py::new(
                 py,
                 (
@@ -146,7 +145,7 @@ impl PreKeySignalMessage {
         Ok((variant_msg, ciphertext_msg))
     }
 
-    pub fn serialized(&self, py: Python) -> PyObject {
+    pub fn serialized(&self, py: Python) -> Py<PyAny> {
         PyBytes::new(py, &self.data.serialized()).into()
     }
 
@@ -204,7 +203,7 @@ impl PreKeySignalMessage {
         }
     }
 
-    pub fn kyber_ciphertext(&self, py: Python) -> Option<PyObject> {
+    pub fn kyber_ciphertext(&self, py: Python) -> Option<Py<PyAny>> {
         match self.data.kyber_ciphertext() {
             Some(ctxt) => Some(PyBytes::new(py, &ctxt).into()),
             None => None,
@@ -212,7 +211,7 @@ impl PreKeySignalMessage {
     }
 
     pub fn message(&self) -> PyResult<Py<SignalMessage>> {
-        Python::with_gil(|py| {
+        Python::attach(|py| {
             let upstream_data = self.data.message().clone();
             let ciphertext =
                 libsignal_protocol::CiphertextMessage::SignalMessage(upstream_data.clone());
@@ -236,6 +235,43 @@ pub struct SignalMessage {
     pub data: libsignal_protocol::SignalMessage,
 }
 
+#[pyclass]
+#[derive(Clone, Copy)]
+pub struct SessionUsabilityRequirements {
+    pub inner: libsignal_protocol::SessionUsabilityRequirements,
+}
+
+#[pymethods]
+impl SessionUsabilityRequirements {
+    #[new]
+    pub fn new() -> Self {
+        SessionUsabilityRequirements {
+            inner: libsignal_protocol::SessionUsabilityRequirements::empty(),
+        }
+    }
+
+    #[staticmethod]
+    fn not_stale() -> Self {
+        Self {
+            inner: libsignal_protocol::SessionUsabilityRequirements::NotStale,
+        }
+    }
+
+    #[staticmethod]
+    fn established_with_pqxdh() -> Self {
+        Self {
+            inner: libsignal_protocol::SessionUsabilityRequirements::EstablishedWithPqxdh,
+        }
+    }
+
+    #[staticmethod]
+    fn spqr() -> Self {
+        Self {
+            inner: libsignal_protocol::SessionUsabilityRequirements::Spqr,
+        }
+    }
+}
+
 #[pymethods]
 impl SignalMessage {
     #[staticmethod]
@@ -247,8 +283,8 @@ impl SignalMessage {
         let ciphertext =
             libsignal_protocol::CiphertextMessage::SignalMessage(upstream_data.clone());
 
-        // Workaround to allow two constructors with pyclass inheritence
-        Python::with_gil(|py| {
+        // Workaround to allow two constructors with pyclass inheritance
+        Python::attach(|py| {
             Py::new(
                 py,
                 (
@@ -271,6 +307,7 @@ impl SignalMessage {
         ciphertext: &[u8],
         sender_identity_key: &IdentityKey,
         receiver_identity_key: &IdentityKey,
+        pq_ratchet: &[u8],
     ) -> PyResult<(Self, CiphertextMessage)> {
         let upstream_data = match libsignal_protocol::SignalMessage::new(
             message_version,
@@ -281,6 +318,7 @@ impl SignalMessage {
             &ciphertext,
             &sender_identity_key.key,
             &receiver_identity_key.key,
+            pq_ratchet,
         ) {
             Ok(data) => data,
             Err(err) => return Err(SignalProtocolError::new_err(err)),
@@ -309,11 +347,11 @@ impl SignalMessage {
         self.data.counter()
     }
 
-    pub fn serialized(&self, py: Python) -> PyObject {
+    pub fn serialized(&self, py: Python) -> Py<PyAny> {
         PyBytes::new(py, &self.data.serialized()).into()
     }
 
-    pub fn body(&self, py: Python) -> PyObject {
+    pub fn body(&self, py: Python) -> Py<PyAny> {
         PyBytes::new(py, &self.data.body()).into()
     }
 
@@ -348,8 +386,8 @@ impl SenderKeyMessage {
         let ciphertext =
             libsignal_protocol::CiphertextMessage::SenderKeyMessage(upstream_data.clone());
 
-        // Workaround to allow two constructors with pyclass inheritence
-        Python::with_gil(|py| {
+        // Workaround to allow two constructors with pyclass inheritance
+        Python::attach(|py| {
             Py::new(
                 py,
                 (
@@ -371,7 +409,7 @@ impl SenderKeyMessage {
         ciphertext: &[u8],
         signature_key: &PrivateKey,
     ) -> PyResult<(Self, CiphertextMessage)> {
-        let mut csprng = OsRng;
+        let mut csprng = rand::rngs::OsRng.unwrap_err();
         let upstream_data = match libsignal_protocol::SenderKeyMessage::new(
             message_version,
             distribution_id.handle,
@@ -394,7 +432,7 @@ impl SenderKeyMessage {
         Ok((variant_msg, ciphertext_msg))
     }
 
-    pub fn serialized(&self, py: Python) -> PyObject {
+    pub fn serialized(&self, py: Python) -> Py<PyAny> {
         PyBytes::new(py, &self.data.serialized()).into()
     }
 
@@ -416,7 +454,7 @@ impl SenderKeyMessage {
         self.data.iteration()
     }
 
-    pub fn ciphertext(&self, py: Python) -> PyObject {
+    pub fn ciphertext(&self, py: Python) -> Py<PyAny> {
         PyBytes::new(py, &self.data.ciphertext()).into()
     }
 
@@ -444,7 +482,7 @@ impl SenderKeyDistributionMessage {
         // Workaround to allow two constructors with pyclass inheritence
         // let gil = Python::acquire_gil();
         // let py = gil.python();
-        Python::with_gil(|py| {
+        Python::attach(|py| {
             Py::new(
                 py,
                 SenderKeyDistributionMessage {
@@ -483,7 +521,7 @@ impl SenderKeyDistributionMessage {
         Ok(variant_msg)
     }
 
-    pub fn serialized(&self, py: Python) -> PyObject {
+    pub fn serialized(&self, py: Python) -> Py<PyAny> {
         PyBytes::new(py, &self.data.serialized()).into()
     }
 
@@ -495,7 +533,7 @@ impl SenderKeyDistributionMessage {
         Ok(self.data.iteration()?)
     }
 
-    pub fn chain_key(&self, py: Python) -> Result<PyObject> {
+    pub fn chain_key(&self, py: Python) -> Result<Py<PyAny>> {
         Ok(PyBytes::new(py, &self.data.chain_key()?).into())
     }
 
@@ -511,6 +549,7 @@ impl SenderKeyDistributionMessage {
 pub fn init_submodule(module: &Bound<'_, PyModule>) -> PyResult<()> {
     module.add_class::<CiphertextMessage>()?;
     module.add_class::<PreKeySignalMessage>()?;
+    module.add_class::<SessionUsabilityRequirements>()?;
     module.add_class::<SignalMessage>()?;
     module.add_class::<SenderKeyMessage>()?;
     module.add_class::<SenderKeyDistributionMessage>()?;

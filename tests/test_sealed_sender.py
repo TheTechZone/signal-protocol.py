@@ -20,9 +20,7 @@ from tests.utils.sessions import create_pre_key_bundle
 def test_server_cert():
     trust_root = KeyPair.generate()
     server_key = KeyPair.generate()
-    server_cert = ServerCertificate(
-        1, server_key.public_key(), trust_root.private_key()
-    )
+    server_cert = ServerCertificate(1, server_key.public_key(), trust_root.private_key())
     serialized_server_cert = server_cert.serialized()
 
     recovered_server_cert = ServerCertificate.deserialize(serialized_server_cert)
@@ -63,9 +61,7 @@ def test_sender_cert():
     trust_root = KeyPair.generate()
     server_key = KeyPair.generate()
     key = KeyPair.generate()
-    server_cert = ServerCertificate(
-        1, server_key.public_key(), trust_root.private_key()
-    )
+    server_cert = ServerCertificate(1, server_key.public_key(), trust_root.private_key())
 
     device_id = DeviceId(2)
     expiration = 1234567
@@ -126,9 +122,7 @@ def test_sealed_sender_happy():
 
     alice_identity_key_pair = IdentityKeyPair.generate()
     alice_registration_id = 1
-    alice_store = InMemSignalProtocolStore(
-        alice_identity_key_pair, alice_registration_id
-    )
+    alice_store = InMemSignalProtocolStore(alice_identity_key_pair, alice_registration_id)
     alice_pubkey = alice_identity_key_pair.public_key()
 
     bob_identity_key_pair = IdentityKeyPair.generate()
@@ -146,9 +140,7 @@ def test_sealed_sender_happy():
 
     trust_root = KeyPair.generate()
     server_key = KeyPair.generate()
-    server_cert = ServerCertificate(
-        1, server_key.public_key(), trust_root.private_key()
-    )
+    server_cert = ServerCertificate(1, server_key.public_key(), trust_root.private_key())
 
     expiration = 1234567
     sender_cert = SenderCertificate(
@@ -193,9 +185,7 @@ def test_sealed_sender_expired_cert():
 
     alice_identity_key_pair = IdentityKeyPair.generate()
     alice_registration_id = 1
-    alice_store = InMemSignalProtocolStore(
-        alice_identity_key_pair, alice_registration_id
-    )
+    alice_store = InMemSignalProtocolStore(alice_identity_key_pair, alice_registration_id)
     alice_pubkey = alice_identity_key_pair.public_key()
 
     bob_identity_key_pair = IdentityKeyPair.generate()
@@ -213,9 +203,7 @@ def test_sealed_sender_expired_cert():
 
     trust_root = KeyPair.generate()
     server_key = KeyPair.generate()
-    server_cert = ServerCertificate(
-        1, server_key.public_key(), trust_root.private_key()
-    )
+    server_cert = ServerCertificate(1, server_key.public_key(), trust_root.private_key())
 
     expiration = 1234567
     sender_cert = SenderCertificate(
@@ -256,9 +244,7 @@ def test_sealed_sender_invalid_trust_root():
 
     alice_identity_key_pair = IdentityKeyPair.generate()
     alice_registration_id = 1
-    alice_store = InMemSignalProtocolStore(
-        alice_identity_key_pair, alice_registration_id
-    )
+    alice_store = InMemSignalProtocolStore(alice_identity_key_pair, alice_registration_id)
     alice_pubkey = alice_identity_key_pair.public_key()
 
     bob_identity_key_pair = IdentityKeyPair.generate()
@@ -276,9 +262,7 @@ def test_sealed_sender_invalid_trust_root():
 
     trust_root = KeyPair.generate()
     server_key = KeyPair.generate()
-    server_cert = ServerCertificate(
-        1, server_key.public_key(), trust_root.private_key()
-    )
+    server_cert = ServerCertificate(1, server_key.public_key(), trust_root.private_key())
 
     expiration = 1234567
     sender_cert = SenderCertificate(

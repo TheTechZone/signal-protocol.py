@@ -1,9 +1,11 @@
 from time import time
 from base64 import b64decode
-from signal_protocol import curve, address, identity_key, state, storage
+
+from signal_protocol import curve, address, identity_key, kem, state, storage
 
 DEVICE_ID = 1
 DEV_ID = address.DeviceId(DEVICE_ID)
+KYBER_1024_KEY_TYPE = kem.KeyType(8)
 
 
 def test_define_prekey_bundle_under_prekey_exhaustion():
@@ -16,12 +18,8 @@ def test_define_prekey_bundle_under_prekey_exhaustion():
     alice_registration_id = 1  # TODO: generate these
     bob_registration_id = 2
 
-    alice_store = storage.InMemSignalProtocolStore(
-        alice_identity_key_pair, alice_registration_id
-    )
-    bob_store = storage.InMemSignalProtocolStore(
-        bob_identity_key_pair, bob_registration_id
-    )
+    alice_store = storage.InMemSignalProtocolStore(alice_identity_key_pair, alice_registration_id)
+    bob_store = storage.InMemSignalProtocolStore(bob_identity_key_pair, bob_registration_id)
 
     bob_pre_key_pair = curve.KeyPair.generate()
     bob_signed_pre_key_pair = curve.KeyPair.generate()
@@ -34,8 +32,14 @@ def test_define_prekey_bundle_under_prekey_exhaustion():
         .calculate_signature(bob_signed_pre_key_public)
     )
 
+    bob_kyber_key_pair = kem.KeyPair.generate(KYBER_1024_KEY_TYPE)
+    bob_kyber_pre_key_signature = bob_identity_key_pair.private_key().calculate_signature(
+        bob_kyber_key_pair.get_public().serialize()
+    )
+
     pre_key_id = state.PreKeyId(31337)
     signed_pre_key_id = state.SignedPreKeyId(22)
+    kyber_pre_key_id = state.KyberPreKeyId(33)
 
     bob_pre_key_bundle = state.PreKeyBundle(
         bob_store.get_local_registration_id(),
@@ -44,6 +48,9 @@ def test_define_prekey_bundle_under_prekey_exhaustion():
         signed_pre_key_id,
         bob_signed_pre_key_pair.public_key(),
         bob_signed_pre_key_signature,
+        kyber_pre_key_id,
+        bob_kyber_key_pair.get_public(),
+        bob_kyber_pre_key_signature,
         bob_store.get_identity_key_pair().identity_key(),
     )
 

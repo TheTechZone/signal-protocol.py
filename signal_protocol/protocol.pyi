@@ -60,7 +60,9 @@ class PreKeySignalMessage(CiphertextMessage):
         base_key: PublicKey,
         identity_key: IdentityKey,
         message: SignalMessage,
-    ) -> tuple[PreKeySignalMessage, CiphertextMessage]: ...
+    ) -> tuple[PreKeySignalMessage, CiphertextMessage]:
+        """Create and return a new object.  See help(type) for accurate signature."""
+
     @staticmethod
     def try_from(data: bytes) -> PreKeySignalMessage:
         """
@@ -237,7 +239,9 @@ class SenderKeyMessage(CiphertextMessage):
         iteration: int,
         ciphertext: bytes,
         signature_key: PrivateKey,
-    ) -> tuple[SenderKeyMessage, CiphertextMessage]: ...
+    ) -> tuple[SenderKeyMessage, CiphertextMessage]:
+        """Create and return a new object.  See help(type) for accurate signature."""
+
     @staticmethod
     def try_from(data: bytes) -> SenderKeyMessage:
         """
@@ -334,8 +338,11 @@ class SignalMessage(CiphertextMessage):
         ciphertext: bytes,
         sender_identity_key: IdentityKey,
         receiver_identity_key: IdentityKey,
+        pq_ratchet: bytes,
     ) -> None: ...
-    def __new__(cls, *args, **kwargs) -> tuple[Self, CiphertextMessage]: ...
+    def __new__(cls, *args, **kwargs) -> tuple[Self, CiphertextMessage]:
+        """Create and return a new object.  See help(type) for accurate signature."""
+
     @staticmethod
     def try_from(data: bytes) -> SignalMessage:
         """
@@ -395,10 +402,7 @@ class SignalMessage(CiphertextMessage):
         ...
 
     def verify_mac(
-        self,
-        sender_identity_key: IdentityKey,
-        receiver_identity_key: IdentityKey,
-        mac_key: bytes,
+        self, sender_identity_key: IdentityKey, receiver_identity_key: IdentityKey, mac_key: bytes
     ) -> bool:
         """
         Verifies the MAC of the signal message.

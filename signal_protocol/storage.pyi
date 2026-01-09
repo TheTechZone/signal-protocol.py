@@ -119,9 +119,7 @@ class InMemSignalProtocolStore:
         """
         ...
 
-    def get_signed_pre_key(
-        self, signed_pre_key_id: SignedPreKeyId
-    ) -> SignedPreKeyRecord:
+    def get_signed_pre_key(self, signed_pre_key_id: SignedPreKeyId) -> SignedPreKeyRecord:
         """
         Gets a signed pre-key.
 
@@ -158,9 +156,7 @@ class InMemSignalProtocolStore:
         """
         ...
 
-    def load_sender_key(
-        self, sender: ProtocolAddress, distribution_id: UUID
-    ) -> SenderKeyRecord:
+    def load_sender_key(self, sender: ProtocolAddress, distribution_id: UUID) -> SenderKeyRecord:
         """
         Loads a sender key.
 

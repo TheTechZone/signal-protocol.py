@@ -23,15 +23,11 @@ def test_group_no_send_session():
 
     alice_identity_key_pair = IdentityKeyPair.generate()
     alice_registration_id = 1
-    alice_store = InMemSignalProtocolStore(
-        alice_identity_key_pair, alice_registration_id
-    )
+    alice_store = InMemSignalProtocolStore(alice_identity_key_pair, alice_registration_id)
 
     with pytest.raises(SignalProtocolException, match="missing sender key state"):
         # TODO: check against rust
-        group_encrypt(
-            alice_store, sender_address, distribution_id, "hello".encode("utf8")
-        )
+        group_encrypt(alice_store, sender_address, distribution_id, "hello".encode("utf8"))
 
 
 def test_group_basic_encrypt_decrypt():
@@ -40,9 +36,7 @@ def test_group_basic_encrypt_decrypt():
 
     alice_identity_key_pair = IdentityKeyPair.generate()
     alice_registration_id = 1
-    alice_store = InMemSignalProtocolStore(
-        alice_identity_key_pair, alice_registration_id
-    )
+    alice_store = InMemSignalProtocolStore(alice_identity_key_pair, alice_registration_id)
     bob_identity_key_pair = IdentityKeyPair.generate()
     bob_registration_id = 2
     bob_store = InMemSignalProtocolStore(bob_identity_key_pair, bob_registration_id)
@@ -58,9 +52,7 @@ def test_group_basic_encrypt_decrypt():
         alice_store, sender_address, distribution_id, "hello".encode("utf8")
     )
 
-    process_sender_key_distribution_message(
-        sender_address, recv_distribution_message, bob_store
-    )
+    process_sender_key_distribution_message(sender_address, recv_distribution_message, bob_store)
 
     bob_plaintext = group_decrypt(alice_ciphertext, bob_store, sender_address)
 
@@ -73,9 +65,7 @@ def test_group_no_recv_session():
 
     alice_identity_key_pair = IdentityKeyPair.generate()
     alice_registration_id = 1
-    alice_store = InMemSignalProtocolStore(
-        alice_identity_key_pair, alice_registration_id
-    )
+    alice_store = InMemSignalProtocolStore(alice_identity_key_pair, alice_registration_id)
     bob_identity_key_pair = IdentityKeyPair.generate()
     bob_registration_id = 2
     bob_store = InMemSignalProtocolStore(bob_identity_key_pair, bob_registration_id)
@@ -102,9 +92,7 @@ def test_group_large_message():
 
     alice_identity_key_pair = IdentityKeyPair.generate()
     alice_registration_id = 1
-    alice_store = InMemSignalProtocolStore(
-        alice_identity_key_pair, alice_registration_id
-    )
+    alice_store = InMemSignalProtocolStore(alice_identity_key_pair, alice_registration_id)
     bob_identity_key_pair = IdentityKeyPair.generate()
     bob_registration_id = 2
     bob_store = InMemSignalProtocolStore(bob_identity_key_pair, bob_registration_id)
@@ -117,13 +105,9 @@ def test_group_large_message():
     )
 
     large_message = bytes(1024)
-    alice_ciphertext = group_encrypt(
-        alice_store, sender_address, distribution_id, large_message
-    )
+    alice_ciphertext = group_encrypt(alice_store, sender_address, distribution_id, large_message)
 
-    process_sender_key_distribution_message(
-        sender_address, recv_distribution_message, bob_store
-    )
+    process_sender_key_distribution_message(sender_address, recv_distribution_message, bob_store)
 
     bob_plaintext = group_decrypt(alice_ciphertext, bob_store, sender_address)
 
@@ -136,9 +120,7 @@ def test_group_basic_ratchet():
 
     alice_identity_key_pair = IdentityKeyPair.generate()
     alice_registration_id = 1
-    alice_store = InMemSignalProtocolStore(
-        alice_identity_key_pair, alice_registration_id
-    )
+    alice_store = InMemSignalProtocolStore(alice_identity_key_pair, alice_registration_id)
     bob_identity_key_pair = IdentityKeyPair.generate()
     bob_registration_id = 2
     bob_store = InMemSignalProtocolStore(bob_identity_key_pair, bob_registration_id)
@@ -150,9 +132,7 @@ def test_group_basic_ratchet():
         sent_distribution_message.serialized()
     )
 
-    process_sender_key_distribution_message(
-        sender_address, recv_distribution_message, bob_store
-    )
+    process_sender_key_distribution_message(sender_address, recv_distribution_message, bob_store)
 
     alice_ciphertext_1 = group_encrypt(
         alice_store, sender_address, distribution_id, "message 1".encode("utf8")
@@ -183,9 +163,7 @@ def test_group_late_join():
 
     alice_identity_key_pair = IdentityKeyPair.generate()
     alice_registration_id = 1
-    alice_store = InMemSignalProtocolStore(
-        alice_identity_key_pair, alice_registration_id
-    )
+    alice_store = InMemSignalProtocolStore(alice_identity_key_pair, alice_registration_id)
     bob_identity_key_pair = IdentityKeyPair.generate()
     bob_registration_id = 2
     bob_store = InMemSignalProtocolStore(bob_identity_key_pair, bob_registration_id)
@@ -205,9 +183,7 @@ def test_group_late_join():
             f"message {i}/100".encode("utf8"),
         )
 
-    process_sender_key_distribution_message(
-        sender_address, recv_distribution_message, bob_store
-    )
+    process_sender_key_distribution_message(sender_address, recv_distribution_message, bob_store)
 
     alice_ciphertext = group_encrypt(
         alice_store, sender_address, distribution_id, "welcome Bob!".encode("utf8")
@@ -223,9 +199,7 @@ def test_group_out_of_order():
 
     alice_identity_key_pair = IdentityKeyPair.generate()
     alice_registration_id = 1
-    alice_store = InMemSignalProtocolStore(
-        alice_identity_key_pair, alice_registration_id
-    )
+    alice_store = InMemSignalProtocolStore(alice_identity_key_pair, alice_registration_id)
     bob_identity_key_pair = IdentityKeyPair.generate()
     bob_registration_id = 2
     bob_store = InMemSignalProtocolStore(bob_identity_key_pair, bob_registration_id)
@@ -236,16 +210,12 @@ def test_group_out_of_order():
     recv_distribution_message = SenderKeyDistributionMessage.try_from(
         sent_distribution_message.serialized()
     )
-    process_sender_key_distribution_message(
-        sender_address, recv_distribution_message, bob_store
-    )
+    process_sender_key_distribution_message(sender_address, recv_distribution_message, bob_store)
 
     ooo_ciphertexts = []
     for i in range(100):
         ooo_ciphertexts.append(
-            group_encrypt(
-                alice_store, sender_address, distribution_id, f"{i}".encode("utf8")
-            )
+            group_encrypt(alice_store, sender_address, distribution_id, f"{i}".encode("utf8"))
         )
     random.shuffle(ooo_ciphertexts)
 
@@ -264,9 +234,7 @@ def test_group_too_far_in_the_future():
 
     alice_identity_key_pair = IdentityKeyPair.generate()
     alice_registration_id = 1
-    alice_store = InMemSignalProtocolStore(
-        alice_identity_key_pair, alice_registration_id
-    )
+    alice_store = InMemSignalProtocolStore(alice_identity_key_pair, alice_registration_id)
     bob_identity_key_pair = IdentityKeyPair.generate()
     bob_registration_id = 2
     bob_store = InMemSignalProtocolStore(bob_identity_key_pair, bob_registration_id)
@@ -277,9 +245,7 @@ def test_group_too_far_in_the_future():
     recv_distribution_message = SenderKeyDistributionMessage.try_from(
         sent_distribution_message.serialized()
     )
-    process_sender_key_distribution_message(
-        sender_address, recv_distribution_message, bob_store
-    )
+    process_sender_key_distribution_message(sender_address, recv_distribution_message, bob_store)
 
     FUTURE_LIMIT = 25001  # used to be 2001
     for i in range(FUTURE_LIMIT):
@@ -294,9 +260,7 @@ def test_group_too_far_in_the_future():
         alice_store, sender_address, distribution_id, "hello????".encode("utf8")
     )
 
-    with pytest.raises(
-        SignalProtocolException, match="message from too far into the future"
-    ):
+    with pytest.raises(SignalProtocolException, match="message from too far into the future"):
         assert group_decrypt(alice_ciphertext, bob_store, sender_address)
 
 
@@ -306,9 +270,7 @@ def test_group_message_key_limit():
 
     alice_identity_key_pair = IdentityKeyPair.generate()
     alice_registration_id = 1
-    alice_store = InMemSignalProtocolStore(
-        alice_identity_key_pair, alice_registration_id
-    )
+    alice_store = InMemSignalProtocolStore(alice_identity_key_pair, alice_registration_id)
     bob_identity_key_pair = IdentityKeyPair.generate()
     bob_registration_id = 2
     bob_store = InMemSignalProtocolStore(bob_identity_key_pair, bob_registration_id)
@@ -319,9 +281,7 @@ def test_group_message_key_limit():
     recv_distribution_message = SenderKeyDistributionMessage.try_from(
         sent_distribution_message.serialized()
     )
-    process_sender_key_distribution_message(
-        sender_address, recv_distribution_message, bob_store
-    )
+    process_sender_key_distribution_message(sender_address, recv_distribution_message, bob_store)
 
     ciphertexts = []
     for i in range(2010):
@@ -335,13 +295,10 @@ def test_group_message_key_limit():
         )
 
     assert (
-        group_decrypt(ciphertexts[1000], bob_store, sender_address).decode("utf8")
-        == "too many msg"
+        group_decrypt(ciphertexts[1000], bob_store, sender_address).decode("utf8") == "too many msg"
     )
     assert (
-        group_decrypt(
-            ciphertexts[len(ciphertexts) - 1], bob_store, sender_address
-        ).decode("utf8")
+        group_decrypt(ciphertexts[len(ciphertexts) - 1], bob_store, sender_address).decode("utf8")
         == "too many msg"
     )
 

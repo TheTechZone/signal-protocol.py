@@ -4,6 +4,7 @@ use pyo3::types::PyBytes;
 use crate::error::{Result, SignalProtocolError};
 
 use base64::{engine::general_purpose, Engine as _};
+use rand::TryRngCore as _;
 
 #[pyclass]
 #[derive(Debug, Copy, Clone)]
@@ -69,7 +70,8 @@ impl KeyPair {
 
     #[staticmethod]
     pub fn generate(key_type: KeyType) -> Self {
-        let keypair = libsignal_protocol::kem::KeyPair::generate(key_type.key_type);
+        let mut csprng = rand::rngs::OsRng.unwrap_err();
+        let keypair = libsignal_protocol::kem::KeyPair::generate(key_type.key_type, &mut csprng);
         KeyPair { key: keypair }
     }
 
@@ -114,15 +116,20 @@ impl KeyPair {
     /// Create a `SharedSecret` and a `Ciphertext`. The `Ciphertext` can be safely sent to the
     /// holder of the corresponding `SecretKey` who can then use it to `decapsulate` the same
     /// `SharedSecret`.
-    pub fn encapsulate(&self, py: Python) -> (PyObject, PyObject) {
+    pub fn encapsulate(&self, py: Python) -> PyResult<(Py<PyAny>, Py<PyAny>)> {
         // we could use get_public().encapsulate() but that does an extra copy operation for no good reason
-        let (ss, ctxt) = self.key.public_key.encapsulate();
-        (PyBytes::new(py, &ss).into(), PyBytes::new(py, &ctxt).into())
+        let mut csprng = rand::rngs::OsRng.unwrap_err();
+        // let (ss, ctxt) = self.key.public_key.encapsulate(&mut csprng);
+        // (PyBytes::new(py, &ss).into(), PyBytes::new(py, &ctxt).into())
+        match self.key.public_key.encapsulate(&mut csprng) {
+            Ok((ss, ctxt)) => Ok((PyBytes::new(py, &ss).into(), PyBytes::new(py, &ctxt).into())),
+            Err(err) => Err(SignalProtocolError::new_err(err)),
+        }
     }
 
     /// Decapsulates a `SharedSecret` that was encapsulated into a `Ciphertext` by a holder of
     /// the corresponding `PublicKey`.
-    pub fn decapsulate(&self, py: Python, ct_bytes: &[u8]) -> PyResult<PyObject> {
+    pub fn decapsulate(&self, py: Python, ct_bytes: &[u8]) -> PyResult<Py<PyAny>> {
         // we could use get_private().decapsulate() but that does an extra copy operation for no good reason
         let ctxt = libsignal_protocol::kem::SerializedCiphertext::from(ct_bytes);
         let ss = self.key.secret_key.decapsulate(&ctxt);
@@ -154,7 +161,7 @@ pub struct PublicKey {
 
 #[pymethods]
 impl PublicKey {
-    pub fn serialize(&self, py: Python) -> PyObject {
+    pub fn serialize(&self, py: Python) -> Py<PyAny> {
         let result = self.key.serialize();
         PyBytes::new(py, &result).into()
     }
@@ -185,9 +192,12 @@ impl PublicKey {
     /// Create a `SharedSecret` and a `Ciphertext`. The `Ciphertext` can be safely sent to the
     /// holder of the corresponding `SecretKey` who can then use it to `decapsulate` the same
     /// `SharedSecret`.
-    pub fn encapsulate(&self, py: Python) -> (PyObject, PyObject) {
-        let (ss, ctxt) = self.key.encapsulate();
-        (PyBytes::new(py, &ss).into(), PyBytes::new(py, &ctxt).into())
+    pub fn encapsulate(&self, py: Python) -> PyResult<(Py<PyAny>, Py<PyAny>)> {
+        let mut csprng = rand::rngs::OsRng.unwrap_err();
+        match self.key.encapsulate(&mut csprng) {
+            Ok((ss, ctxt)) => Ok((PyBytes::new(py, &ss).into(), PyBytes::new(py, &ctxt).into())),
+            Err(err) => Err(SignalProtocolError::new_err(err)),
+        }
     }
 }
 
@@ -200,7 +210,7 @@ pub struct SecretKey {
 
 #[pymethods]
 impl SecretKey {
-    pub fn serialize(&self, py: Python) -> PyObject {
+    pub fn serialize(&self, py: Python) -> Py<PyAny> {
         let result = self.key.serialize();
         PyBytes::new(py, &result).into()
     }
@@ -226,7 +236,7 @@ impl SecretKey {
 
     /// Decapsulates a `SharedSecret` that was encapsulated into a `Ciphertext` by a holder of
     /// the corresponding `PublicKey`.
-    pub fn decapsulate(&self, py: Python, ct_bytes: &[u8]) -> PyResult<PyObject> {
+    pub fn decapsulate(&self, py: Python, ct_bytes: &[u8]) -> PyResult<Py<PyAny>> {
         let ctxt = libsignal_protocol::kem::SerializedCiphertext::from(ct_bytes);
         let ss = self.key.decapsulate(&ctxt);
         match ss {
@@ -252,7 +262,7 @@ impl SerializedCiphertext {
     }
 
     /// Get the raw Kyber ciphertext bytes, without the KeyType prefix.
-    fn raw(&self, py: Python) -> PyObject {
+    fn raw(&self, py: Python) -> Py<PyAny> {
         PyBytes::new(py, &(&*self.state)[1..]).into()
     }
 }

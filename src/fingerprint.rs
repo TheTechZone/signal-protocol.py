@@ -30,7 +30,11 @@ impl Fingerprint {
             &remote_key.key,
         ) {
             Ok(state) => Ok(Self { state }),
-            Err(err) => Err(SignalProtocolError::new_err(err)),
+            Err(err) => {
+                // Convert FingerprintError to SignalProtocolError, then to PyErr
+                let signal_err: SignalProtocolError = err.into();
+                Err(signal_err.into())
+            }
         }
     }
 
@@ -42,7 +46,7 @@ impl Fingerprint {
         Ok(self.state.scannable.compare(combined)?)
     }
 
-    pub fn serialize(&self, py: Python) -> Result<PyObject> {
+    pub fn serialize(&self, py: Python) -> Result<Py<PyAny>> {
         let fingerprint = self.state.scannable.serialize()?;
         Ok(PyBytes::new(py, &fingerprint).into())
     }

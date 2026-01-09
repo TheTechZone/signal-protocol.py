@@ -13,15 +13,17 @@ pub struct DeviceId {
 }
 
 impl From<DeviceId> for u32 {
+    // todo: deviceID is now u8 - change these accordingly
     fn from(value: DeviceId) -> Self {
         u32::from(value.value)
     }
 }
 
 impl From<u32> for DeviceId {
+    // todo: deviceID is now u8 - change these accordingly
     fn from(value: u32) -> Self {
         DeviceId {
-            value: libsignal_protocol::DeviceId::from(value),
+            value: libsignal_protocol::DeviceId::try_from(value).unwrap(),
         }
     }
 }
@@ -38,13 +40,15 @@ impl Serialize for DeviceId {
 #[pymethods]
 impl DeviceId {
     #[new]
+    // todo: deviceID is now u8 - change these accordingly
     fn new(device_id: u32) -> DeviceId {
         DeviceId {
-            value: libsignal_protocol::DeviceId::from(device_id),
+            value: libsignal_protocol::DeviceId::try_from(device_id).unwrap(),
         }
     }
 
     // TODO: Maybe turn into a getter
+    // todo: deviceID is now u8 - change these accordingly
     pub fn get_id(&self) -> u32 {
         u32::from(self.value)
     }
@@ -71,7 +75,7 @@ impl ProtocolAddress {
         ProtocolAddress {
             state: libsignal_protocol::ProtocolAddress::new(
                 name,
-                libsignal_protocol::DeviceId::from(device_id),
+                libsignal_protocol::DeviceId::try_from(device_id).unwrap(),
             ),
         }
     }

@@ -12,10 +12,67 @@ use crate::state::{
 use crate::uuid::UUID;
 
 // traits
+use crate::curve::PublicKey;
 use libsignal_protocol::{
     IdentityKeyStore, KyberPreKeyStore, PreKeyStore, SenderKeyStore, SessionStore,
     SignedPreKeyStore,
 };
+use pyo3::exceptions::PyValueError;
+
+#[pyclass]
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum IdentityChange {
+    NewOrUnchanged,
+    ReplacedExisting,
+}
+
+#[pymethods]
+impl IdentityChange {
+    #[staticmethod]
+    pub fn from_str(s: &str) -> PyResult<Self> {
+        match s {
+            "NewOrUnchanged" => Ok(IdentityChange::NewOrUnchanged),
+            "ReplacedExisting" => Ok(IdentityChange::ReplacedExisting),
+            _ => Err(PyValueError::new_err(format!(
+                "Invalid IdentityChange variant: {}",
+                s
+            ))),
+        }
+    }
+
+    pub fn __str__(&self) -> &str {
+        match self {
+            IdentityChange::NewOrUnchanged => "NewOrUnchanged",
+            IdentityChange::ReplacedExisting => "ReplacedExisting",
+        }
+    }
+
+    pub fn __repr__(&self) -> String {
+        format!("IdentityChange::{}", self.__str__())
+    }
+}
+
+impl From<libsignal_protocol::IdentityChange> for IdentityChange {
+    fn from(value: libsignal_protocol::IdentityChange) -> Self {
+        match value {
+            libsignal_protocol::IdentityChange::NewOrUnchanged => IdentityChange::NewOrUnchanged,
+            libsignal_protocol::IdentityChange::ReplacedExisting => {
+                IdentityChange::ReplacedExisting
+            }
+        }
+    }
+}
+
+impl From<IdentityChange> for libsignal_protocol::IdentityChange {
+    fn from(value: IdentityChange) -> Self {
+        match value {
+            IdentityChange::NewOrUnchanged => libsignal_protocol::IdentityChange::NewOrUnchanged,
+            IdentityChange::ReplacedExisting => {
+                libsignal_protocol::IdentityChange::ReplacedExisting
+            }
+        }
+    }
+}
 
 #[pyclass]
 #[derive(Clone)]
@@ -76,12 +133,16 @@ impl InMemSignalProtocolStore {
         )?)
     }
 
-    fn save_identity(&mut self, address: &ProtocolAddress, identity: &IdentityKey) -> Result<bool> {
-        Ok(block_on(
+    fn save_identity(
+        &mut self,
+        address: &ProtocolAddress,
+        identity: &IdentityKey,
+    ) -> Result<IdentityChange> {
+        Ok(IdentityChange::from(block_on(
             self.store
                 .identity_store
                 .save_identity(&address.state, &identity.key),
-        )?)
+        )?))
     }
 
     fn get_identity(&self, address: &ProtocolAddress) -> Result<Option<IdentityKey>> {
@@ -213,10 +274,17 @@ impl InMemSignalProtocolStore {
     }
 
     /// Mark the entry for kyber_pre_key_id as "used". This would mean different things for one-time and last-resort Kyber keys.
-    fn mark_kyber_pre_key_used(&mut self, kyber_pre_key_id: KyberPreKeyId) -> Result<()> {
-        Ok(block_on(
-            self.store.mark_kyber_pre_key_used(kyber_pre_key_id.value),
-        )?)
+    fn mark_kyber_pre_key_used(
+        &mut self,
+        kyber_pre_key_id: KyberPreKeyId,
+        signed_pre_key_id: SignedPreKeyId,
+        base_key: PublicKey,
+    ) -> Result<()> {
+        Ok(block_on(self.store.mark_kyber_pre_key_used(
+            kyber_pre_key_id.value,
+            signed_pre_key_id.value,
+            &base_key.key,
+        ))?)
     }
 }
 

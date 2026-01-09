@@ -20,6 +20,9 @@ class PreKeyBundle:
         signed_pre_key_id: SignedPreKeyId,
         signed_pre_key_public: PublicKey,
         signed_pre_key_signature: bytes,
+        kyber_pre_key_id: KyberPreKeyId,
+        kyber_pre_key_public: KemPublicKey,
+        kyber_pre_key_signature: bytes,
         identity_key: IdentityKey,
     ) -> None: ...
     def registration_id(self) -> int:
@@ -77,7 +80,7 @@ class PreKeyId:
 
     def __init__(self, id: int) -> None: ...
     def get_id(self) -> int:
-        """Returns the integer represation of the id"""
+        """Returns the integer representation of the id"""
 
 class PreKeyRecord:
     """Represents a pre-key record."""
@@ -152,7 +155,7 @@ class SessionRecord:
         """Returns the remote identity key in bytes."""
         ...
 
-    def get_receiver_chain_key_bytes(self) -> bytes:
+    def get_receiver_chain_key_bytes(self, sender: PublicKey) -> bytes:
         """Returns the receiver chain key in bytes."""
         ...
 

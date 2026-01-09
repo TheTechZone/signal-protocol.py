@@ -14,8 +14,8 @@ use base64::Engine;
 use libsignal_protocol::GenericSignedPreKey;
 use pyo3::prelude::*;
 use pyo3::types::PyDict;
-use rand::rngs::OsRng;
-use rand::Rng;
+use rand::TryRngCore as _;
+
 use std::time::{SystemTime, UNIX_EPOCH};
 
 use crate::{
@@ -107,7 +107,7 @@ pub fn create_registration_keys(
     pq_data: Option<KyberPreKeyRecord>,
     spk_id: Option<u32>,
     pq_id: Option<u32>,
-) -> PyResult<(PyObject, PyObject)> {
+) -> PyResult<(Py<PyAny>, Py<PyAny>)> {
     match key_kind {
         "aci" | "pni" => {}
         _ => {
@@ -134,14 +134,13 @@ pub fn create_registration_keys(
             let keypair = KeyPair::generate();
 
             // generate spk record
-            let id =
-                SignedPreKeyId::new(spk_id.unwrap_or(rand::thread_rng().gen_range(100..10000)));
+            let id = SignedPreKeyId::new(spk_id.unwrap_or(rand::random_range(100..10000)));
             let ts = SystemTime::now()
                 .duration_since(UNIX_EPOCH)
                 .map_err(|e| SignalProtocolError::err_from_str(e.to_string()))?
                 .as_secs();
 
-            let mut csprng: OsRng = OsRng;
+            let mut csprng = rand::rngs::OsRng.unwrap_err();
             let sig = ik
                 .key
                 .private_key()
@@ -166,7 +165,7 @@ pub fn create_registration_keys(
         Some(pq) => pq,
         None => {
             let id: KyberPreKeyId =
-                KyberPreKeyId::new(pq_id.unwrap_or(rand::thread_rng().gen_range(100..10000)));
+                KyberPreKeyId::new(pq_id.unwrap_or(rand::random_range(100..10000)));
             let key_type = KeyType::new(8)?;
             let pq = KyberPreKeyRecord::generate(key_type, id, ik.private_key()?)?;
             _ = secrets.set_item(
@@ -209,7 +208,7 @@ pub fn create_registration(
     pni_spk_id: Option<u32>,
     aci_kyber_id: Option<u32>,
     pni_kyber_id: Option<u32>,
-) -> PyResult<(PyObject, PyObject)> {
+) -> PyResult<(Py<PyAny>, Py<PyAny>)> {
     let (aci_keys, aci_secrets) = create_registration_keys(
         py,
         "aci",
@@ -229,11 +228,11 @@ pub fn create_registration(
         pni_kyber_id,
     )?;
 
-    let aci_dict = aci_keys.downcast_bound::<PyDict>(py)?;
-    let pni_dict = pni_keys.downcast_bound::<PyDict>(py)?;
+    let aci_dict = aci_keys.cast_bound::<PyDict>(py)?;
+    let pni_dict = pni_keys.cast_bound::<PyDict>(py)?;
 
-    let aci_sdict = aci_secrets.downcast_bound::<PyDict>(py)?;
-    let pni_sdict = pni_secrets.downcast_bound::<PyDict>(py)?;
+    let aci_sdict = aci_secrets.cast_bound::<PyDict>(py)?;
+    let pni_sdict = pni_secrets.cast_bound::<PyDict>(py)?;
 
     _ = merge_dicts(aci_dict, pni_dict);
     _ = merge_dicts(aci_sdict, pni_sdict);
@@ -259,7 +258,7 @@ pub fn create_keys_data(
     last_resort_pqk: Option<KemKeyPair>,
     prekey_start_at: Option<u32>,
     kyber_prekey_start_at: Option<u32>,
-) -> PyResult<(PyObject, PyObject)> {
+) -> PyResult<(Py<PyAny>, Py<PyAny>)> {
     let dict = PyDict::new(py);
     match spk {
         Some(key) => {

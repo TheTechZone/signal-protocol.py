@@ -4,7 +4,7 @@ use pyo3::prelude::*;
 use pyo3::types::PyBytes;
 use pyo3::wrap_pyfunction;
 
-use rand::rngs::OsRng;
+use rand::TryRngCore as _;
 use serde::Serialize;
 
 use crate::error::Result;
@@ -17,8 +17,8 @@ pub const PUBLIC_KEY_LENGTH: usize = 32;
 // pub const SIGNATURE_LENGTH: usize = 64;
 
 #[pyfunction]
-pub fn generate_keypair(py: Python) -> PyResult<(PyObject, PyObject)> {
-    let mut csprng = OsRng;
+pub fn generate_keypair(py: Python) -> PyResult<(Py<PyAny>, Py<PyAny>)> {
+    let mut csprng = rand::rngs::OsRng.unwrap_err();
     let key_pair = libsignal_protocol::KeyPair::generate(&mut csprng);
 
     Ok((
@@ -43,7 +43,7 @@ impl KeyPair {
 
     #[staticmethod]
     pub fn generate() -> Self {
-        let mut csprng = OsRng;
+        let mut csprng = rand::rngs::OsRng.unwrap_err();
         let keypair = libsignal_protocol::KeyPair::generate(&mut csprng);
         KeyPair { key: keypair }
     }
@@ -62,13 +62,13 @@ impl KeyPair {
         }
     }
 
-    pub fn serialize(&self, py: Python) -> PyObject {
+    pub fn serialize(&self, py: Python) -> Py<PyAny> {
         let result = self.key.public_key.serialize();
         PyBytes::new(py, &result).into()
     }
 
-    pub fn calculate_signature(&self, py: Python, message: &[u8]) -> PyResult<PyObject> {
-        let mut csprng = OsRng;
+    pub fn calculate_signature(&self, py: Python, message: &[u8]) -> PyResult<Py<PyAny>> {
+        let mut csprng = rand::rngs::OsRng.unwrap_err();
         match self.key.calculate_signature(&message, &mut csprng) {
             Ok(sig) => match sig.into_pyobject(py) {
                 Ok(s) => Ok(s.extract()?),
@@ -84,7 +84,7 @@ impl KeyPair {
         }
     }
 
-    pub fn calculate_agreement(&self, py: Python, their_key: &PublicKey) -> PyResult<PyObject> {
+    pub fn calculate_agreement(&self, py: Python, their_key: &PublicKey) -> PyResult<Py<PyAny>> {
         match self.key.calculate_agreement(&their_key.key) {
             Ok(agreement) => Ok(PyBytes::new(py, &agreement).into()),
             Err(err) => Err(SignalProtocolError::err_from_str(format!(
@@ -139,7 +139,7 @@ impl PublicKey {
         }
     }
 
-    pub fn serialize(&self, py: Python) -> PyObject {
+    pub fn serialize(&self, py: Python) -> Py<PyAny> {
         PyBytes::new(py, &self.key.serialize()).into()
     }
 
@@ -212,7 +212,7 @@ impl PrivateKey {
         }
     }
 
-    pub fn serialize(&self, py: Python) -> PyObject {
+    pub fn serialize(&self, py: Python) -> Py<PyAny> {
         PyBytes::new(py, &self.key.serialize()).into()
     }
 
@@ -231,8 +231,8 @@ impl PrivateKey {
         }
     }
 
-    pub fn calculate_signature(&self, message: &[u8], py: Python) -> PyResult<PyObject> {
-        let mut csprng = OsRng;
+    pub fn calculate_signature(&self, message: &[u8], py: Python) -> PyResult<Py<PyAny>> {
+        let mut csprng = rand::rngs::OsRng.unwrap_err();
         match self.key.calculate_signature(message, &mut csprng) {
             Ok(sig) => Ok(PyBytes::new(py, &sig).into()),
             Err(err) => Err(SignalProtocolError::err_from_str(format!(
@@ -242,7 +242,7 @@ impl PrivateKey {
         }
     }
 
-    pub fn calculate_agreement(&self, py: Python, their_key: &PublicKey) -> PyResult<PyObject> {
+    pub fn calculate_agreement(&self, py: Python, their_key: &PublicKey) -> PyResult<Py<PyAny>> {
         match self.key.calculate_agreement(&their_key.key) {
             Ok(result) => Ok(PyBytes::new(py, &result).into()),
             Err(err) => Err(SignalProtocolError::err_from_str(format!(

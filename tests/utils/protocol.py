@@ -35,6 +35,8 @@ def create_signal_message():
         ciphertext,
         sender_identity_key_pair,
         receiver_identity_key_pair,
+        # todo: changeme
+        bytes(0),
     )
 
 

@@ -6,7 +6,7 @@ use pyo3::prelude::*;
 use pyo3::types::PyBytes;
 
 use base64::{engine::general_purpose, Engine as _};
-use rand::rngs::OsRng;
+use rand::TryRngCore as _;
 
 use crate::curve::{PrivateKey, PublicKey};
 use crate::error::SignalProtocolError;
@@ -36,7 +36,7 @@ impl IdentityKey {
         }
     }
 
-    pub fn serialize(&self, py: Python) -> PyObject {
+    pub fn serialize(&self, py: Python) -> Py<PyAny> {
         PyBytes::new(py, &self.key.serialize()).into()
     }
 
@@ -109,7 +109,7 @@ impl IdentityKeyPair {
 
     #[staticmethod]
     pub fn generate() -> Self {
-        let mut csprng = OsRng;
+        let mut csprng = rand::rngs::OsRng.unwrap_err();
         let key_pair = libsignal_protocol::IdentityKeyPair::generate(&mut csprng);
         IdentityKeyPair { key: key_pair }
     }
@@ -135,12 +135,12 @@ impl IdentityKeyPair {
         }
     }
 
-    pub fn serialize(&self, py: Python) -> PyObject {
+    pub fn serialize(&self, py: Python) -> Py<PyAny> {
         PyBytes::new(py, &self.key.serialize()).into()
     }
 
-    pub fn sign_alternate_identity(&self, py: Python, other: &IdentityKey) -> PyResult<PyObject> {
-        let mut csprng = OsRng;
+    pub fn sign_alternate_identity(&self, py: Python, other: &IdentityKey) -> PyResult<Py<PyAny>> {
+        let mut csprng = rand::rngs::OsRng.unwrap_err();
         let alt = self.key.sign_alternate_identity(&other.key, &mut csprng);
         match alt {
             Err(err) => Err(SignalProtocolError::err_from_str(err.to_string())),
